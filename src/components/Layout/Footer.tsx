@@ -2,13 +2,13 @@ import React from 'react';
 import { MapPin, Mail, Phone, Scale } from 'lucide-react';
 
 interface FooterProps {
-  onNavigate: (tab: 'landing' | 'simulators' | 'diagnostic' | 'portal' | 'crm') => void;
+  onNavigate: (tab: 'landing' | 'solutions' | 'simulators' | 'diagnostic' | 'blog' | 'portal' | 'crm' | 'seo') => void;
 }
 
 export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
   return (
-    <footer className="bg-slate-950 border-t border-slate-800 text-slate-400 text-xs">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <footer className="w-full bg-[#020617] border-t border-slate-800 text-slate-400 text-xs">
+      <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 py-12">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8 pb-10 border-b border-slate-800/80">
           {/* Col 1: Wordmark & Firm Identity */}
           <div className="space-y-3">
@@ -35,16 +35,25 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
                 <button
                   type="button"
                   onClick={() => onNavigate('landing')}
-                  className="hover:text-cyan-400 transition-colors"
+                  className="hover:text-[#00A4EF] transition-colors"
                 >
-                  Propuesta de Valor
+                  Inicio & Video Conferencia
+                </button>
+              </li>
+              <li>
+                <button
+                  type="button"
+                  onClick={() => onNavigate('solutions')}
+                  className="hover:text-[#00A4EF] transition-colors font-semibold text-white"
+                >
+                  Soluciones & Servicios
                 </button>
               </li>
               <li>
                 <button
                   type="button"
                   onClick={() => onNavigate('simulators')}
-                  className="hover:text-cyan-400 transition-colors"
+                  className="hover:text-[#00A4EF] transition-colors"
                 >
                   Simuladores Financieros (VAN/TIR, Punto de Equilibrio)
                 </button>
@@ -53,7 +62,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
                 <button
                   type="button"
                   onClick={() => onNavigate('diagnostic')}
-                  className="hover:text-cyan-400 transition-colors"
+                  className="hover:text-[#00A4EF] transition-colors"
                 >
                   Diagnóstico Estratégico Interactivo
                 </button>
@@ -61,8 +70,17 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
               <li>
                 <button
                   type="button"
+                  onClick={() => onNavigate('blog')}
+                  className="hover:text-[#00A4EF] transition-colors"
+                >
+                  Blog & Podcast Spotify
+                </button>
+              </li>
+              <li>
+                <button
+                  type="button"
                   onClick={() => onNavigate('portal')}
-                  className="hover:text-cyan-400 transition-colors"
+                  className="hover:text-[#00A4EF] transition-colors"
                 >
                   Portal de Clientes & Reportes
                 </button>
@@ -71,9 +89,18 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
                 <button
                   type="button"
                   onClick={() => onNavigate('crm')}
-                  className="hover:text-cyan-400 transition-colors"
+                  className="hover:text-[#00A4EF] transition-colors"
                 >
                   Consola Interna & Pipeline CRM
+                </button>
+              </li>
+              <li>
+                <button
+                  type="button"
+                  onClick={() => onNavigate('seo')}
+                  className="hover:text-[#00A4EF] transition-colors"
+                >
+                  Control SEO & Metadatos
                 </button>
               </li>
             </ul>

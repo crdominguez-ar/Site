@@ -7,25 +7,28 @@ import React, { useState } from 'react';
 import { Navbar } from './components/Layout/Navbar';
 import { Footer } from './components/Layout/Footer';
 import { LandingView } from './components/Landing/LandingView';
+import { SolutionsView } from './components/Solutions/SolutionsView';
 import { CalculatorsSuite } from './components/Calculators/CalculatorsSuite';
 import { InteractiveDiagnostic } from './components/Diagnostic/InteractiveDiagnostic';
+import { BlogView } from './components/Blog/BlogView';
 import { ClientPortal } from './components/Portal/ClientPortal';
 import { InternalCRM } from './components/CRM/InternalCRM';
+import { SEOControlPanel } from './components/SEO/SEOControlPanel';
 import { ConsultationModal } from './components/Modals/ConsultationModal';
 import { UserRole } from './types';
 
 export default function App() {
-  const [currentTab, setCurrentTab] = useState<'landing' | 'simulators' | 'diagnostic' | 'portal' | 'crm'>('landing');
+  const [currentTab, setCurrentTab] = useState<'landing' | 'solutions' | 'simulators' | 'diagnostic' | 'blog' | 'portal' | 'crm' | 'seo'>('landing');
   const [currentRole, setCurrentRole] = useState<UserRole>('admin');
   const [isConsultationModalOpen, setIsConsultationModalOpen] = useState<boolean>(false);
 
-  const handleTabChange = (tab: 'landing' | 'simulators' | 'diagnostic' | 'portal' | 'crm') => {
+  const handleTabChange = (tab: 'landing' | 'solutions' | 'simulators' | 'diagnostic' | 'blog' | 'portal' | 'crm' | 'seo') => {
     setCurrentTab(tab);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col">
+    <div className="min-h-screen w-full bg-slate-950 text-slate-100 flex flex-col">
       {/* Top Navigation */}
       <Navbar
         currentTab={currentTab}
@@ -35,8 +38,8 @@ export default function App() {
         onOpenConsultationModal={() => setIsConsultationModalOpen(true)}
       />
 
-      {/* Main Content Viewport */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
+      {/* Main Content Viewport - Full Width Ancho Completo */}
+      <main className="flex-1 w-full min-h-screen">
         {currentTab === 'landing' && (
           <LandingView
             onSelectTab={handleTabChange}
@@ -44,12 +47,24 @@ export default function App() {
           />
         )}
 
+        {currentTab === 'solutions' && (
+          <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 py-10 sm:py-14">
+            <SolutionsView
+              onOpenConsultationModal={() => setIsConsultationModalOpen(true)}
+              onOpenDiagnostic={() => handleTabChange('diagnostic')}
+              onOpenSimulators={() => handleTabChange('simulators')}
+            />
+          </div>
+        )}
+
         {currentTab === 'simulators' && (
-          <CalculatorsSuite />
+          <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 py-10 sm:py-14">
+            <CalculatorsSuite />
+          </div>
         )}
 
         {currentTab === 'diagnostic' && (
-          <div className="max-w-4xl mx-auto space-y-6">
+          <div className="w-full max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-14 space-y-6">
             <div className="text-center space-y-2 mb-8">
               <span className="text-xs font-mono font-semibold uppercase tracking-wider text-[#00A4EF]">
                 Auditoría Inicial Automatizada
@@ -65,12 +80,28 @@ export default function App() {
           </div>
         )}
 
+        {currentTab === 'blog' && (
+          <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 py-10 sm:py-14">
+            <BlogView />
+          </div>
+        )}
+
         {currentTab === 'portal' && (
-          <ClientPortal />
+          <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 py-10 sm:py-14">
+            <ClientPortal />
+          </div>
         )}
 
         {currentTab === 'crm' && (
-          <InternalCRM currentRole={currentRole} />
+          <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 py-10 sm:py-14">
+            <InternalCRM currentRole={currentRole} />
+          </div>
+        )}
+
+        {currentTab === 'seo' && (
+          <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 py-10 sm:py-14">
+            <SEOControlPanel />
+          </div>
         )}
       </main>
 
