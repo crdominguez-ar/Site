@@ -48,7 +48,7 @@ export default function App() {
         )}
 
         {currentTab === 'solutions' && (
-          <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 py-10 sm:py-14">
+          <div className="w-full px-6 sm:px-12 lg:px-20 py-10 sm:py-14">
             <SolutionsView
               onOpenConsultationModal={() => setIsConsultationModalOpen(true)}
               onOpenDiagnostic={() => handleTabChange('diagnostic')}
@@ -58,13 +58,13 @@ export default function App() {
         )}
 
         {currentTab === 'simulators' && (
-          <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 py-10 sm:py-14">
+          <div className="w-full px-6 sm:px-12 lg:px-20 py-10 sm:py-14">
             <CalculatorsSuite />
           </div>
         )}
 
         {currentTab === 'diagnostic' && (
-          <div className="w-full max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-14 space-y-6">
+          <div className="w-full px-6 sm:px-12 lg:px-20 py-10 sm:py-14 space-y-6">
             <div className="text-center space-y-2 mb-8">
               <span className="text-xs font-mono font-semibold uppercase tracking-wider text-[#00A4EF]">
                 Auditoría Inicial Automatizada
@@ -72,7 +72,7 @@ export default function App() {
               <h1 className="text-3xl font-black text-white">
                 Diagnóstico Estratégico Empresarial
               </h1>
-              <p className="text-sm text-slate-400 max-w-xl mx-auto">
+              <p className="text-sm text-slate-400 max-w-2xl mx-auto">
                 Evalúa en 4 pasos la estructura financiera, contingencias tributarias y potencial de franquiciabilidad o digitalización de tu organización.
               </p>
             </div>
@@ -81,25 +81,25 @@ export default function App() {
         )}
 
         {currentTab === 'blog' && (
-          <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 py-10 sm:py-14">
+          <div className="w-full px-6 sm:px-12 lg:px-20 py-10 sm:py-14">
             <BlogView />
           </div>
         )}
 
         {currentTab === 'portal' && (
-          <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 py-10 sm:py-14">
+          <div className="w-full px-6 sm:px-12 lg:px-20 py-10 sm:py-14">
             <ClientPortal />
           </div>
         )}
 
         {currentTab === 'crm' && (
-          <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 py-10 sm:py-14">
+          <div className="w-full px-6 sm:px-12 lg:px-20 py-10 sm:py-14">
             <InternalCRM currentRole={currentRole} />
           </div>
         )}
 
         {currentTab === 'seo' && (
-          <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 py-10 sm:py-14">
+          <div className="w-full px-6 sm:px-12 lg:px-20 py-10 sm:py-14">
             <SEOControlPanel />
           </div>
         )}

@@ -91,14 +91,14 @@ export const InteractiveDiagnostic: React.FC<InteractiveDiagnosticProps> = ({
   };
 
   return (
-    <div id="diagnostico" className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-2xl">
+    <div id="diagnostico" className="w-full space-y-6">
       {/* Header bar with step indicator */}
-      <div className="px-6 py-5 bg-slate-950 border-b border-slate-800 flex flex-wrap items-center justify-between gap-4">
+      <div className="py-4 border-b border-slate-800 flex flex-wrap items-center justify-between gap-4">
         <div>
-          <span className="text-xs uppercase tracking-wider text-cyan-400 font-semibold block">
+          <span className="text-xs uppercase tracking-wider text-[#00A4EF] font-semibold block font-mono">
             Diagnóstico Financiero & Estratégico Interactivo
           </span>
-          <h2 className="text-lg font-bold text-white">
+          <h2 className="text-2xl font-bold text-white tracking-tight mt-1">
             Evaluación Personalizada para tu Negocio
           </h2>
         </div>
@@ -110,7 +110,7 @@ export const InteractiveDiagnostic: React.FC<InteractiveDiagnosticProps> = ({
               key={s}
               className={`h-2 rounded-full transition-all duration-300 ${
                 s === step
-                  ? 'w-8 bg-cyan-400'
+                  ? 'w-8 bg-[#0078D4]'
                   : s < step
                   ? 'w-4 bg-slate-600'
                   : 'w-2 bg-slate-800'
@@ -120,7 +120,7 @@ export const InteractiveDiagnostic: React.FC<InteractiveDiagnosticProps> = ({
         </div>
       </div>
 
-      <div className="p-6 md:p-8">
+      <div className="py-2">
         {step === 1 && (
           <div className="space-y-6">
             <div>

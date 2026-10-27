@@ -13,100 +13,96 @@ interface LandingViewProps {
 export const LandingView: React.FC<LandingViewProps> = ({ onSelectTab, onOpenConsultationModal }) => {
   return (
     <div className="w-full space-y-0 pb-0">
-      {/* Block 1: Hero Section (Full-Width Obsidian Slate #020617) */}
-      <section className="w-full bg-[#020617] border-b border-slate-800 py-10 sm:py-16 px-4 sm:px-8 lg:px-12 xl:px-16">
-        <div className="w-full max-w-7xl mx-auto space-y-10">
-          <div className="relative overflow-hidden rounded-2xl border border-slate-800 bg-slate-900 fluent-shadow-elevated">
-            <div className="relative min-h-[540px] lg:min-h-[580px] flex flex-col justify-end p-6 sm:p-10 lg:p-14">
-              {/* Background photography */}
-              <div className="absolute inset-0 z-0">
-                <img
-                  src="/src/assets/images/hero_patagonia_consultancy_1793059908678.jpg"
-                  alt="Estudio Contable Domínguez & Lambrecht - Consultoría Estratégica en Patagonia"
-                  referrerPolicy="no-referrer"
-                  className="w-full h-full object-cover object-center brightness-[0.55]"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/80 to-slate-950/30" />
-                <div className="absolute inset-0 bg-gradient-to-r from-slate-950/95 via-slate-950/60 to-transparent" />
-              </div>
+      {/* Block 1: Hero Section (Ancho Completo Edge-to-Edge sin marcos ni bordes de tarjeta) */}
+      <section className="relative w-full min-h-[580px] lg:min-h-[660px] flex flex-col justify-between bg-slate-950 overflow-hidden border-b border-slate-800">
+        {/* Full-bleed background photography */}
+        <div className="absolute inset-0 z-0">
+          <img
+            src="/src/assets/images/hero_patagonia_consultancy_1793059908678.jpg"
+            alt="Estudio Contable Domínguez & Lambrecht - Consultoría Estratégica en Patagonia"
+            referrerPolicy="no-referrer"
+            className="w-full h-full object-cover object-center brightness-[0.55]"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/80 to-slate-950/25" />
+          <div className="absolute inset-0 bg-gradient-to-r from-slate-950/95 via-slate-950/65 to-transparent" />
+        </div>
 
-              {/* Hero Content */}
-              <div className="relative z-10 max-w-3xl space-y-4">
-                <div className="flex items-center gap-2 text-xs font-mono font-semibold text-[#00A4EF] uppercase tracking-wider">
-                  <span>Trelew, Chubut</span>
-                  <span aria-hidden="true">·</span>
-                  <span>Patagonia Argentina</span>
-                  <span aria-hidden="true">·</span>
-                  <span>Cr. Carlos Rodrigo Domínguez</span>
-                </div>
+        {/* Hero Content spanning edge-to-edge with generous corporate padding */}
+        <div className="relative z-10 w-full px-6 sm:px-12 lg:px-20 xl:px-24 pt-20 pb-16 lg:pt-28 lg:pb-20 max-w-5xl space-y-5">
+          <div className="flex items-center gap-2 text-xs font-mono font-semibold text-[#00A4EF] uppercase tracking-wider">
+            <span>Trelew, Chubut</span>
+            <span aria-hidden="true">·</span>
+            <span>Patagonia Argentina</span>
+            <span aria-hidden="true">·</span>
+            <span>Cr. Carlos Rodrigo Domínguez</span>
+          </div>
 
-                <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black text-white tracking-tight leading-[1.12] text-balance">
-                  Consultoría de Negocios Estratégica & Dirección Financiera
-                </h1>
+          <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black text-white tracking-tight leading-[1.1] text-balance">
+            Consultoría de Negocios Estratégica & Dirección Financiera
+          </h1>
 
-                <p className="text-sm sm:text-base text-slate-300 leading-relaxed max-w-2xl font-normal">
-                  Superamos la gestoría administrativa tradicional. Desarrollamos arquitectura contable, fiscal y de dirección financiera moderna para PyMEs patagónicas, franquicias, exportadores de software y empresas 100% IA (Zero-Human Companies).
-                </p>
+          <p className="text-base sm:text-lg text-slate-300 leading-relaxed max-w-3xl font-normal">
+            Superamos la gestoría administrativa tradicional. Desarrollamos arquitectura contable, fiscal y de dirección financiera moderna para PyMEs patagónicas, franquicias, exportadores de software y empresas 100% IA (Zero-Human Companies).
+          </p>
 
-                <div className="flex flex-wrap items-center gap-3 pt-3">
-                  <button
-                    type="button"
-                    onClick={() => onSelectTab('solutions')}
-                    className="px-5 py-2.5 bg-[#0078D4] hover:bg-[#106EBE] active:bg-[#005A9E] text-white font-bold text-xs sm:text-sm rounded-md transition-all shadow-md flex items-center gap-2"
-                  >
-                    <span>Conocer Soluciones & Servicios</span>
-                    <ArrowRight className="w-4 h-4" />
-                  </button>
+          <div className="flex flex-wrap items-center gap-3.5 pt-3">
+            <button
+              type="button"
+              onClick={() => onSelectTab('solutions')}
+              className="px-6 py-3 bg-[#0078D4] hover:bg-[#106EBE] active:bg-[#005A9E] text-white font-bold text-xs sm:text-sm rounded-md transition-all shadow-md flex items-center gap-2"
+            >
+              <span>Conocer Soluciones & Servicios</span>
+              <ArrowRight className="w-4 h-4" />
+            </button>
 
-                  <button
-                    type="button"
-                    onClick={() => onSelectTab('diagnostic')}
-                    className="px-5 py-2.5 bg-slate-900/90 hover:bg-slate-800 text-slate-200 border border-slate-700 font-semibold text-xs sm:text-sm rounded-md transition-colors flex items-center gap-2"
-                  >
-                    <span>Diagnóstico de Empresa</span>
-                    <ChevronRight className="w-4 h-4" />
-                  </button>
-                </div>
-              </div>
+            <button
+              type="button"
+              onClick={() => onSelectTab('diagnostic')}
+              className="px-6 py-3 bg-slate-900/90 hover:bg-slate-800 text-slate-200 border border-slate-700 font-semibold text-xs sm:text-sm rounded-md transition-colors flex items-center gap-2"
+            >
+              <span>Diagnóstico de Empresa</span>
+              <ChevronRight className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+
+        {/* 4-Column KPI strip spanning full width 100% edge-to-edge */}
+        <div className="relative z-10 w-full border-t border-slate-800/80 bg-slate-950/90 backdrop-blur-md">
+          <div className="w-full px-6 sm:px-12 lg:px-20 xl:px-24 grid grid-cols-2 lg:grid-cols-4 divide-y lg:divide-y-0 lg:divide-x divide-slate-800/80">
+            <div className="py-6 sm:pr-8">
+              <span className="text-2xl sm:text-4xl font-black text-white font-mono tabular-nums block">
+                18+
+              </span>
+              <span className="text-xs text-slate-400 mt-1 block">
+                Años de experiencia financiera y tributaria en Patagonia
+              </span>
             </div>
 
-            {/* 4-Column KPI strip in Microsoft Enterprise Dashboard Style */}
-            <div className="grid grid-cols-2 md:grid-cols-4 border-t border-slate-800 bg-slate-950/90 divide-x divide-slate-800/80">
-              <div className="p-5 sm:p-6">
-                <span className="text-2xl sm:text-3xl font-black text-white font-mono tabular-nums block">
-                  18+
-                </span>
-                <span className="text-xs text-slate-400 mt-1 block">
-                  Años de experiencia financiera y tributaria en Patagonia
-                </span>
-              </div>
+            <div className="py-6 sm:px-8">
+              <span className="text-2xl sm:text-4xl font-black text-[#00A4EF] font-mono tabular-nums block">
+                5
+              </span>
+              <span className="text-xs text-slate-400 mt-1 block">
+                Ejes estratégicos de negocio
+              </span>
+            </div>
 
-              <div className="p-5 sm:p-6">
-                <span className="text-2xl sm:text-3xl font-black text-[#00A4EF] font-mono tabular-nums block">
-                  5
-                </span>
-                <span className="text-xs text-slate-400 mt-1 block">
-                  Ejes estratégicos de negocio
-                </span>
-              </div>
+            <div className="py-6 sm:px-8">
+              <span className="text-2xl sm:text-4xl font-black text-white font-mono tabular-nums block">
+                100%
+              </span>
+              <span className="text-xs text-slate-400 mt-1 block">
+                Blindaje legal Ley CCyC 1512-1524 & AFIP
+              </span>
+            </div>
 
-              <div className="p-5 sm:p-6">
-                <span className="text-2xl sm:text-3xl font-black text-white font-mono tabular-nums block">
-                  100%
-                </span>
-                <span className="text-xs text-slate-400 mt-1 block">
-                  Blindaje legal Ley CCyC 1512-1524 & AFIP
-                </span>
-              </div>
-
-              <div className="p-5 sm:p-6">
-                <span className="text-2xl sm:text-3xl font-black text-[#107C41] font-mono tabular-nums block">
-                  USD 45M+
-                </span>
-                <span className="text-xs text-slate-400 mt-1 block">
-                  En flujos de caja y modelos evaluados
-                </span>
-              </div>
+            <div className="py-6 sm:pl-8">
+              <span className="text-2xl sm:text-4xl font-black text-[#107C41] font-mono tabular-nums block">
+                USD 45M+
+              </span>
+              <span className="text-xs text-slate-400 mt-1 block">
+                En flujos de caja y modelos evaluados
+              </span>
             </div>
           </div>
         </div>
@@ -115,9 +111,9 @@ export const LandingView: React.FC<LandingViewProps> = ({ onSelectTab, onOpenCon
       {/* Block 2: Executive YouTube Video Player (Tone: Corporate Deep Slate Navy #0F172A) */}
       <ExecutiveVideoSection />
 
-      {/* Block 3: 5 Strategic Axes (Tone: Corporate Midnight #0B0F19) */}
-      <section className="w-full bg-[#0B0F19] border-b border-slate-800 py-16 px-4 sm:px-8 lg:px-12 xl:px-16">
-        <div className="w-full max-w-7xl mx-auto space-y-8">
+      {/* Block 3: 5 Strategic Axes (Tone: Corporate Midnight #0B0F19 - Ancho Completo) */}
+      <section className="w-full bg-[#0B0F19] border-b border-slate-800 py-16 lg:py-20 px-6 sm:px-12 lg:px-20 xl:px-24">
+        <div className="w-full space-y-10">
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
             <div>
               <div className="flex items-center gap-1.5 text-xs font-mono font-semibold uppercase tracking-wider text-[#00A4EF] mb-1">
@@ -125,10 +121,10 @@ export const LandingView: React.FC<LandingViewProps> = ({ onSelectTab, onOpenCon
                 <span>·</span>
                 <span>Estudio Domínguez & Lambrecht</span>
               </div>
-              <h2 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
+              <h2 className="text-2xl sm:text-4xl font-extrabold text-white tracking-tight">
                 Cinco Ejes de Consultoría Integral
               </h2>
-              <p className="text-xs sm:text-sm text-slate-400 mt-1.5 max-w-2xl leading-relaxed">
+              <p className="text-xs sm:text-sm text-slate-400 mt-1.5 max-w-3xl leading-relaxed">
                 Metodologías analíticas adaptadas a la escala real de cada negocio. De la cooperativa regional a las arquitecturas autónomas de IA.
               </p>
             </div>
@@ -144,7 +140,7 @@ export const LandingView: React.FC<LandingViewProps> = ({ onSelectTab, onOpenCon
           </div>
 
           {/* Bento Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {/* Card 1: Tradicionales */}
             <div className="bg-slate-900 border border-slate-800 rounded-xl p-6 flex flex-col justify-between hover:border-[#0078D4]/60 transition-all fluent-shadow-card">
               <div>
@@ -331,23 +327,23 @@ export const LandingView: React.FC<LandingViewProps> = ({ onSelectTab, onOpenCon
         </div>
       </section>
 
-      {/* Block 4: Case Studies (Tone: Dark Zinc Corporate #18181B) */}
-      <section className="w-full bg-[#18181B] border-b border-slate-800 py-16 px-4 sm:px-8 lg:px-12 xl:px-16">
-        <div className="w-full max-w-7xl mx-auto space-y-8">
+      {/* Block 4: Case Studies (Tone: Dark Zinc Corporate #18181B - Ancho Completo) */}
+      <section className="w-full bg-[#18181B] border-b border-slate-800 py-16 lg:py-20 px-6 sm:px-12 lg:px-20 xl:px-24">
+        <div className="w-full space-y-8">
           <div>
             <span className="text-xs font-mono font-semibold uppercase tracking-wider text-[#00A4EF]">
               Casos de Estudio & Métricas Cuantitativas
             </span>
-            <h2 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight mt-1">
+            <h2 className="text-2xl sm:text-4xl font-extrabold text-white tracking-tight mt-1">
               Impacto Comprobado en Empresas de la Patagonia
             </h2>
-            <p className="text-xs sm:text-sm text-slate-400 mt-1 max-w-2xl leading-relaxed">
+            <p className="text-xs sm:text-sm text-slate-400 mt-1 max-w-3xl leading-relaxed">
               Metodología financiera aplicada con rigor normativo y resultados auditados.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-            <div className="p-5 bg-slate-950 border border-slate-800 rounded-lg space-y-3">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="p-6 bg-slate-950 border border-slate-800 rounded-xl space-y-3">
               <span className="text-xs font-mono text-[#00A4EF]">Cooperativa Industrial · Trelew</span>
               <h4 className="text-sm font-bold text-white">
                 Determinación de Costos Ocultos y Punto de Equilibrio
@@ -360,7 +356,7 @@ export const LandingView: React.FC<LandingViewProps> = ({ onSelectTab, onOpenCon
               </div>
             </div>
 
-            <div className="p-5 bg-slate-950 border border-slate-800 rounded-lg space-y-3">
+            <div className="p-6 bg-slate-950 border border-slate-800 rounded-xl space-y-3">
               <span className="text-xs font-mono text-[#107C41]">SaaS B2B Tech · Puerto Madryn</span>
               <h4 className="text-sm font-bold text-white">
                 Liquidación de Factura E & Registro Economía del Conocimiento
@@ -373,7 +369,7 @@ export const LandingView: React.FC<LandingViewProps> = ({ onSelectTab, onOpenCon
               </div>
             </div>
 
-            <div className="p-5 bg-slate-950 border border-slate-800 rounded-lg space-y-3">
+            <div className="p-6 bg-slate-950 border border-slate-800 rounded-xl space-y-3">
               <span className="text-xs font-mono text-[#0078D4]">Red Comercial · Valle de Chubut</span>
               <h4 className="text-sm font-bold text-white">
                 Auditoría Precontractual de Franquicia (CCyC 1512-1524)
@@ -389,16 +385,16 @@ export const LandingView: React.FC<LandingViewProps> = ({ onSelectTab, onOpenCon
         </div>
       </section>
 
-      {/* Block 5: Partner Profile (Tone: Deep Slate Navy #0F172A) */}
-      <section className="w-full bg-[#0F172A] border-b border-slate-800 py-16 px-4 sm:px-8 lg:px-12 xl:px-16">
-        <div className="w-full max-w-7xl mx-auto">
+      {/* Block 5: Partner Profile (Tone: Deep Slate Navy #0F172A - Ancho Completo sin caja cerrada) */}
+      <section className="w-full bg-[#0F172A] border-b border-slate-800 py-16 lg:py-20 px-6 sm:px-12 lg:px-20 xl:px-24">
+        <div className="w-full">
           <PartnerProfile />
         </div>
       </section>
 
-      {/* Block 6: Interactive Diagnostic (Tone: Deep Midnight Slate #020617) */}
-      <section className="w-full bg-[#020617] py-16 px-4 sm:px-8 lg:px-12 xl:px-16">
-        <div className="w-full max-w-7xl mx-auto">
+      {/* Block 6: Interactive Diagnostic (Tone: Deep Midnight Slate #020617 - Ancho Completo) */}
+      <section className="w-full bg-[#020617] py-16 lg:py-20 px-6 sm:px-12 lg:px-20 xl:px-24">
+        <div className="w-full">
           <InteractiveDiagnostic onLeadCreated={() => onSelectTab('crm')} />
         </div>
       </section>
