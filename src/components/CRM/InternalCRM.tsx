@@ -152,7 +152,7 @@ export const InternalCRM: React.FC<InternalCRMProps> = ({ currentRole }) => {
             <button
               type="button"
               onClick={() => setShowLeadModal(true)}
-              className="px-4 py-2 bg-cyan-500 hover:bg-cyan-400 text-slate-950 text-xs font-bold rounded-lg transition-colors flex items-center gap-1.5"
+              className="px-4 py-2 bg-[#0078D4] hover:bg-[#106EBE] text-white text-xs font-bold rounded-md transition-colors flex items-center gap-1.5 shadow-sm"
             >
               <Plus className="w-4 h-4" />
               <span>Alta de Lead</span>
@@ -169,7 +169,7 @@ export const InternalCRM: React.FC<InternalCRMProps> = ({ currentRole }) => {
               onClick={() => setSelectedVertical('all')}
               className={`px-2.5 py-1 text-xs rounded-md font-medium transition-colors ${
                 selectedVertical === 'all'
-                  ? 'bg-cyan-500 text-slate-950 font-bold'
+                  ? 'bg-[#0078D4] text-white font-bold'
                   : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
               }`}
             >
@@ -182,7 +182,7 @@ export const InternalCRM: React.FC<InternalCRMProps> = ({ currentRole }) => {
                 onClick={() => setSelectedVertical(vKey)}
                 className={`px-2.5 py-1 text-xs rounded-md font-medium transition-colors ${
                   selectedVertical === vKey
-                    ? 'bg-cyan-500 text-slate-950 font-bold'
+                    ? 'bg-[#0078D4] text-white font-bold'
                     : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
                 }`}
               >

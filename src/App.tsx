@@ -51,7 +51,7 @@ export default function App() {
         {currentTab === 'diagnostic' && (
           <div className="max-w-4xl mx-auto space-y-6">
             <div className="text-center space-y-2 mb-8">
-              <span className="text-xs font-mono font-semibold uppercase tracking-wider text-cyan-400">
+              <span className="text-xs font-mono font-semibold uppercase tracking-wider text-[#00A4EF]">
                 Auditoría Inicial Automatizada
               </span>
               <h1 className="text-3xl font-black text-white">

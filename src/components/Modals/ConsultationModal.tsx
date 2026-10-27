@@ -187,7 +187,7 @@ export const ConsultationModal: React.FC<ConsultationModalProps> = ({ isOpen, on
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="px-5 py-2.5 bg-cyan-400 hover:bg-cyan-300 text-slate-950 font-bold text-xs rounded-lg transition-colors flex items-center gap-2 disabled:opacity-50"
+                className="px-5 py-2.5 bg-[#0078D4] hover:bg-[#106EBE] text-white font-bold text-xs rounded-md transition-colors flex items-center gap-2 disabled:opacity-50 shadow-sm"
               >
                 {isSubmitting ? (
                   <>

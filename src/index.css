@@ -2,26 +2,45 @@
 
 @layer base {
   :root {
-    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    --ms-blue: #0078D4;
+    --ms-blue-hover: #106EBE;
+    --ms-blue-light: #EFF6FC;
+    --ms-navy: #0F172A;
+    --ms-neutral-light: #F8FAFC;
+    --ms-border: #E2E8F0;
+    font-family: 'Segoe UI', 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
   }
   
   code, pre, .font-mono {
-    font-family: 'JetBrains Mono', monospace;
+    font-family: 'JetBrains Mono', Consolas, 'Courier New', monospace;
   }
 }
 
-/* Custom scrollbar for clean tabular and kanban displays */
+/* Microsoft Fluent Depth Shadows */
+.fluent-shadow-card {
+  box-shadow: 0 1.6px 3.6px 0 rgba(0, 0, 0, 0.08), 0 0.3px 0.9px 0 rgba(0, 0, 0, 0.06);
+}
+
+.fluent-shadow-elevated {
+  box-shadow: 0 6.4px 14.4px 0 rgba(0, 0, 0, 0.12), 0 1.2px 3.6px 0 rgba(0, 0, 0, 0.08);
+}
+
+.fluent-shadow-hover:hover {
+  box-shadow: 0 10px 24px -4px rgba(0, 120, 212, 0.16), 0 2px 6px 0 rgba(0, 0, 0, 0.06);
+}
+
+/* Custom scrollbar matching Microsoft Fluent UI */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: rgba(15, 23, 42, 0.6);
+  background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba(51, 65, 85, 0.8);
+  background: rgba(148, 163, 184, 0.5);
   border-radius: 3px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(100, 116, 139, 1);
+  background: rgba(100, 116, 139, 0.8);
 }

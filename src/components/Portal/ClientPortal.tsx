@@ -271,7 +271,7 @@ export const ClientPortal: React.FC = () => {
               <button
                 type="submit"
                 disabled={isSubmittingTicket}
-                className="w-full py-2 bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs rounded-lg transition-colors flex items-center justify-center gap-2"
+                className="w-full py-2.5 bg-[#0078D4] hover:bg-[#106EBE] text-white font-bold text-xs rounded-md transition-colors flex items-center justify-center gap-2 shadow-sm"
               >
                 <Send className="w-3.5 h-3.5" />
                 <span>Enviar Consulta Prioritaria</span>

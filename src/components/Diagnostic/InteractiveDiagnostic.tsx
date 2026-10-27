@@ -175,7 +175,7 @@ export const InteractiveDiagnostic: React.FC<InteractiveDiagnosticProps> = ({
               <button
                 type="button"
                 onClick={handleNext}
-                className="px-6 py-2.5 bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-semibold text-sm rounded-lg transition-colors flex items-center gap-2"
+                className="px-6 py-2.5 bg-[#0078D4] hover:bg-[#106EBE] text-white font-semibold text-sm rounded-lg transition-colors flex items-center gap-2"
               >
                 Continuar al Paso 2
                 <ArrowRight className="w-4 h-4" />
@@ -298,7 +298,7 @@ export const InteractiveDiagnostic: React.FC<InteractiveDiagnosticProps> = ({
               <button
                 type="button"
                 onClick={handleNext}
-                className="px-6 py-2.5 bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-semibold text-sm rounded-lg transition-colors flex items-center gap-2"
+                className="px-6 py-2.5 bg-[#0078D4] hover:bg-[#106EBE] text-white font-semibold text-sm rounded-lg transition-colors flex items-center gap-2"
               >
                 Continuar a Datos de Contacto
                 <ArrowRight className="w-4 h-4" />
@@ -399,7 +399,7 @@ export const InteractiveDiagnostic: React.FC<InteractiveDiagnosticProps> = ({
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="px-6 py-2.5 bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-semibold text-sm rounded-lg transition-colors flex items-center gap-2 disabled:opacity-50"
+                className="px-6 py-2.5 bg-[#0078D4] hover:bg-[#106EBE] text-white font-semibold text-sm rounded-lg transition-colors flex items-center gap-2 disabled:opacity-50"
               >
                 {isSubmitting ? (
                   <>

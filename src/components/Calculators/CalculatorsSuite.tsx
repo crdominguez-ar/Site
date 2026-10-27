@@ -10,28 +10,30 @@ export const CalculatorsSuite: React.FC = () => {
 
   return (
     <div className="space-y-8">
-      {/* Header */}
-      <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 md:p-8">
+      {/* Header with Microsoft Enterprise Styling */}
+      <div className="bg-slate-900 border border-slate-800 rounded-xl p-6 md:p-8 fluent-shadow-card">
         <div className="max-w-3xl">
-          <span className="text-xs font-semibold uppercase tracking-wider text-cyan-400 font-mono">
-            Modelos Cuantitativos & Simuladores Financieros
-          </span>
-          <h2 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight mt-1">
+          <div className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-[#00A4EF] font-mono mb-1">
+            <span>Herramientas Analíticas</span>
+            <span>·</span>
+            <span>Estudio Domínguez & Lambrecht</span>
+          </div>
+          <h2 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
             Simuladores Interactivos de Viabilidad Económica
           </h2>
           <p className="text-sm text-slate-400 mt-2 leading-relaxed">
-            Herramientas financieras y jurídicas en tiempo real desarrolladas por Estudio Domínguez & Lambrecht para evaluar proyectos, costos marginales, recupero de franquicias y estructuras 100% IA.
+            Modelos cuantitativos de precisión financiera y jurídica en tiempo real para estimar costos marginales, recupero de franquicias comerciales, liquidación de divisas e impacto operativo de agentes IA.
           </p>
         </div>
 
-        {/* Tab Controls (clean segmented control) */}
+        {/* Microsoft Fluent Segmented Pivot Bar */}
         <div className="flex flex-wrap gap-2 mt-6 pt-6 border-t border-slate-800">
           <button
             type="button"
             onClick={() => setActiveCalculator('breakeven')}
-            className={`px-4 py-2 text-xs font-semibold rounded-lg transition-colors flex items-center gap-2 ${
+            className={`px-4 py-2 text-xs font-semibold rounded-md transition-colors flex items-center gap-2 ${
               activeCalculator === 'breakeven'
-                ? 'bg-cyan-500 text-slate-950 font-bold shadow-md'
+                ? 'bg-[#0078D4] text-white font-bold shadow-sm'
                 : 'bg-slate-950 text-slate-300 hover:bg-slate-800 border border-slate-800'
             }`}
           >
@@ -42,9 +44,9 @@ export const CalculatorsSuite: React.FC = () => {
           <button
             type="button"
             onClick={() => setActiveCalculator('franchise')}
-            className={`px-4 py-2 text-xs font-semibold rounded-lg transition-colors flex items-center gap-2 ${
+            className={`px-4 py-2 text-xs font-semibold rounded-md transition-colors flex items-center gap-2 ${
               activeCalculator === 'franchise'
-                ? 'bg-cyan-500 text-slate-950 font-bold shadow-md'
+                ? 'bg-[#0078D4] text-white font-bold shadow-sm'
                 : 'bg-slate-950 text-slate-300 hover:bg-slate-800 border border-slate-800'
             }`}
           >
@@ -55,9 +57,9 @@ export const CalculatorsSuite: React.FC = () => {
           <button
             type="button"
             onClick={() => setActiveCalculator('export')}
-            className={`px-4 py-2 text-xs font-semibold rounded-lg transition-colors flex items-center gap-2 ${
+            className={`px-4 py-2 text-xs font-semibold rounded-md transition-colors flex items-center gap-2 ${
               activeCalculator === 'export'
-                ? 'bg-cyan-500 text-slate-950 font-bold shadow-md'
+                ? 'bg-[#0078D4] text-white font-bold shadow-sm'
                 : 'bg-slate-950 text-slate-300 hover:bg-slate-800 border border-slate-800'
             }`}
           >
@@ -68,9 +70,9 @@ export const CalculatorsSuite: React.FC = () => {
           <button
             type="button"
             onClick={() => setActiveCalculator('zhc')}
-            className={`px-4 py-2 text-xs font-semibold rounded-lg transition-colors flex items-center gap-2 ${
+            className={`px-4 py-2 text-xs font-semibold rounded-md transition-colors flex items-center gap-2 ${
               activeCalculator === 'zhc'
-                ? 'bg-cyan-500 text-slate-950 font-bold shadow-md'
+                ? 'bg-[#0078D4] text-white font-bold shadow-sm'
                 : 'bg-slate-950 text-slate-300 hover:bg-slate-800 border border-slate-800'
             }`}
           >
