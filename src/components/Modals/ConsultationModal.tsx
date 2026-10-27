@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { dbRepository } from '../../lib/supabaseClient';
 import { BusinessVertical, Lead } from '../../types';
 import { BUSINESS_VERTICALS } from '../../data/verticals';
-import { X, Send, CheckCircle2, Loader2, Calendar } from 'lucide-react';
+import { X, Send, CheckCircle2, Loader2 } from 'lucide-react';
 
 interface ConsultationModalProps {
   isOpen: boolean;
@@ -61,12 +61,12 @@ export const ConsultationModal: React.FC<ConsultationModalProps> = ({ isOpen, on
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4 backdrop-blur-sm">
-      <div className="bg-slate-900 border border-slate-800 rounded-2xl max-w-lg w-full p-6 sm:p-8 space-y-5 relative">
+    <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4 backdrop-blur-sm">
+      <div className="bg-white border border-slate-200 rounded-2xl max-w-lg w-full p-6 sm:p-8 space-y-5 relative shadow-2xl">
         <button
           type="button"
           onClick={handleClose}
-          className="absolute top-5 right-5 text-slate-400 hover:text-white p-1"
+          className="absolute top-5 right-5 text-slate-400 hover:text-slate-700 p-1"
         >
           <X className="w-5 h-5" />
         </button>
@@ -74,20 +74,20 @@ export const ConsultationModal: React.FC<ConsultationModalProps> = ({ isOpen, on
         {!isSuccess ? (
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <span className="text-xs uppercase tracking-wider text-cyan-400 font-mono font-semibold">
+              <span className="text-xs uppercase tracking-wider text-[#0078D4] font-mono font-semibold">
                 Estudio Contable Domínguez & Lambrecht
               </span>
-              <h3 className="text-xl font-bold text-white mt-1">
+              <h3 className="text-xl font-bold text-slate-900 mt-1">
                 Solicitud de Asesoría Estratégica
               </h3>
-              <p className="text-xs text-slate-400 mt-1">
+              <p className="text-xs text-slate-600 mt-1">
                 Coordina una primera sesión de evaluación técnica con el Cr. Carlos Rodrigo Domínguez.
               </p>
             </div>
 
             <div className="space-y-3">
               <div>
-                <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1">
+                <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
                   Empresa o Proyecto *
                 </label>
                 <input
@@ -96,13 +96,13 @@ export const ConsultationModal: React.FC<ConsultationModalProps> = ({ isOpen, on
                   value={company}
                   onChange={(e) => setCompany(e.target.value)}
                   placeholder="ej. AgroPesca Chubut SA"
-                  className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3.5 py-2 text-xs text-white focus:border-cyan-500 focus:outline-none"
+                  className="w-full bg-white border border-slate-300 rounded-lg px-3.5 py-2 text-xs text-slate-900 focus:border-[#0078D4] focus:outline-none"
                 />
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1">
+                  <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
                     Nombre del Socio / Titular *
                   </label>
                   <input
@@ -111,12 +111,12 @@ export const ConsultationModal: React.FC<ConsultationModalProps> = ({ isOpen, on
                     value={contact}
                     onChange={(e) => setContact(e.target.value)}
                     placeholder="ej. Rodrigo Álvarez"
-                    className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3.5 py-2 text-xs text-white focus:border-cyan-500 focus:outline-none"
+                    className="w-full bg-white border border-slate-300 rounded-lg px-3.5 py-2 text-xs text-slate-900 focus:border-[#0078D4] focus:outline-none"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1">
+                  <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
                     Email Corporativo *
                   </label>
                   <input
@@ -125,14 +125,14 @@ export const ConsultationModal: React.FC<ConsultationModalProps> = ({ isOpen, on
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="direccion@empresa.com"
-                    className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3.5 py-2 text-xs text-white focus:border-cyan-500 focus:outline-none"
+                    className="w-full bg-white border border-slate-300 rounded-lg px-3.5 py-2 text-xs text-slate-900 focus:border-[#0078D4] focus:outline-none"
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1">
+                  <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
                     WhatsApp / Teléfono
                   </label>
                   <input
@@ -140,18 +140,18 @@ export const ConsultationModal: React.FC<ConsultationModalProps> = ({ isOpen, on
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
                     placeholder="+54 280 4..."
-                    className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3.5 py-2 text-xs text-white focus:border-cyan-500 focus:outline-none"
+                    className="w-full bg-white border border-slate-300 rounded-lg px-3.5 py-2 text-xs text-slate-900 focus:border-[#0078D4] focus:outline-none"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1">
+                  <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
                     Área de Interés
                   </label>
                   <select
                     value={vertical}
                     onChange={(e) => setVertical(e.target.value as BusinessVertical)}
-                    className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3.5 py-2 text-xs text-white focus:border-cyan-500 focus:outline-none"
+                    className="w-full bg-white border border-slate-300 rounded-lg px-3.5 py-2 text-xs text-slate-900 focus:border-[#0078D4] focus:outline-none"
                   >
                     {(Object.keys(BUSINESS_VERTICALS) as BusinessVertical[]).map((vKey) => (
                       <option key={vKey} value={vKey}>
@@ -163,7 +163,7 @@ export const ConsultationModal: React.FC<ConsultationModalProps> = ({ isOpen, on
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1">
+                <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
                   Breve descripción de la necesidad
                 </label>
                 <textarea
@@ -171,7 +171,7 @@ export const ConsultationModal: React.FC<ConsultationModalProps> = ({ isOpen, on
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
                   placeholder="Detalles sobre costos, contratos de franquicia, Factura E o CFO..."
-                  className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3.5 py-2 text-xs text-white focus:border-cyan-500 focus:outline-none resize-none"
+                  className="w-full bg-white border border-slate-300 rounded-lg px-3.5 py-2 text-xs text-slate-900 focus:border-[#0078D4] focus:outline-none resize-none"
                 />
               </div>
             </div>
@@ -180,7 +180,7 @@ export const ConsultationModal: React.FC<ConsultationModalProps> = ({ isOpen, on
               <button
                 type="button"
                 onClick={handleClose}
-                className="px-4 py-2 text-xs text-slate-400 hover:text-white"
+                className="px-4 py-2 text-xs text-slate-600 hover:text-slate-900"
               >
                 Cancelar
               </button>
@@ -205,20 +205,20 @@ export const ConsultationModal: React.FC<ConsultationModalProps> = ({ isOpen, on
           </form>
         ) : (
           <div className="text-center py-6 space-y-4">
-            <div className="w-12 h-12 rounded-full bg-emerald-950 border border-emerald-800 text-emerald-400 flex items-center justify-center mx-auto">
+            <div className="w-12 h-12 rounded-full bg-emerald-50 border border-emerald-200 text-[#107C41] flex items-center justify-center mx-auto">
               <CheckCircle2 className="w-6 h-6" />
             </div>
-            <h3 className="text-xl font-bold text-white">
+            <h3 className="text-xl font-bold text-slate-900">
               Solicitud Registrada con Éxito
             </h3>
-            <p className="text-xs text-slate-300 max-w-sm mx-auto leading-relaxed">
-              Hemos registrado la ficha para <strong>{company}</strong>. El Cr. Carlos Rodrigo Domínguez se comunicará contigo al teléfono o email provisto para coordinar la sesión.
+            <p className="text-xs text-slate-600 max-w-sm mx-auto leading-relaxed">
+              Hemos registrado la ficha para <strong className="text-slate-900">{company}</strong>. El Cr. Carlos Rodrigo Domínguez se comunicará contigo al teléfono o email provisto para coordinar la sesión.
             </p>
             <div className="pt-4">
               <button
                 type="button"
                 onClick={handleClose}
-                className="px-6 py-2 bg-slate-800 hover:bg-slate-700 text-white font-semibold text-xs rounded-lg transition-colors"
+                className="px-6 py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 font-semibold text-xs rounded-lg transition-colors"
               >
                 Entendido
               </button>

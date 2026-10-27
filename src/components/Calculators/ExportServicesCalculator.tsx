@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Globe, DollarSign, ShieldAlert, Check, TrendingUp } from 'lucide-react';
+import { Globe, ShieldAlert, TrendingUp } from 'lucide-react';
 
 export const ExportServicesCalculator: React.FC = () => {
   const [monthlyInvoicedUsd, setMonthlyInvoicedUsd] = useState<number>(6500);
@@ -19,16 +19,16 @@ export const ExportServicesCalculator: React.FC = () => {
   const taxSavingsEstimateUsd = isKnowledgeEconomyEligible ? annualInvoicedUsd * 0.085 : 0;
 
   return (
-    <div className="bg-slate-900 border border-slate-800 rounded-xl p-6 md:p-8">
+    <div className="bg-white border border-slate-200 rounded-xl p-6 md:p-8 shadow-sm">
       <div className="flex items-center gap-3 mb-6">
-        <div className="p-2.5 bg-emerald-950 border border-emerald-800/50 rounded-lg text-emerald-400">
+        <div className="p-2.5 bg-emerald-50 border border-emerald-200 rounded-lg text-[#107C41]">
           <Globe className="w-5 h-5" />
         </div>
         <div>
-          <h3 className="text-xl font-bold text-white tracking-tight">
+          <h3 className="text-xl font-bold text-slate-900 tracking-tight">
             Simulador de Exportación de Servicios & Liquidación de Divisas
           </h3>
-          <p className="text-sm text-slate-400">
+          <p className="text-sm text-slate-600">
             Ingeniería tributaria y cambiaria para SaaS, creadores, agencias y consultores tech
           </p>
         </div>
@@ -37,7 +37,7 @@ export const ExportServicesCalculator: React.FC = () => {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         <div className="lg:col-span-6 space-y-5">
           <div>
-            <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">
+            <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">
               Facturación Mensual en Divisas (Factura E / Exportación)
             </label>
             <div className="relative">
@@ -46,7 +46,7 @@ export const ExportServicesCalculator: React.FC = () => {
                 type="number"
                 value={monthlyInvoicedUsd}
                 onChange={(e) => setMonthlyInvoicedUsd(Math.max(100, Number(e.target.value)))}
-                className="w-full bg-slate-950 border border-slate-700 rounded-lg pl-12 pr-4 py-2 text-white font-mono focus:border-cyan-500 focus:outline-none transition-colors"
+                className="w-full bg-white border border-slate-300 rounded-lg pl-14 pr-4 py-2 text-slate-900 font-mono focus:border-[#107C41] focus:outline-none transition-colors"
                 placeholder="6500"
               />
             </div>
@@ -56,7 +56,7 @@ export const ExportServicesCalculator: React.FC = () => {
                   key={preset}
                   type="button"
                   onClick={() => setMonthlyInvoicedUsd(preset)}
-                  className="text-xs text-slate-400 hover:text-emerald-400 bg-slate-800/60 px-2 py-0.5 rounded transition-colors"
+                  className="text-xs text-slate-600 hover:text-[#107C41] bg-slate-100 px-2 py-0.5 rounded transition-colors"
                 >
                   USD {preset.toLocaleString()}
                 </button>
@@ -66,8 +66,8 @@ export const ExportServicesCalculator: React.FC = () => {
 
           <div>
             <div className="flex justify-between items-center mb-2">
-              <label className="text-xs font-semibold text-slate-300 uppercase tracking-wider">
-                Comisión Pasarela / Plataforma (Stripe, Lemon Squeezy, Paddle, Wise): <span className="text-emerald-400 font-mono">{platformFeePercent}%</span>
+              <label className="text-xs font-semibold text-slate-700 uppercase tracking-wider">
+                Comisión Pasarela / Plataforma (Stripe, Lemon Squeezy, Paddle, Wise): <span className="text-[#107C41] font-mono font-bold">{platformFeePercent}%</span>
               </label>
             </div>
             <input
@@ -77,91 +77,91 @@ export const ExportServicesCalculator: React.FC = () => {
               step="0.5"
               value={platformFeePercent}
               onChange={(e) => setPlatformFeePercent(Number(e.target.value))}
-              className="w-full h-2 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-emerald-400"
+              className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-[#107C41]"
             />
           </div>
 
-          <div className="p-4 bg-slate-950 border border-slate-800 rounded-lg space-y-3">
+          <div className="p-4 bg-slate-50 border border-slate-200 rounded-lg space-y-3">
             <div className="flex items-start gap-3">
               <input
                 type="checkbox"
                 id="lec"
                 checked={isKnowledgeEconomyEligible}
                 onChange={(e) => setIsKnowledgeEconomyEligible(e.target.checked)}
-                className="mt-1 h-4 w-4 rounded border-slate-700 text-emerald-500 focus:ring-0 cursor-pointer"
+                className="mt-1 h-4 w-4 rounded border-slate-300 text-[#107C41] focus:ring-0 cursor-pointer"
               />
               <label htmlFor="lec" className="cursor-pointer">
-                <span className="text-xs font-semibold text-white block">
+                <span className="text-xs font-semibold text-slate-900 block">
                   Elegible para Régimen de Economía del Conocimiento (Ley 27.506)
                 </span>
-                <span className="text-[11px] text-slate-400 block mt-0.5">
+                <span className="text-[11px] text-slate-600 block mt-0.5">
                   Software, biotecnología, producción audiovisual o I+D con personal formalizado o certificación de calidad.
                 </span>
               </label>
             </div>
           </div>
 
-          <div className="p-3.5 bg-slate-950/60 border border-slate-800/80 rounded-lg text-xs text-slate-400 space-y-1.5">
-            <div className="flex items-center gap-1.5 text-slate-300 font-medium">
-              <ShieldAlert className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+          <div className="p-3.5 bg-amber-50/70 border border-amber-200/90 rounded-lg text-xs text-slate-700 space-y-1.5">
+            <div className="flex items-center gap-1.5 text-amber-900 font-semibold">
+              <ShieldAlert className="w-3.5 h-3.5 text-amber-600 shrink-0" />
               <span>Regla Cambiaria BCRA:</span>
             </div>
-            <p>
+            <p className="text-amber-800">
               Las divisas cobradas por exportación de servicios deben ingresarse dentro de los 5 días hábiles bancarios siguientes a la acreditación en la cuenta del exterior.
             </p>
           </div>
         </div>
 
         {/* Results */}
-        <div className="lg:col-span-6 bg-slate-950 border border-slate-800/80 rounded-xl p-6 flex flex-col justify-between">
+        <div className="lg:col-span-6 bg-slate-50 border border-slate-200 rounded-xl p-6 flex flex-col justify-between">
           <div className="space-y-4">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-800">
-              <span className="text-xs text-slate-400 uppercase tracking-wider">Facturación Bruta Anualizada</span>
-              <span className="text-lg font-bold text-white font-mono tabular-nums">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-200">
+              <span className="text-xs text-slate-600 uppercase tracking-wider font-semibold">Facturación Bruta Anualizada</span>
+              <span className="text-lg font-bold text-slate-900 font-mono tabular-nums">
                 USD {annualInvoicedUsd.toLocaleString('en-US')}
               </span>
             </div>
 
             <div className="space-y-3">
-              <div className="p-3 bg-slate-900 border border-slate-800 rounded-lg flex items-center justify-between">
+              <div className="p-3 bg-white border border-slate-200 rounded-lg flex items-center justify-between shadow-2xs">
                 <div>
-                  <span className="text-xs text-slate-400 block">Cupo Exento de Liquidación Forzosa</span>
-                  <span className="text-[11px] text-emerald-400 font-medium">Disponible en moneda dura en cuenta local</span>
+                  <span className="text-xs text-slate-500 block">Cupo Exento de Liquidación Forzosa</span>
+                  <span className="text-[11px] text-[#107C41] font-semibold">Disponible en moneda dura en cuenta local</span>
                 </div>
-                <span className="text-base font-extrabold text-emerald-400 font-mono tabular-nums">
+                <span className="text-base font-extrabold text-[#107C41] font-mono tabular-nums">
                   USD {quotaFreeUsd.toLocaleString('en-US')}
                 </span>
               </div>
 
-              <div className="p-3 bg-slate-900 border border-slate-800 rounded-lg flex items-center justify-between">
+              <div className="p-3 bg-white border border-slate-200 rounded-lg flex items-center justify-between shadow-2xs">
                 <div>
-                  <span className="text-xs text-slate-400 block">Excedente Anual a Liquidar / Estructurar</span>
-                  <span className="text-[11px] text-slate-400">Canalizable vía MULC o estructura SAS/LLC</span>
+                  <span className="text-xs text-slate-500 block">Excedente Anual a Liquidar / Estructurar</span>
+                  <span className="text-[11px] text-slate-600">Canalizable vía MULC o estructura SAS/LLC</span>
                 </div>
-                <span className="text-base font-extrabold text-white font-mono tabular-nums">
+                <span className="text-base font-extrabold text-slate-900 font-mono tabular-nums">
                   USD {excessSubjectToMulcOrFinancial.toLocaleString('en-US')}
                 </span>
               </div>
 
               {isKnowledgeEconomyEligible && (
-                <div className="p-3 bg-slate-900 border border-emerald-900/40 rounded-lg flex items-center justify-between">
+                <div className="p-3 bg-white border border-emerald-200 rounded-lg flex items-center justify-between shadow-2xs">
                   <div>
-                    <span className="text-xs text-slate-400 block">Ahorro Impositivo Proyectado (LEC)</span>
-                    <span className="text-[11px] text-emerald-400">Bono fiscal contribuciones + rebaja Ganancias</span>
+                    <span className="text-xs text-slate-500 block">Ahorro Impositivo Proyectado (LEC)</span>
+                    <span className="text-[11px] text-[#107C41] font-semibold">Bono fiscal contribuciones + rebaja Ganancias</span>
                   </div>
-                  <span className="text-base font-extrabold text-emerald-400 font-mono tabular-nums">
+                  <span className="text-base font-extrabold text-[#107C41] font-mono tabular-nums">
                     + USD {Math.round(taxSavingsEstimateUsd).toLocaleString('en-US')} / año
                   </span>
                 </div>
               )}
             </div>
 
-            <div className="p-3.5 bg-emerald-950/20 border border-emerald-800/40 rounded-lg">
+            <div className="p-3.5 bg-emerald-50 border border-emerald-200 rounded-lg">
               <div className="flex items-center gap-2 mb-1">
-                <TrendingUp className="w-4 h-4 text-emerald-400" />
-                <span className="text-xs font-semibold text-slate-200">Recomendación Estratégica D&L</span>
+                <TrendingUp className="w-4 h-4 text-emerald-700" />
+                <span className="text-xs font-semibold text-emerald-900">Recomendación Estratégica D&L</span>
               </div>
-              <p className="text-xs text-slate-300 leading-relaxed">
+              <p className="text-xs text-emerald-800 leading-relaxed">
                 {excessSubjectToMulcOrFinancial > 0
                   ? 'Tu volumen de facturación supera el cupo simplificado. Conviene estructurar una arquitectura corporativa combinada (SAS local + filial en el exterior) para preservar el valor de tus divisas de forma 100% legal.'
                   : 'Tu facturación se encuentra dentro de los márgenes de exención directa. Puedes ingresar la totalidad de tus cobros a cuentas en dólares en Argentina mediante el régimen de Factura E.'}
@@ -169,9 +169,9 @@ export const ExportServicesCalculator: React.FC = () => {
             </div>
           </div>
 
-          <div className="pt-4 border-t border-slate-800/80 mt-4 flex items-center justify-between text-xs text-slate-400">
+          <div className="pt-4 border-t border-slate-200 mt-4 flex items-center justify-between text-xs text-slate-500">
             <span>Encuadre: Com. BCRA & Ley 27.506</span>
-            <span className="text-emerald-400 font-medium">Asesoría Tributaria Digital D&L</span>
+            <span className="text-[#107C41] font-semibold">Asesoría Tributaria Digital D&L</span>
           </div>
         </div>
       </div>

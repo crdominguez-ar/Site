@@ -62,43 +62,40 @@ export const InteractiveDiagnostic: React.FC<InteractiveDiagnosticProps> = ({
         vertical,
         stage: 'nuevo',
         priority: calculatedScore > 85 ? 'alta' : 'media',
-        estimatedMonthlyBudgetUsd: annualTurnover === 'more_500k' ? 2500 : 1200,
         score: Math.min(100, calculatedScore),
-        notes: `Diagnóstico web completado. Desafío principal: ${mainChallenge}. Estructura: ${entityType}. Facturación est.: ${annualTurnover}`,
-        diagnosticData: {
-          annualTurnover,
-          mainChallenge,
-          entityType,
-        },
+        estimatedMonthlyBudgetUsd: annualTurnover === 'more_500k' ? 2500 : 1200,
+        notes: `Interés: ${verticalConfig.shortTitle} | Ubicación: ${location} | Desafío: ${mainChallenge} | Personería: ${entityType}`,
       });
 
       setSubmittedLead(created);
-      if (onLeadCreated) onLeadCreated(created);
       setStep(4);
+      if (onLeadCreated) {
+        onLeadCreated(created);
+      }
     } catch (err) {
-      console.error(err);
+      console.error('Error al guardar lead de diagnóstico:', err);
     } finally {
       setIsSubmitting(false);
     }
   };
 
   const verticalIcons: Record<BusinessVertical, React.ReactNode> = {
-    tradicional_pyme: <Building2 className="w-5 h-5" />,
-    digital_saas: <Globe className="w-5 h-5" />,
-    franquicias: <Scale className="w-5 h-5" />,
-    cfo_estrategico: <LineChart className="w-5 h-5" />,
-    ia_zhc: <Cpu className="w-5 h-5" />,
+    tradicional_pyme: <Building2 className="w-5 h-5 text-[#0078D4]" />,
+    digital_saas: <Globe className="w-5 h-5 text-[#107C41]" />,
+    franquicias: <Scale className="w-5 h-5 text-[#0078D4]" />,
+    cfo_estrategico: <LineChart className="w-5 h-5 text-[#0078D4]" />,
+    ia_zhc: <Cpu className="w-5 h-5 text-[#8764B8]" />,
   };
 
   return (
     <div id="diagnostico" className="w-full space-y-6">
       {/* Header bar with step indicator */}
-      <div className="py-4 border-b border-slate-800 flex flex-wrap items-center justify-between gap-4">
+      <div className="py-4 border-b border-slate-200 flex flex-wrap items-center justify-between gap-4">
         <div>
-          <span className="text-xs uppercase tracking-wider text-[#00A4EF] font-semibold block font-mono">
+          <span className="text-xs uppercase tracking-wider text-[#0078D4] font-semibold block font-mono">
             Diagnóstico Financiero & Estratégico Interactivo
           </span>
-          <h2 className="text-2xl font-bold text-white tracking-tight mt-1">
+          <h2 className="text-2xl font-bold text-slate-900 tracking-tight mt-1">
             Evaluación Personalizada para tu Negocio
           </h2>
         </div>
@@ -112,8 +109,8 @@ export const InteractiveDiagnostic: React.FC<InteractiveDiagnosticProps> = ({
                 s === step
                   ? 'w-8 bg-[#0078D4]'
                   : s < step
-                  ? 'w-4 bg-slate-600'
-                  : 'w-2 bg-slate-800'
+                  ? 'w-4 bg-slate-400'
+                  : 'w-2 bg-slate-200'
               }`}
             />
           ))}
@@ -124,10 +121,10 @@ export const InteractiveDiagnostic: React.FC<InteractiveDiagnosticProps> = ({
         {step === 1 && (
           <div className="space-y-6">
             <div>
-              <h3 className="text-xl font-bold text-white mb-1">
+              <h3 className="text-xl font-bold text-slate-900 mb-1">
                 Paso 1: Selecciona la vertical que mejor describe tu actividad
               </h3>
-              <p className="text-sm text-slate-400">
+              <p className="text-sm text-slate-600">
                 Cada modelo de negocio en Estudio Domínguez & Lambrecht cuenta con una metodología financiera específica.
               </p>
             </div>
@@ -144,24 +141,24 @@ export const InteractiveDiagnostic: React.FC<InteractiveDiagnosticProps> = ({
                     onClick={() => setVertical(vKey)}
                     className={`p-5 rounded-xl border text-left transition-all flex flex-col justify-between ${
                       isSelected
-                        ? 'bg-slate-800/90 border-cyan-500 ring-1 ring-cyan-500/50'
-                        : 'bg-slate-950/60 border-slate-800 hover:border-slate-700'
+                        ? 'bg-blue-50/70 border-[#0078D4] ring-1 ring-[#0078D4] shadow-sm'
+                        : 'bg-white border-slate-200 hover:border-slate-300 hover:bg-slate-50 shadow-2xs'
                     }`}
                   >
                     <div>
                       <div className={`p-2.5 rounded-lg inline-flex mb-3 ${
-                        isSelected ? 'bg-cyan-950 text-cyan-400' : 'bg-slate-900 text-slate-400'
+                        isSelected ? 'bg-blue-100 text-[#0078D4]' : 'bg-slate-100 text-slate-600'
                       }`}>
                         {verticalIcons[vKey]}
                       </div>
-                      <h4 className="text-base font-bold text-white mb-1.5">{item.title}</h4>
-                      <p className="text-xs text-slate-400 leading-relaxed">{item.tagline}</p>
+                      <h4 className="text-base font-bold text-slate-900 mb-1.5">{item.title}</h4>
+                      <p className="text-xs text-slate-600 leading-relaxed">{item.tagline}</p>
                     </div>
 
-                    <div className="mt-4 pt-3 border-t border-slate-800/80 flex items-center justify-between text-xs text-slate-400">
+                    <div className="mt-4 pt-3 border-t border-slate-200 flex items-center justify-between text-xs text-slate-500">
                       <span className="font-mono">{item.shortTitle}</span>
                       {isSelected ? (
-                        <CheckCircle2 className="w-4 h-4 text-cyan-400" />
+                        <CheckCircle2 className="w-4 h-4 text-[#0078D4]" />
                       ) : (
                         <ArrowRight className="w-4 h-4 opacity-40" />
                       )}
@@ -171,11 +168,11 @@ export const InteractiveDiagnostic: React.FC<InteractiveDiagnosticProps> = ({
               })}
             </div>
 
-            <div className="flex justify-end pt-4 border-t border-slate-800">
+            <div className="flex justify-end pt-4 border-t border-slate-200">
               <button
                 type="button"
                 onClick={handleNext}
-                className="px-6 py-2.5 bg-[#0078D4] hover:bg-[#106EBE] text-white font-semibold text-sm rounded-lg transition-colors flex items-center gap-2"
+                className="px-6 py-2.5 bg-[#0078D4] hover:bg-[#106EBE] text-white font-semibold text-sm rounded-lg transition-colors flex items-center gap-2 shadow-sm"
               >
                 Continuar al Paso 2
                 <ArrowRight className="w-4 h-4" />
@@ -187,15 +184,15 @@ export const InteractiveDiagnostic: React.FC<InteractiveDiagnosticProps> = ({
         {step === 2 && (
           <div className="space-y-6">
             <div>
-              <div className="flex items-center gap-2 text-xs text-cyan-400 font-semibold uppercase mb-1">
+              <div className="flex items-center gap-2 text-xs text-[#0078D4] font-semibold uppercase mb-1">
                 <span>{verticalConfig.title}</span>
                 <span>·</span>
                 <span>Configuración de Parámetros</span>
               </div>
-              <h3 className="text-xl font-bold text-white mb-1">
+              <h3 className="text-xl font-bold text-slate-900 mb-1">
                 Paso 2: Diagnóstico específico de tu operación
               </h3>
-              <p className="text-sm text-slate-400">
+              <p className="text-sm text-slate-600">
                 Responde 3 preguntas clave para evaluar tu estructura de rentabilidad y contingencias.
               </p>
             </div>
@@ -203,7 +200,7 @@ export const InteractiveDiagnostic: React.FC<InteractiveDiagnosticProps> = ({
             <div className="space-y-6">
               {/* Question 1 */}
               <div>
-                <label className="block text-sm font-semibold text-slate-200 mb-2">
+                <label className="block text-sm font-semibold text-slate-800 mb-2">
                   1. Rango de facturación o volumen operativo actual
                 </label>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -218,12 +215,12 @@ export const InteractiveDiagnostic: React.FC<InteractiveDiagnosticProps> = ({
                       onClick={() => setAnnualTurnover(opt.id)}
                       className={`p-3.5 rounded-lg border text-left transition-colors ${
                         annualTurnover === opt.id
-                          ? 'bg-slate-800 border-cyan-500 text-white'
-                          : 'bg-slate-950 border-slate-800 text-slate-300 hover:border-slate-700'
+                          ? 'bg-blue-50/80 border-[#0078D4] text-[#0078D4] ring-1 ring-[#0078D4]'
+                          : 'bg-white border-slate-200 text-slate-700 hover:border-slate-300 shadow-2xs'
                       }`}
                     >
                       <span className="text-xs font-bold block">{opt.label}</span>
-                      <span className="text-[11px] text-slate-400 block mt-0.5">{opt.sub}</span>
+                      <span className="text-[11px] text-slate-500 block mt-0.5">{opt.sub}</span>
                     </button>
                   ))}
                 </div>
@@ -231,7 +228,7 @@ export const InteractiveDiagnostic: React.FC<InteractiveDiagnosticProps> = ({
 
               {/* Question 2 */}
               <div>
-                <label className="block text-sm font-semibold text-slate-200 mb-2">
+                <label className="block text-sm font-semibold text-slate-800 mb-2">
                   2. ¿Cuál es el principal cuello de botella económico o legal que enfrentas?
                 </label>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -248,8 +245,8 @@ export const InteractiveDiagnostic: React.FC<InteractiveDiagnosticProps> = ({
                       onClick={() => setMainChallenge(opt.id)}
                       className={`p-3.5 rounded-lg border text-left transition-colors ${
                         mainChallenge === opt.id
-                          ? 'bg-slate-800 border-cyan-500 text-white'
-                          : 'bg-slate-950 border-slate-800 text-slate-300 hover:border-slate-700'
+                          ? 'bg-blue-50/80 border-[#0078D4] text-[#0078D4] ring-1 ring-[#0078D4]'
+                          : 'bg-white border-slate-200 text-slate-700 hover:border-slate-300 shadow-2xs'
                       }`}
                     >
                       <span className="text-xs font-medium block">{opt.label}</span>
@@ -260,7 +257,7 @@ export const InteractiveDiagnostic: React.FC<InteractiveDiagnosticProps> = ({
 
               {/* Question 3 */}
               <div>
-                <label className="block text-sm font-semibold text-slate-200 mb-2">
+                <label className="block text-sm font-semibold text-slate-800 mb-2">
                   3. Tipo de personería o vehículo societario actual
                 </label>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
@@ -276,8 +273,8 @@ export const InteractiveDiagnostic: React.FC<InteractiveDiagnosticProps> = ({
                       onClick={() => setEntityType(opt.id)}
                       className={`p-3 rounded-lg border text-center transition-colors ${
                         entityType === opt.id
-                          ? 'bg-slate-800 border-cyan-500 text-white'
-                          : 'bg-slate-950 border-slate-800 text-slate-300 hover:border-slate-700'
+                          ? 'bg-blue-50/80 border-[#0078D4] text-[#0078D4] ring-1 ring-[#0078D4]'
+                          : 'bg-white border-slate-200 text-slate-700 hover:border-slate-300 shadow-2xs'
                       }`}
                     >
                       <span className="text-xs font-medium">{opt.label}</span>
@@ -287,18 +284,18 @@ export const InteractiveDiagnostic: React.FC<InteractiveDiagnosticProps> = ({
               </div>
             </div>
 
-            <div className="flex justify-between pt-4 border-t border-slate-800">
+            <div className="flex justify-between pt-4 border-t border-slate-200">
               <button
                 type="button"
                 onClick={handleBack}
-                className="px-5 py-2 text-xs font-medium text-slate-400 hover:text-white transition-colors"
+                className="px-5 py-2 text-xs font-medium text-slate-600 hover:text-slate-900 transition-colors"
               >
                 Volver
               </button>
               <button
                 type="button"
                 onClick={handleNext}
-                className="px-6 py-2.5 bg-[#0078D4] hover:bg-[#106EBE] text-white font-semibold text-sm rounded-lg transition-colors flex items-center gap-2"
+                className="px-6 py-2.5 bg-[#0078D4] hover:bg-[#106EBE] text-white font-semibold text-sm rounded-lg transition-colors flex items-center gap-2 shadow-sm"
               >
                 Continuar a Datos de Contacto
                 <ArrowRight className="w-4 h-4" />
@@ -310,17 +307,17 @@ export const InteractiveDiagnostic: React.FC<InteractiveDiagnosticProps> = ({
         {step === 3 && (
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
-              <h3 className="text-xl font-bold text-white mb-1">
+              <h3 className="text-xl font-bold text-slate-900 mb-1">
                 Paso 3: Datos de tu Empresa para el Dictamen Preliminar
               </h3>
-              <p className="text-sm text-slate-400">
+              <p className="text-sm text-slate-600">
                 Los informes son analizados personalmente por el equipo del Cr. Carlos Rodrigo Domínguez.
               </p>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">
+                <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">
                   Razón Social / Nombre Comercial *
                 </label>
                 <input
@@ -329,12 +326,12 @@ export const InteractiveDiagnostic: React.FC<InteractiveDiagnosticProps> = ({
                   value={companyName}
                   onChange={(e) => setCompanyName(e.target.value)}
                   placeholder="ej. Frío Sur Logística SRL"
-                  className="w-full bg-slate-950 border border-slate-700 rounded-lg px-4 py-2.5 text-white text-sm focus:border-cyan-500 focus:outline-none"
+                  className="w-full bg-white border border-slate-300 rounded-lg px-4 py-2.5 text-slate-900 text-sm focus:border-[#0078D4] focus:outline-none"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">
+                <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">
                   Nombre del Titular o Socio *
                 </label>
                 <input
@@ -343,12 +340,12 @@ export const InteractiveDiagnostic: React.FC<InteractiveDiagnosticProps> = ({
                   value={contactName}
                   onChange={(e) => setContactName(e.target.value)}
                   placeholder="ej. Martín Rossi"
-                  className="w-full bg-slate-950 border border-slate-700 rounded-lg px-4 py-2.5 text-white text-sm focus:border-cyan-500 focus:outline-none"
+                  className="w-full bg-white border border-slate-300 rounded-lg px-4 py-2.5 text-slate-900 text-sm focus:border-[#0078D4] focus:outline-none"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">
+                <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">
                   Correo Electrónico Corporativo *
                 </label>
                 <input
@@ -357,12 +354,12 @@ export const InteractiveDiagnostic: React.FC<InteractiveDiagnosticProps> = ({
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="direccion@empresa.com"
-                  className="w-full bg-slate-950 border border-slate-700 rounded-lg px-4 py-2.5 text-white text-sm focus:border-cyan-500 focus:outline-none"
+                  className="w-full bg-white border border-slate-300 rounded-lg px-4 py-2.5 text-slate-900 text-sm focus:border-[#0078D4] focus:outline-none"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">
+                <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">
                   Teléfono / WhatsApp Directo
                 </label>
                 <input
@@ -370,13 +367,13 @@ export const InteractiveDiagnostic: React.FC<InteractiveDiagnosticProps> = ({
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
                   placeholder="+54 280 4..."
-                  className="w-full bg-slate-950 border border-slate-700 rounded-lg px-4 py-2.5 text-white text-sm focus:border-cyan-500 focus:outline-none"
+                  className="w-full bg-white border border-slate-300 rounded-lg px-4 py-2.5 text-slate-900 text-sm focus:border-[#0078D4] focus:outline-none"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">
+              <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">
                 Ubicación / Radicación de Operaciones
               </label>
               <input
@@ -384,22 +381,22 @@ export const InteractiveDiagnostic: React.FC<InteractiveDiagnosticProps> = ({
                 value={location}
                 onChange={(e) => setLocation(e.target.value)}
                 placeholder="Trelew / Puerto Madryn / Comodoro / Remoto"
-                className="w-full bg-slate-950 border border-slate-700 rounded-lg px-4 py-2.5 text-white text-sm focus:border-cyan-500 focus:outline-none"
+                className="w-full bg-white border border-slate-300 rounded-lg px-4 py-2.5 text-slate-900 text-sm focus:border-[#0078D4] focus:outline-none"
               />
             </div>
 
-            <div className="flex justify-between pt-4 border-t border-slate-800">
+            <div className="flex justify-between pt-4 border-t border-slate-200">
               <button
                 type="button"
                 onClick={handleBack}
-                className="px-5 py-2 text-xs font-medium text-slate-400 hover:text-white transition-colors"
+                className="px-5 py-2 text-xs font-medium text-slate-600 hover:text-slate-900 transition-colors"
               >
                 Volver
               </button>
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="px-6 py-2.5 bg-[#0078D4] hover:bg-[#106EBE] text-white font-semibold text-sm rounded-lg transition-colors flex items-center gap-2 disabled:opacity-50"
+                className="px-6 py-2.5 bg-[#0078D4] hover:bg-[#106EBE] text-white font-semibold text-sm rounded-lg transition-colors flex items-center gap-2 disabled:opacity-50 shadow-sm"
               >
                 {isSubmitting ? (
                   <>
@@ -419,50 +416,50 @@ export const InteractiveDiagnostic: React.FC<InteractiveDiagnosticProps> = ({
 
         {step === 4 && submittedLead && (
           <div className="space-y-6">
-            <div className="p-6 bg-slate-950 border border-cyan-800/50 rounded-xl">
+            <div className="p-6 bg-white border border-slate-200 rounded-xl shadow-md">
               <div className="flex items-center gap-3 mb-4">
-                <div className="p-2 bg-emerald-950 border border-emerald-800 rounded-full text-emerald-400">
+                <div className="p-2 bg-emerald-50 border border-emerald-200 rounded-full text-[#107C41]">
                   <CheckCircle2 className="w-6 h-6" />
                 </div>
                 <div>
-                  <h3 className="text-xl font-bold text-white">
+                  <h3 className="text-xl font-bold text-slate-900">
                     Diagnóstico Inicial Generado con Éxito
                   </h3>
-                  <p className="text-xs text-slate-400">
+                  <p className="text-xs text-slate-500">
                     Ingresado en el CRM de Estudio Contable Domínguez & Lambrecht
                   </p>
                 </div>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 my-6">
-                <div className="p-3 bg-slate-900 border border-slate-800 rounded-lg">
-                  <span className="text-xs text-slate-400 block mb-1">Score de Calificación</span>
-                  <span className="text-2xl font-extrabold text-cyan-400 font-mono">
+                <div className="p-4 bg-slate-50 border border-slate-200 rounded-lg shadow-2xs">
+                  <span className="text-xs text-slate-500 block mb-1">Score de Calificación</span>
+                  <span className="text-2xl font-extrabold text-[#0078D4] font-mono">
                     {submittedLead.score}/100
                   </span>
-                  <span className="text-[11px] text-slate-400 block mt-0.5">Prioridad: {submittedLead.priority.toUpperCase()}</span>
+                  <span className="text-[11px] text-slate-500 block mt-0.5">Prioridad: {submittedLead.priority.toUpperCase()}</span>
                 </div>
 
-                <div className="p-3 bg-slate-900 border border-slate-800 rounded-lg">
-                  <span className="text-xs text-slate-400 block mb-1">Vertical Asignada</span>
-                  <span className="text-sm font-bold text-white block">
+                <div className="p-4 bg-slate-50 border border-slate-200 rounded-lg shadow-2xs">
+                  <span className="text-xs text-slate-500 block mb-1">Vertical Asignada</span>
+                  <span className="text-sm font-bold text-slate-900 block">
                     {BUSINESS_VERTICALS[submittedLead.vertical].shortTitle}
                   </span>
-                  <span className="text-[11px] text-slate-400 block mt-0.5">Marco: {BUSINESS_VERTICALS[submittedLead.vertical].normativeBase.slice(0, 30)}...</span>
+                  <span className="text-[11px] text-slate-500 block mt-0.5">Marco: {BUSINESS_VERTICALS[submittedLead.vertical].normativeBase.slice(0, 30)}...</span>
                 </div>
 
-                <div className="p-3 bg-slate-900 border border-slate-800 rounded-lg">
-                  <span className="text-xs text-slate-400 block mb-1">Presupuesto Sugerido</span>
-                  <span className="text-2xl font-extrabold text-emerald-400 font-mono">
-                    USD {submittedLead.estimatedMonthlyBudgetUsd} <span className="text-xs font-normal text-slate-400">/ mes</span>
+                <div className="p-4 bg-slate-50 border border-slate-200 rounded-lg shadow-2xs">
+                  <span className="text-xs text-slate-500 block mb-1">Presupuesto Sugerido</span>
+                  <span className="text-2xl font-extrabold text-[#107C41] font-mono">
+                    USD {submittedLead.estimatedMonthlyBudgetUsd} <span className="text-xs font-normal text-slate-500">/ mes</span>
                   </span>
-                  <span className="text-[11px] text-slate-400 block mt-0.5">Modalidad Fraccional</span>
+                  <span className="text-[11px] text-slate-500 block mt-0.5">Modalidad Fraccional</span>
                 </div>
               </div>
 
-              <div className="p-4 bg-slate-900/60 border border-slate-800 rounded-lg text-xs text-slate-300 space-y-2">
-                <span className="font-semibold text-white block">Entregables recomendados para {submittedLead.companyName}:</span>
-                <ul className="space-y-1 list-disc list-inside text-slate-400">
+              <div className="p-4 bg-slate-50 border border-slate-200 rounded-lg text-xs text-slate-700 space-y-2">
+                <span className="font-semibold text-slate-900 block">Entregables recomendados para {submittedLead.companyName}:</span>
+                <ul className="space-y-1 list-disc list-inside text-slate-600">
                   {BUSINESS_VERTICALS[submittedLead.vertical].deliverables.map((deliv, i) => (
                     <li key={i}>{deliv}</li>
                   ))}
@@ -471,7 +468,7 @@ export const InteractiveDiagnostic: React.FC<InteractiveDiagnosticProps> = ({
             </div>
 
             <div className="flex flex-wrap items-center justify-between gap-4 pt-2">
-              <span className="text-xs text-slate-400">
+              <span className="text-xs text-slate-500">
                 El Cr. Carlos Rodrigo Domínguez o un consultor senior revisará tu ficha antes de las próximas 24 horas hábiles.
               </span>
               <button
@@ -481,7 +478,7 @@ export const InteractiveDiagnostic: React.FC<InteractiveDiagnosticProps> = ({
                   setCompanyName('');
                   setContactName('');
                 }}
-                className="text-xs text-cyan-400 hover:text-cyan-300 font-medium transition-colors"
+                className="text-xs text-[#0078D4] hover:underline font-semibold transition-colors"
               >
                 Realizar otro diagnóstico
               </button>

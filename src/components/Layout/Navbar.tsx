@@ -1,6 +1,5 @@
 import React from 'react';
 import { UserRole } from '../../types';
-import { Sparkles, SlidersHorizontal, BookOpen, Shield } from 'lucide-react';
 
 interface NavbarProps {
   currentTab: 'landing' | 'solutions' | 'simulators' | 'diagnostic' | 'blog' | 'portal' | 'crm' | 'seo';
@@ -18,36 +17,35 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenConsultationModal,
 }) => {
   return (
-    <header className="sticky top-0 z-40 bg-slate-900/95 backdrop-blur-md border-b border-slate-800 fluent-shadow-card w-full">
-      <div className="w-full px-4 sm:px-6 lg:px-12 h-16 flex items-center justify-between gap-6">
-        {/* Zone 1: Clean Corporate Monogram & Wordmark (sin ventanitas de colores) */}
+    <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200 fluent-shadow-card w-full">
+      <div className="w-full px-6 sm:px-12 lg:px-20 h-16 flex items-center justify-between gap-6">
+        {/* Zone 1: Clean Corporate Emblem D&L and Wordmark */}
         <button
           type="button"
           onClick={() => setCurrentTab('landing')}
           className="flex items-center gap-3 text-left whitespace-nowrap shrink-0 group focus:outline-none"
         >
-          {/* Refined corporate emblem D&L */}
-          <div className="w-8 h-8 rounded bg-gradient-to-br from-[#0078D4] to-[#004E8C] flex items-center justify-center text-white font-black text-xs tracking-wider shadow-sm border border-blue-400/30">
+          <div className="w-8 h-8 rounded bg-gradient-to-br from-[#0078D4] to-[#005A9E] flex items-center justify-center text-white font-black text-xs tracking-wider shadow-sm">
             D&L
           </div>
 
           <div className="flex items-baseline gap-2">
-            <span className="text-base font-bold tracking-tight text-white group-hover:text-[#00A4EF] transition-colors">
+            <span className="text-base font-bold tracking-tight text-slate-900 group-hover:text-[#0078D4] transition-colors">
               Domínguez & Lambrecht
             </span>
-            <span className="hidden sm:inline text-xs text-slate-400 font-mono">
+            <span className="hidden sm:inline text-xs text-slate-500 font-mono">
               | Consultoría Estratégica
             </span>
           </div>
         </button>
 
-        {/* Zone 2: Navigation Links (Microsoft Fluent Pivot Tabs) */}
-        <nav className="hidden xl:flex items-center gap-1 text-xs font-semibold text-slate-300">
+        {/* Zone 2: Navigation Links (Microsoft Pivot Tabs) */}
+        <nav className="hidden xl:flex items-center gap-1 text-xs font-semibold text-slate-600">
           <button
             type="button"
             onClick={() => setCurrentTab('landing')}
-            className={`px-3 py-5 transition-colors whitespace-nowrap relative hover:text-white ${
-              currentTab === 'landing' ? 'text-white font-bold' : 'text-slate-400'
+            className={`px-3 py-5 transition-colors whitespace-nowrap relative hover:text-slate-950 ${
+              currentTab === 'landing' ? 'text-slate-950 font-bold' : 'text-slate-600'
             }`}
           >
             Inicio
@@ -56,12 +54,11 @@ export const Navbar: React.FC<NavbarProps> = ({
             )}
           </button>
 
-          {/* Soluciones Button requested by user */}
           <button
             type="button"
             onClick={() => setCurrentTab('solutions')}
-            className={`px-3 py-5 transition-colors whitespace-nowrap relative hover:text-white ${
-              currentTab === 'solutions' ? 'text-white font-bold' : 'text-slate-400'
+            className={`px-3 py-5 transition-colors whitespace-nowrap relative hover:text-slate-950 ${
+              currentTab === 'solutions' ? 'text-slate-950 font-bold' : 'text-slate-600'
             }`}
           >
             Soluciones
@@ -73,8 +70,8 @@ export const Navbar: React.FC<NavbarProps> = ({
           <button
             type="button"
             onClick={() => setCurrentTab('simulators')}
-            className={`px-3 py-5 transition-colors whitespace-nowrap relative hover:text-white ${
-              currentTab === 'simulators' ? 'text-white font-bold' : 'text-slate-400'
+            className={`px-3 py-5 transition-colors whitespace-nowrap relative hover:text-slate-950 ${
+              currentTab === 'simulators' ? 'text-slate-950 font-bold' : 'text-slate-600'
             }`}
           >
             Simuladores
@@ -86,8 +83,8 @@ export const Navbar: React.FC<NavbarProps> = ({
           <button
             type="button"
             onClick={() => setCurrentTab('diagnostic')}
-            className={`px-3 py-5 transition-colors whitespace-nowrap relative hover:text-white ${
-              currentTab === 'diagnostic' ? 'text-white font-bold' : 'text-slate-400'
+            className={`px-3 py-5 transition-colors whitespace-nowrap relative hover:text-slate-950 ${
+              currentTab === 'diagnostic' ? 'text-slate-950 font-bold' : 'text-slate-600'
             }`}
           >
             Diagnóstico
@@ -96,12 +93,11 @@ export const Navbar: React.FC<NavbarProps> = ({
             )}
           </button>
 
-          {/* Blog / Perspectivas requested by user */}
           <button
             type="button"
             onClick={() => setCurrentTab('blog')}
-            className={`px-3 py-5 transition-colors whitespace-nowrap relative hover:text-white ${
-              currentTab === 'blog' ? 'text-white font-bold' : 'text-slate-400'
+            className={`px-3 py-5 transition-colors whitespace-nowrap relative hover:text-slate-950 ${
+              currentTab === 'blog' ? 'text-slate-950 font-bold' : 'text-slate-600'
             }`}
           >
             Blog & Podcast
@@ -113,8 +109,8 @@ export const Navbar: React.FC<NavbarProps> = ({
           <button
             type="button"
             onClick={() => setCurrentTab('portal')}
-            className={`px-3 py-5 transition-colors whitespace-nowrap relative hover:text-white ${
-              currentTab === 'portal' ? 'text-white font-bold' : 'text-slate-400'
+            className={`px-3 py-5 transition-colors whitespace-nowrap relative hover:text-slate-950 ${
+              currentTab === 'portal' ? 'text-slate-950 font-bold' : 'text-slate-600'
             }`}
           >
             Portal Clientes
@@ -126,8 +122,8 @@ export const Navbar: React.FC<NavbarProps> = ({
           <button
             type="button"
             onClick={() => setCurrentTab('crm')}
-            className={`px-3 py-5 transition-colors whitespace-nowrap relative hover:text-white ${
-              currentTab === 'crm' ? 'text-white font-bold' : 'text-slate-400'
+            className={`px-3 py-5 transition-colors whitespace-nowrap relative hover:text-slate-950 ${
+              currentTab === 'crm' ? 'text-slate-950 font-bold' : 'text-slate-600'
             }`}
           >
             CRM Dynamics
@@ -136,12 +132,11 @@ export const Navbar: React.FC<NavbarProps> = ({
             )}
           </button>
 
-          {/* SEO Control Tab */}
           <button
             type="button"
             onClick={() => setCurrentTab('seo')}
-            className={`px-3 py-5 transition-colors whitespace-nowrap relative hover:text-white ${
-              currentTab === 'seo' ? 'text-white font-bold' : 'text-slate-400'
+            className={`px-3 py-5 transition-colors whitespace-nowrap relative hover:text-slate-950 ${
+              currentTab === 'seo' ? 'text-slate-950 font-bold' : 'text-slate-600'
             }`}
           >
             Control SEO
@@ -153,19 +148,19 @@ export const Navbar: React.FC<NavbarProps> = ({
 
         {/* Zone 3: 1 primary action + role toggle */}
         <div className="flex items-center gap-3 shrink-0">
-          {/* Microsoft 365 style role selector */}
-          <div className="flex items-center bg-slate-950 border border-slate-700/80 rounded-md px-2.5 py-1.5 text-xs">
-            <span className="hidden sm:inline text-[11px] text-slate-400 font-mono mr-1.5">
+          {/* Tenant role selector in light corporate style */}
+          <div className="flex items-center bg-slate-50 border border-slate-200 rounded-md px-2.5 py-1.5 text-xs text-slate-700">
+            <span className="hidden sm:inline text-[11px] text-slate-500 font-mono mr-1.5">
               Entorno:
             </span>
             <select
               value={currentRole}
               onChange={(e) => setCurrentRole(e.target.value as UserRole)}
-              className="bg-transparent text-slate-200 text-xs font-semibold focus:outline-none cursor-pointer"
+              className="bg-transparent text-slate-800 text-xs font-semibold focus:outline-none cursor-pointer"
             >
-              <option value="admin" className="bg-slate-900 text-white">Socio (Cr. Domínguez)</option>
-              <option value="consultant" className="bg-slate-900 text-white">Consultor Staff</option>
-              <option value="client" className="bg-slate-900 text-white">Cliente (Portal)</option>
+              <option value="admin" className="bg-white text-slate-900">Socio (Cr. Domínguez)</option>
+              <option value="consultant" className="bg-white text-slate-900">Consultor Staff</option>
+              <option value="client" className="bg-white text-slate-900">Cliente (Portal)</option>
             </select>
           </div>
 
@@ -181,60 +176,60 @@ export const Navbar: React.FC<NavbarProps> = ({
       </div>
 
       {/* Mobile secondary navigation strip */}
-      <div className="xl:hidden flex items-center justify-around px-2 py-2 bg-slate-950 border-t border-slate-800 text-[11px] font-semibold text-slate-400 overflow-x-auto gap-1">
+      <div className="xl:hidden flex items-center justify-around px-2 py-2 bg-slate-50 border-t border-slate-200 text-[11px] font-semibold text-slate-600 overflow-x-auto gap-1">
         <button
           type="button"
           onClick={() => setCurrentTab('landing')}
-          className={`px-2 py-1 whitespace-nowrap ${currentTab === 'landing' ? 'text-[#00A4EF] font-bold' : ''}`}
+          className={`px-2 py-1 whitespace-nowrap ${currentTab === 'landing' ? 'text-[#0078D4] font-bold' : ''}`}
         >
           Inicio
         </button>
         <button
           type="button"
           onClick={() => setCurrentTab('solutions')}
-          className={`px-2 py-1 whitespace-nowrap ${currentTab === 'solutions' ? 'text-[#00A4EF] font-bold' : ''}`}
+          className={`px-2 py-1 whitespace-nowrap ${currentTab === 'solutions' ? 'text-[#0078D4] font-bold' : ''}`}
         >
           Soluciones
         </button>
         <button
           type="button"
           onClick={() => setCurrentTab('simulators')}
-          className={`px-2 py-1 whitespace-nowrap ${currentTab === 'simulators' ? 'text-[#00A4EF] font-bold' : ''}`}
+          className={`px-2 py-1 whitespace-nowrap ${currentTab === 'simulators' ? 'text-[#0078D4] font-bold' : ''}`}
         >
           Simuladores
         </button>
         <button
           type="button"
           onClick={() => setCurrentTab('diagnostic')}
-          className={`px-2 py-1 whitespace-nowrap ${currentTab === 'diagnostic' ? 'text-[#00A4EF] font-bold' : ''}`}
+          className={`px-2 py-1 whitespace-nowrap ${currentTab === 'diagnostic' ? 'text-[#0078D4] font-bold' : ''}`}
         >
           Diagnóstico
         </button>
         <button
           type="button"
           onClick={() => setCurrentTab('blog')}
-          className={`px-2 py-1 whitespace-nowrap ${currentTab === 'blog' ? 'text-[#00A4EF] font-bold' : ''}`}
+          className={`px-2 py-1 whitespace-nowrap ${currentTab === 'blog' ? 'text-[#0078D4] font-bold' : ''}`}
         >
           Blog
         </button>
         <button
           type="button"
           onClick={() => setCurrentTab('portal')}
-          className={`px-2 py-1 whitespace-nowrap ${currentTab === 'portal' ? 'text-[#00A4EF] font-bold' : ''}`}
+          className={`px-2 py-1 whitespace-nowrap ${currentTab === 'portal' ? 'text-[#0078D4] font-bold' : ''}`}
         >
           Portal
         </button>
         <button
           type="button"
           onClick={() => setCurrentTab('crm')}
-          className={`px-2 py-1 whitespace-nowrap ${currentTab === 'crm' ? 'text-[#00A4EF] font-bold' : ''}`}
+          className={`px-2 py-1 whitespace-nowrap ${currentTab === 'crm' ? 'text-[#0078D4] font-bold' : ''}`}
         >
           CRM
         </button>
         <button
           type="button"
           onClick={() => setCurrentTab('seo')}
-          className={`px-2 py-1 whitespace-nowrap ${currentTab === 'seo' ? 'text-[#00A4EF] font-bold' : ''}`}
+          className={`px-2 py-1 whitespace-nowrap ${currentTab === 'seo' ? 'text-[#0078D4] font-bold' : ''}`}
         >
           SEO
         </button>

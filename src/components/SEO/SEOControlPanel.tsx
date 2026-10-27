@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { 
   Globe, Search, Share2, CheckCircle2, AlertTriangle, 
-  Copy, Check, Code2, Sparkles, SlidersHorizontal, Eye
+  Copy, Check, Code2
 } from 'lucide-react';
 
 export const SEOControlPanel: React.FC = () => {
@@ -67,46 +67,46 @@ export const SEOControlPanel: React.FC = () => {
   return (
     <div className="space-y-8">
       {/* Header */}
-      <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 sm:p-8 fluent-shadow-elevated">
+      <div className="bg-white border border-slate-200 rounded-2xl p-6 sm:p-8 shadow-sm">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="space-y-2 max-w-2xl">
-            <div className="flex items-center gap-2 text-xs font-mono font-semibold uppercase tracking-wider text-[#00A4EF]">
+            <div className="flex items-center gap-2 text-xs font-mono font-semibold uppercase tracking-wider text-[#0078D4]">
               <Globe className="w-4 h-4" />
               <span>Centro de Control SEO & Metadatos Oficiales</span>
             </div>
-            <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
+            <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
               Control & Auditoría de Posicionamiento Orgánico
             </h1>
-            <p className="text-xs sm:text-sm text-slate-300 leading-relaxed font-normal">
+            <p className="text-xs sm:text-sm text-slate-600 leading-relaxed font-normal">
               Administra los meta tags, simula el resultado en el buscador de Google, valida las tarjetas de previsualización social (OpenGraph/Twitter) y monitorea el marcado estructurado Schema.org JSON-LD.
             </p>
           </div>
 
           {/* SEO Score Meter */}
-          <div className="p-4 bg-slate-950 border border-slate-800 rounded-xl text-center shrink-0 min-w-[160px]">
-            <span className="text-[11px] text-slate-400 uppercase font-mono block">
+          <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl text-center shrink-0 min-w-[160px]">
+            <span className="text-[11px] text-slate-500 uppercase font-mono block">
               Puntaje SEO Técnico
             </span>
             <span className={`text-3xl font-black font-mono tabular-nums block mt-1 ${
-              seoScore >= 85 ? 'text-[#107C41]' : 'text-amber-400'
+              seoScore >= 85 ? 'text-[#107C41]' : 'text-amber-700'
             }`}>
               {seoScore}/100
             </span>
-            <span className="text-[10px] text-[#00A4EF] font-medium block mt-0.5">
+            <span className="text-[10px] text-[#0078D4] font-semibold block mt-0.5">
               Optimizado para Google
             </span>
           </div>
         </div>
 
         {/* Tab Selector */}
-        <div className="flex flex-wrap gap-2 mt-6 pt-6 border-t border-slate-800">
+        <div className="flex flex-wrap gap-2 mt-6 pt-6 border-t border-slate-200">
           <button
             type="button"
             onClick={() => setActivePreview('google')}
             className={`px-4 py-2 text-xs font-semibold rounded-md transition-colors flex items-center gap-2 ${
               activePreview === 'google'
                 ? 'bg-[#0078D4] text-white font-bold shadow-sm'
-                : 'bg-slate-950 text-slate-300 hover:bg-slate-800 border border-slate-800'
+                : 'bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-200'
             }`}
           >
             <Search className="w-3.5 h-3.5" />
@@ -119,7 +119,7 @@ export const SEOControlPanel: React.FC = () => {
             className={`px-4 py-2 text-xs font-semibold rounded-md transition-colors flex items-center gap-2 ${
               activePreview === 'social'
                 ? 'bg-[#0078D4] text-white font-bold shadow-sm'
-                : 'bg-slate-950 text-slate-300 hover:bg-slate-800 border border-slate-800'
+                : 'bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-200'
             }`}
           >
             <Share2 className="w-3.5 h-3.5" />
@@ -132,7 +132,7 @@ export const SEOControlPanel: React.FC = () => {
             className={`px-4 py-2 text-xs font-semibold rounded-md transition-colors flex items-center gap-2 ${
               activePreview === 'schema'
                 ? 'bg-[#0078D4] text-white font-bold shadow-sm'
-                : 'bg-slate-950 text-slate-300 hover:bg-slate-800 border border-slate-800'
+                : 'bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-200'
             }`}
           >
             <Code2 className="w-3.5 h-3.5" />
@@ -144,20 +144,20 @@ export const SEOControlPanel: React.FC = () => {
       {/* Editor & Preview Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         {/* Left Column: Form Fields */}
-        <div className="lg:col-span-6 bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-5 fluent-shadow-card">
-          <div className="flex items-center justify-between pb-3 border-b border-slate-800">
-            <h3 className="text-sm font-bold text-white uppercase tracking-wider">
+        <div className="lg:col-span-6 bg-white border border-slate-200 rounded-2xl p-6 space-y-5 shadow-sm">
+          <div className="flex items-center justify-between pb-3 border-b border-slate-200">
+            <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider">
               Parámetros de Metadatos
             </h3>
-            <span className="text-xs text-[#00A4EF] font-mono">Edición en Tiempo Real</span>
+            <span className="text-xs text-[#0078D4] font-mono font-semibold">Edición en Tiempo Real</span>
           </div>
 
           <div>
             <div className="flex justify-between items-center mb-1.5">
-              <label className="text-xs font-semibold text-slate-300 uppercase tracking-wider">
+              <label className="text-xs font-semibold text-slate-700 uppercase tracking-wider">
                 Meta Title ({titleLength} caracteres)
               </label>
-              <span className={`text-[11px] font-mono ${isTitleOptimal ? 'text-[#107C41]' : 'text-amber-400'}`}>
+              <span className={`text-[11px] font-mono font-semibold ${isTitleOptimal ? 'text-[#107C41]' : 'text-amber-700'}`}>
                 {isTitleOptimal ? '✓ Longitud óptima (35-65)' : 'Ajustar longitud'}
               </span>
             </div>
@@ -165,16 +165,16 @@ export const SEOControlPanel: React.FC = () => {
               type="text"
               value={metaTitle}
               onChange={(e) => setMetaTitle(e.target.value)}
-              className="w-full bg-slate-950 border border-slate-700 rounded-md px-3.5 py-2 text-xs text-white focus:border-[#0078D4] focus:outline-none"
+              className="w-full bg-white border border-slate-300 rounded-md px-3.5 py-2 text-xs text-slate-900 focus:border-[#0078D4] focus:outline-none"
             />
           </div>
 
           <div>
             <div className="flex justify-between items-center mb-1.5">
-              <label className="text-xs font-semibold text-slate-300 uppercase tracking-wider">
+              <label className="text-xs font-semibold text-slate-700 uppercase tracking-wider">
                 Meta Description ({descLength} caracteres)
               </label>
-              <span className={`text-[11px] font-mono ${isDescOptimal ? 'text-[#107C41]' : 'text-amber-400'}`}>
+              <span className={`text-[11px] font-mono font-semibold ${isDescOptimal ? 'text-[#107C41]' : 'text-amber-700'}`}>
                 {isDescOptimal ? '✓ Longitud óptima (120-165)' : 'Ajustar longitud'}
               </span>
             </div>
@@ -182,48 +182,48 @@ export const SEOControlPanel: React.FC = () => {
               rows={3}
               value={metaDescription}
               onChange={(e) => setMetaDescription(e.target.value)}
-              className="w-full bg-slate-950 border border-slate-700 rounded-md px-3.5 py-2 text-xs text-white focus:border-[#0078D4] focus:outline-none resize-none"
+              className="w-full bg-white border border-slate-300 rounded-md px-3.5 py-2 text-xs text-slate-900 focus:border-[#0078D4] focus:outline-none resize-none"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
+            <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">
               URL Canónica
             </label>
             <input
               type="url"
               value={canonicalUrl}
               onChange={(e) => setCanonicalUrl(e.target.value)}
-              className="w-full bg-slate-950 border border-slate-700 rounded-md px-3.5 py-2 text-xs text-white font-mono focus:border-[#0078D4] focus:outline-none"
+              className="w-full bg-white border border-slate-300 rounded-md px-3.5 py-2 text-xs text-slate-900 font-mono focus:border-[#0078D4] focus:outline-none"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
+            <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">
               Palabras Clave de Enfoque (Keywords)
             </label>
             <input
               type="text"
               value={keywords}
               onChange={(e) => setKeywords(e.target.value)}
-              className="w-full bg-slate-950 border border-slate-700 rounded-md px-3.5 py-2 text-xs text-white focus:border-[#0078D4] focus:outline-none"
+              className="w-full bg-white border border-slate-300 rounded-md px-3.5 py-2 text-xs text-slate-900 focus:border-[#0078D4] focus:outline-none"
             />
           </div>
 
           {/* Keyword Checklist */}
-          <div className="pt-2 border-t border-slate-800 space-y-2">
-            <span className="text-xs font-semibold text-slate-300 block">
+          <div className="pt-2 border-t border-slate-200 space-y-2">
+            <span className="text-xs font-semibold text-slate-700 block">
               Términos Estratégicos Detectados:
             </span>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
               {focusTerms.map((t, idx) => (
-                <div key={idx} className="flex items-center gap-1.5 text-slate-300">
+                <div key={idx} className="flex items-center gap-1.5 text-slate-700">
                   {t.found ? (
                     <CheckCircle2 className="w-3.5 h-3.5 text-[#107C41] shrink-0" />
                   ) : (
-                    <AlertTriangle className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                    <AlertTriangle className="w-3.5 h-3.5 text-amber-600 shrink-0" />
                   )}
-                  <span className={t.found ? 'text-white' : 'text-slate-400'}>{t.term}</span>
+                  <span className={t.found ? 'text-slate-900 font-medium' : 'text-slate-500'}>{t.term}</span>
                 </div>
               ))}
             </div>
@@ -233,23 +233,23 @@ export const SEOControlPanel: React.FC = () => {
         {/* Right Column: Interactive Live Previews */}
         <div className="lg:col-span-6 space-y-6">
           {activePreview === 'google' && (
-            <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-4 fluent-shadow-card">
-              <div className="flex items-center justify-between pb-3 border-b border-slate-800">
-                <span className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-2">
-                  <Search className="w-4 h-4 text-[#00A4EF]" />
+            <div className="bg-white border border-slate-200 rounded-2xl p-6 space-y-4 shadow-sm">
+              <div className="flex items-center justify-between pb-3 border-b border-slate-200">
+                <span className="text-xs font-bold text-slate-900 uppercase tracking-wider flex items-center gap-2">
+                  <Search className="w-4 h-4 text-[#0078D4]" />
                   Simulador de Búsqueda Google (SERP Snippet)
                 </span>
-                <span className="text-[11px] text-slate-400 font-mono">Vista Previa</span>
+                <span className="text-[11px] text-slate-500 font-mono">Vista Previa</span>
               </div>
 
               {/* Realistic Google Search Card */}
-              <div className="p-5 bg-white rounded-xl shadow-lg space-y-2 text-slate-900">
+              <div className="p-5 bg-slate-50 border border-slate-200 rounded-xl shadow-2xs space-y-2 text-slate-900">
                 <div className="flex items-center gap-2 text-xs text-slate-600">
                   <div className="w-4 h-4 rounded-full bg-[#0078D4] text-white flex items-center justify-center text-[10px] font-bold">
                     D
                   </div>
-                  <span className="font-medium">dominguez-lambrecht.com.ar</span>
-                  <span className="text-slate-400">› consultoria</span>
+                  <span className="font-medium text-slate-800">dominguez-lambrecht.com.ar</span>
+                  <span className="text-slate-500">› consultoria</span>
                 </div>
 
                 <h4 className="text-lg font-semibold text-[#1a0dab] hover:underline cursor-pointer leading-snug">
@@ -269,31 +269,31 @@ export const SEOControlPanel: React.FC = () => {
                 </div>
               </div>
 
-              <p className="text-xs text-slate-400 leading-relaxed">
+              <p className="text-xs text-slate-600 leading-relaxed">
                 Google utiliza el meta title y description para generar el resultado de búsqueda. Con la configuración actual, los usuarios que busquen en Trelew y Patagonia encontrarán tu consultoría destacada.
               </p>
             </div>
           )}
 
           {activePreview === 'social' && (
-            <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-4 fluent-shadow-card">
-              <div className="flex items-center justify-between pb-3 border-b border-slate-800">
-                <span className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-2">
+            <div className="bg-white border border-slate-200 rounded-2xl p-6 space-y-4 shadow-sm">
+              <div className="flex items-center justify-between pb-3 border-b border-slate-200">
+                <span className="text-xs font-bold text-slate-900 uppercase tracking-wider flex items-center gap-2">
                   <Share2 className="w-4 h-4 text-[#0078D4]" />
                   Tarjeta Social OpenGraph (LinkedIn / X / WhatsApp)
                 </span>
-                <span className="text-[11px] text-slate-400 font-mono">1200 x 630 Card</span>
+                <span className="text-[11px] text-slate-500 font-mono">1200 x 630 Card</span>
               </div>
 
               {/* Realistic Social Share Card */}
-              <div className="rounded-xl overflow-hidden border border-slate-700 bg-slate-950 shadow-lg">
-                <div className="aspect-[1.91/1] w-full relative">
+              <div className="rounded-xl overflow-hidden border border-slate-200 bg-white shadow-md">
+                <div className="aspect-[1.91/1] w-full relative bg-slate-100">
                   <img
                     src="/src/assets/images/hero_patagonia_consultancy_1793059908678.jpg"
                     alt={metaTitle}
                     className="w-full h-full object-cover"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent" />
                   <div className="absolute bottom-3 left-4 right-4">
                     <span className="px-2 py-0.5 bg-[#0078D4] text-white text-[10px] font-bold rounded">
                       ESTUDIO DOMÍNGUEZ & LAMBRECHT
@@ -301,12 +301,12 @@ export const SEOControlPanel: React.FC = () => {
                   </div>
                 </div>
 
-                <div className="p-4 bg-slate-950 space-y-1">
-                  <span className="text-[10px] text-slate-400 uppercase font-mono">DOMINGUEZ-LAMBRECHT.COM.AR</span>
-                  <h4 className="text-sm font-bold text-white leading-snug">
+                <div className="p-4 bg-white space-y-1">
+                  <span className="text-[10px] text-slate-500 uppercase font-mono">DOMINGUEZ-LAMBRECHT.COM.AR</span>
+                  <h4 className="text-sm font-bold text-slate-900 leading-snug">
                     {metaTitle}
                   </h4>
-                  <p className="text-xs text-slate-400 line-clamp-2">
+                  <p className="text-xs text-slate-600 line-clamp-2">
                     {metaDescription}
                   </p>
                 </div>
@@ -315,16 +315,16 @@ export const SEOControlPanel: React.FC = () => {
           )}
 
           {activePreview === 'schema' && (
-            <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-4 fluent-shadow-card">
-              <div className="flex items-center justify-between pb-3 border-b border-slate-800">
-                <span className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-2">
+            <div className="bg-white border border-slate-200 rounded-2xl p-6 space-y-4 shadow-sm">
+              <div className="flex items-center justify-between pb-3 border-b border-slate-200">
+                <span className="text-xs font-bold text-slate-900 uppercase tracking-wider flex items-center gap-2">
                   <Code2 className="w-4 h-4 text-[#107C41]" />
                   Marcado Estructurado Schema.org JSON-LD
                 </span>
-                <span className="text-[11px] text-[#107C41] font-mono">Válido para Google Rich Snippets</span>
+                <span className="text-[11px] text-[#107C41] font-mono font-semibold">Válido para Google Rich Snippets</span>
               </div>
 
-              <div className="p-4 bg-slate-950 rounded-xl border border-slate-800 font-mono text-xs text-slate-300 overflow-x-auto max-h-72">
+              <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 font-mono text-xs text-slate-800 overflow-x-auto max-h-72">
                 <pre>{`{
   "@context": "https://schema.org",
   "@type": "AccountingService",
@@ -349,19 +349,19 @@ export const SEOControlPanel: React.FC = () => {
 }`}</pre>
               </div>
 
-              <p className="text-xs text-slate-400">
-                Este marcado ya está inyectado directamente en el encabezado <code className="text-[#00A4EF]">&lt;head&gt;</code> de la aplicación web para garantizar la indexación como servicio financiero profesional calificado.
+              <p className="text-xs text-slate-600">
+                Este marcado ya está inyectado directamente en el encabezado <code className="text-[#0078D4]">&lt;head&gt;</code> de la aplicación web para garantizar la indexación como servicio financiero profesional calificado.
               </p>
             </div>
           )}
 
           {/* HTML Export Box */}
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 flex items-center justify-between gap-4">
+          <div className="bg-white border border-slate-200 rounded-2xl p-5 flex items-center justify-between gap-4 shadow-sm">
             <div>
-              <span className="text-xs font-bold text-white block">
+              <span className="text-xs font-bold text-slate-900 block">
                 Copiar Metatags Generados
               </span>
-              <span className="text-[11px] text-slate-400">
+              <span className="text-[11px] text-slate-500">
                 Para producción o sincronización con Vercel / Cloudflare
               </span>
             </div>

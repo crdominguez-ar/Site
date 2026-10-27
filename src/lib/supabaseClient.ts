@@ -380,6 +380,10 @@ class DataRepository {
     localStorage.setItem(this.tasksKey, JSON.stringify(updated));
   }
 
+  async toggleTaskCompletion(taskId: string): Promise<void> {
+    return this.toggleTask(taskId);
+  }
+
   async addTask(task: Omit<CRMTask, 'id'>): Promise<CRMTask> {
     const newTask: CRMTask = {
       ...task,
@@ -389,6 +393,18 @@ class DataRepository {
     const updated = [newTask, ...current];
     localStorage.setItem(this.tasksKey, JSON.stringify(updated));
     return newTask;
+  }
+
+  async createTask(task: Partial<CRMTask> & { title: string; companyName: string }): Promise<CRMTask> {
+    return this.addTask({
+      title: task.title,
+      companyName: task.companyName,
+      dueDate: task.dueDate || 'En 48 hs',
+      priority: task.priority || 'normal',
+      completed: false,
+      assignedRole: (task.assignedRole as any) || 'socio',
+      vertical: task.vertical || 'cfo_estrategico',
+    });
   }
 
   async getReports(): Promise<DeliverableReport[]> {

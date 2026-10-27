@@ -5,8 +5,8 @@
     --ms-blue: #0078D4;
     --ms-blue-hover: #106EBE;
     --ms-blue-light: #EFF6FC;
-    --ms-navy: #0F172A;
-    --ms-neutral-light: #F8FAFC;
+    --ms-neutral-canvas: #FFFFFF;
+    --ms-neutral-subtle: #F8FAFC;
     --ms-border: #E2E8F0;
     font-family: 'Segoe UI', 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
   }
@@ -16,20 +16,20 @@
   }
 }
 
-/* Microsoft Fluent Depth Shadows */
+/* Microsoft Fluent Light Depth Shadows */
 .fluent-shadow-card {
-  box-shadow: 0 1.6px 3.6px 0 rgba(0, 0, 0, 0.08), 0 0.3px 0.9px 0 rgba(0, 0, 0, 0.06);
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px -1px rgba(0, 0, 0, 0.05);
 }
 
 .fluent-shadow-elevated {
-  box-shadow: 0 6.4px 14.4px 0 rgba(0, 0, 0, 0.12), 0 1.2px 3.6px 0 rgba(0, 0, 0, 0.08);
+  box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.08), 0 8px 10px -6px rgba(15, 23, 42, 0.04);
 }
 
 .fluent-shadow-hover:hover {
-  box-shadow: 0 10px 24px -4px rgba(0, 120, 212, 0.16), 0 2px 6px 0 rgba(0, 0, 0, 0.06);
+  box-shadow: 0 14px 28px -4px rgba(0, 120, 212, 0.12), 0 4px 10px -2px rgba(15, 23, 42, 0.05);
 }
 
-/* Custom scrollbar matching Microsoft Fluent UI */
+/* Clean corporate light scrollbar */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
@@ -38,9 +38,9 @@
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba(148, 163, 184, 0.5);
+  background: rgba(203, 213, 225, 0.8);
   border-radius: 3px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(100, 116, 139, 0.8);
+  background: rgba(148, 163, 184, 1);
 }

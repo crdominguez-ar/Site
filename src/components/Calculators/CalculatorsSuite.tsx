@@ -10,31 +10,31 @@ export const CalculatorsSuite: React.FC = () => {
 
   return (
     <div className="space-y-8">
-      {/* Header with Microsoft Enterprise Styling */}
-      <div className="bg-slate-900 border border-slate-800 rounded-xl p-6 md:p-8 fluent-shadow-card">
+      {/* Header with Microsoft Enterprise Light Styling */}
+      <div className="bg-white border border-slate-200 rounded-xl p-6 md:p-8 shadow-sm">
         <div className="max-w-3xl">
-          <div className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-[#00A4EF] font-mono mb-1">
+          <div className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-[#0078D4] font-mono mb-1">
             <span>Herramientas Analíticas</span>
             <span>·</span>
             <span>Estudio Domínguez & Lambrecht</span>
           </div>
-          <h2 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
+          <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
             Simuladores Interactivos de Viabilidad Económica
           </h2>
-          <p className="text-sm text-slate-400 mt-2 leading-relaxed">
+          <p className="text-sm text-slate-600 mt-2 leading-relaxed">
             Modelos cuantitativos de precisión financiera y jurídica en tiempo real para estimar costos marginales, recupero de franquicias comerciales, liquidación de divisas e impacto operativo de agentes IA.
           </p>
         </div>
 
         {/* Microsoft Fluent Segmented Pivot Bar */}
-        <div className="flex flex-wrap gap-2 mt-6 pt-6 border-t border-slate-800">
+        <div className="flex flex-wrap gap-2 mt-6 pt-6 border-t border-slate-200">
           <button
             type="button"
             onClick={() => setActiveCalculator('breakeven')}
             className={`px-4 py-2 text-xs font-semibold rounded-md transition-colors flex items-center gap-2 ${
               activeCalculator === 'breakeven'
                 ? 'bg-[#0078D4] text-white font-bold shadow-sm'
-                : 'bg-slate-950 text-slate-300 hover:bg-slate-800 border border-slate-800'
+                : 'bg-slate-50 text-slate-700 hover:bg-slate-100 border border-slate-200'
             }`}
           >
             <Building2 className="w-3.5 h-3.5" />
@@ -47,7 +47,7 @@ export const CalculatorsSuite: React.FC = () => {
             className={`px-4 py-2 text-xs font-semibold rounded-md transition-colors flex items-center gap-2 ${
               activeCalculator === 'franchise'
                 ? 'bg-[#0078D4] text-white font-bold shadow-sm'
-                : 'bg-slate-950 text-slate-300 hover:bg-slate-800 border border-slate-800'
+                : 'bg-slate-50 text-slate-700 hover:bg-slate-100 border border-slate-200'
             }`}
           >
             <Scale className="w-3.5 h-3.5" />
@@ -60,7 +60,7 @@ export const CalculatorsSuite: React.FC = () => {
             className={`px-4 py-2 text-xs font-semibold rounded-md transition-colors flex items-center gap-2 ${
               activeCalculator === 'export'
                 ? 'bg-[#0078D4] text-white font-bold shadow-sm'
-                : 'bg-slate-950 text-slate-300 hover:bg-slate-800 border border-slate-800'
+                : 'bg-slate-50 text-slate-700 hover:bg-slate-100 border border-slate-200'
             }`}
           >
             <Globe className="w-3.5 h-3.5" />
@@ -73,7 +73,7 @@ export const CalculatorsSuite: React.FC = () => {
             className={`px-4 py-2 text-xs font-semibold rounded-md transition-colors flex items-center gap-2 ${
               activeCalculator === 'zhc'
                 ? 'bg-[#0078D4] text-white font-bold shadow-sm'
-                : 'bg-slate-950 text-slate-300 hover:bg-slate-800 border border-slate-800'
+                : 'bg-slate-50 text-slate-700 hover:bg-slate-100 border border-slate-200'
             }`}
           >
             <Cpu className="w-3.5 h-3.5" />

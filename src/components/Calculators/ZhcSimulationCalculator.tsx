@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Cpu, Zap, Coins, FileCheck, Layers } from 'lucide-react';
+import { Cpu, Layers } from 'lucide-react';
 
 export const ZhcSimulationCalculator: React.FC = () => {
   const [agentLoopsCount, setAgentLoopsCount] = useState<number>(4);
@@ -20,16 +20,16 @@ export const ZhcSimulationCalculator: React.FC = () => {
   const efficiencyRatio = traditionalMonthlyCostUsd > 0 ? ((monthlySavingsUsd / traditionalMonthlyCostUsd) * 100) : 0;
 
   return (
-    <div className="bg-slate-900 border border-slate-800 rounded-xl p-6 md:p-8">
+    <div className="bg-white border border-slate-200 rounded-xl p-6 md:p-8 shadow-sm">
       <div className="flex items-center gap-3 mb-6">
-        <div className="p-2.5 bg-indigo-950 border border-indigo-800/50 rounded-lg text-indigo-400">
+        <div className="p-2.5 bg-purple-50 border border-purple-200 rounded-lg text-[#8764B8]">
           <Cpu className="w-5 h-5" />
         </div>
         <div>
-          <h3 className="text-xl font-bold text-white tracking-tight">
+          <h3 className="text-xl font-bold text-slate-900 tracking-tight">
             Simulador de Viabilidad Operativa & Tributaria ZHC (Zero-Human Company)
           </h3>
-          <p className="text-sm text-slate-400">
+          <p className="text-sm text-slate-600">
             Modelado de costos de inferencia multi-agente vs nómina tradicional y auditoría de tesorería
           </p>
         </div>
@@ -39,7 +39,7 @@ export const ZhcSimulationCalculator: React.FC = () => {
         <div className="lg:col-span-6 space-y-5">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">
+              <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">
                 Bucles Multi-Agente Activos ({agentLoopsCount})
               </label>
               <input
@@ -48,15 +48,15 @@ export const ZhcSimulationCalculator: React.FC = () => {
                 max="16"
                 value={agentLoopsCount}
                 onChange={(e) => setAgentLoopsCount(Number(e.target.value))}
-                className="w-full h-2 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-indigo-400"
+                className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-[#8764B8]"
               />
-              <span className="text-[11px] text-slate-400 mt-1 block">
+              <span className="text-[11px] text-slate-500 mt-1 block">
                 Agentes autónomos (ventas, soporte, backoffice, coding)
               </span>
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">
+              <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">
                 Consumo Mensual de Tokens ({tokensPerMonthMillions}M)
               </label>
               <input
@@ -66,15 +66,15 @@ export const ZhcSimulationCalculator: React.FC = () => {
                 step="10"
                 value={tokensPerMonthMillions}
                 onChange={(e) => setTokensPerMonthMillions(Number(e.target.value))}
-                className="w-full h-2 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-indigo-400"
+                className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-[#8764B8]"
               />
-              <span className="text-[11px] text-slate-400 mt-1 block">
+              <span className="text-[11px] text-slate-500 mt-1 block">
                 Millones de tokens procesados (prompt + completion)
               </span>
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">
+              <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">
                 Costo Promedio / Millón Tokens
               </label>
               <div className="relative">
@@ -84,13 +84,13 @@ export const ZhcSimulationCalculator: React.FC = () => {
                   step="0.1"
                   value={costPerMillionTokens}
                   onChange={(e) => setCostPerMillionTokens(Math.max(0.1, Number(e.target.value)))}
-                  className="w-full bg-slate-950 border border-slate-700 rounded-lg pl-7 pr-3 py-1.5 text-white font-mono text-sm focus:border-indigo-500 focus:outline-none"
+                  className="w-full bg-white border border-slate-300 rounded-lg pl-7 pr-3 py-1.5 text-slate-900 font-mono text-sm focus:border-[#8764B8] focus:outline-none"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">
+              <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">
                 Personal Humano Equivalente ({humanFteReplaced} FTEs)
               </label>
               <input
@@ -99,13 +99,13 @@ export const ZhcSimulationCalculator: React.FC = () => {
                 max="25"
                 value={humanFteReplaced}
                 onChange={(e) => setHumanFteReplaced(Number(e.target.value))}
-                className="w-full h-2 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-indigo-400"
+                className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-[#8764B8]"
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">
+            <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">
               Salario Bruto Tradicional Promedio (USD / mes por empleado)
             </label>
             <div className="relative">
@@ -114,17 +114,17 @@ export const ZhcSimulationCalculator: React.FC = () => {
                 type="number"
                 value={humanMonthlySalaryUsd}
                 onChange={(e) => setHumanMonthlySalaryUsd(Math.max(300, Number(e.target.value)))}
-                className="w-full bg-slate-950 border border-slate-700 rounded-lg pl-12 pr-4 py-2 text-white font-mono focus:border-indigo-500 focus:outline-none"
+                className="w-full bg-white border border-slate-300 rounded-lg pl-14 pr-4 py-2 text-slate-900 font-mono focus:border-[#8764B8] focus:outline-none"
               />
             </div>
           </div>
 
-          <div className="p-3.5 bg-slate-950/70 border border-slate-800 rounded-lg text-xs space-y-2">
-            <span className="font-semibold text-slate-200 flex items-center gap-1.5">
-              <Layers className="w-3.5 h-3.5 text-indigo-400" />
+          <div className="p-3.5 bg-slate-50 border border-slate-200 rounded-lg text-xs space-y-2">
+            <span className="font-semibold text-slate-800 flex items-center gap-1.5">
+              <Layers className="w-3.5 h-3.5 text-[#8764B8]" />
               Aspectos Tributarios ZHC que dictamina D&L:
             </span>
-            <ul className="text-slate-400 space-y-1 list-disc list-inside">
+            <ul className="text-slate-600 space-y-1 list-disc list-inside">
               <li>Deducibilidad de facturas de OpenAI/Anthropic/Google Cloud en Ganancias.</li>
               <li>Conciliación de transacciones on-chain y smart contracts con balance legal.</li>
               <li>Personería jurídica societaria de transición (SAS con gobierno automatizado).</li>
@@ -133,49 +133,49 @@ export const ZhcSimulationCalculator: React.FC = () => {
         </div>
 
         {/* Results */}
-        <div className="lg:col-span-6 bg-slate-950 border border-slate-800/80 rounded-xl p-6 flex flex-col justify-between">
+        <div className="lg:col-span-6 bg-slate-50 border border-slate-200 rounded-xl p-6 flex flex-col justify-between">
           <div className="space-y-4">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-800">
-              <span className="text-xs text-slate-400 uppercase tracking-wider">Eficiencia Operativa Relativa</span>
-              <span className="text-lg font-bold text-indigo-400 font-mono tabular-nums">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-200">
+              <span className="text-xs text-slate-600 uppercase tracking-wider font-semibold">Eficiencia Operativa Relativa</span>
+              <span className="text-lg font-bold text-[#8764B8] font-mono tabular-nums">
                 +{efficiencyRatio.toFixed(1)}% de ahorro
               </span>
             </div>
 
             <div className="grid grid-cols-2 gap-3">
-              <div className="p-3 bg-slate-900 border border-slate-800 rounded-lg">
-                <span className="text-xs text-slate-400 block mb-1">Costo ZHC Mensual (IA)</span>
-                <span className="text-lg font-extrabold text-white font-mono tabular-nums">
+              <div className="p-3 bg-white border border-slate-200 rounded-lg shadow-2xs">
+                <span className="text-xs text-slate-500 block mb-1">Costo ZHC Mensual (IA)</span>
+                <span className="text-lg font-extrabold text-slate-900 font-mono tabular-nums">
                   USD {Math.round(totalZhcMonthlyCostUsd).toLocaleString('en-US')}
                 </span>
-                <span className="text-[10px] text-slate-400 block mt-0.5">Tokens + Infraestructura</span>
+                <span className="text-[10px] text-slate-500 block mt-0.5">Tokens + Infraestructura</span>
               </div>
 
-              <div className="p-3 bg-slate-900 border border-slate-800 rounded-lg">
-                <span className="text-xs text-slate-400 block mb-1">Costo Nómina Tradicional</span>
-                <span className="text-lg font-extrabold text-slate-300 font-mono tabular-nums">
+              <div className="p-3 bg-white border border-slate-200 rounded-lg shadow-2xs">
+                <span className="text-xs text-slate-500 block mb-1">Costo Nómina Tradicional</span>
+                <span className="text-lg font-extrabold text-slate-700 font-mono tabular-nums">
                   USD {Math.round(traditionalMonthlyCostUsd).toLocaleString('en-US')}
                 </span>
-                <span className="text-[10px] text-slate-400 block mt-0.5">Incluye 42% cargas sociales</span>
+                <span className="text-[10px] text-slate-500 block mt-0.5">Incluye 42% cargas sociales</span>
               </div>
             </div>
 
-            <div className="p-4 bg-indigo-950/20 border border-indigo-800/40 rounded-lg">
+            <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-lg">
               <div className="flex items-center justify-between mb-1">
-                <span className="text-xs font-semibold text-slate-200">Ahorro Neto Anualizado</span>
-                <span className="text-lg font-extrabold text-emerald-400 font-mono tabular-nums">
+                <span className="text-xs font-semibold text-emerald-900">Ahorro Neto Anualizado</span>
+                <span className="text-lg font-extrabold text-emerald-700 font-mono tabular-nums">
                   + USD {Math.round(annualSavingsUsd).toLocaleString('en-US')} / año
                 </span>
               </div>
-              <p className="text-xs text-slate-400 mt-2">
+              <p className="text-xs text-emerald-800 mt-2">
                 Una empresa ZHC con {agentLoopsCount} bucles autónomos reduce costos fijos de estructura un {efficiencyRatio.toFixed(0)}%, pero requiere blindaje legal para evitar contingencias fiscales por falta de sustancia laboral tradicional.
               </p>
             </div>
           </div>
 
-          <div className="pt-4 border-t border-slate-800/80 mt-4 flex items-center justify-between text-xs text-slate-400">
+          <div className="pt-4 border-t border-slate-200 mt-4 flex items-center justify-between text-xs text-slate-500">
             <span>Vanguardia: ZHC & Governança Cripto</span>
-            <span className="text-indigo-400 font-medium">Asesoría Cr. Carlos Rodrigo Domínguez</span>
+            <span className="text-[#8764B8] font-medium">Asesoría Cr. Carlos Rodrigo Domínguez</span>
           </div>
         </div>
       </div>

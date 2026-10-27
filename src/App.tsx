@@ -28,7 +28,7 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen w-full bg-slate-950 text-slate-100 flex flex-col">
+    <div className="min-h-screen w-full bg-[#F8FAFC] text-slate-900 flex flex-col font-sans antialiased">
       {/* Top Navigation */}
       <Navbar
         currentTab={currentTab}
@@ -66,13 +66,13 @@ export default function App() {
         {currentTab === 'diagnostic' && (
           <div className="w-full px-6 sm:px-12 lg:px-20 py-10 sm:py-14 space-y-6">
             <div className="text-center space-y-2 mb-8">
-              <span className="text-xs font-mono font-semibold uppercase tracking-wider text-[#00A4EF]">
+              <span className="text-xs font-mono font-semibold uppercase tracking-wider text-[#0078D4]">
                 Auditoría Inicial Automatizada
               </span>
-              <h1 className="text-3xl font-black text-white">
+              <h1 className="text-3xl font-black text-slate-900">
                 Diagnóstico Estratégico Empresarial
               </h1>
-              <p className="text-sm text-slate-400 max-w-2xl mx-auto">
+              <p className="text-sm text-slate-600 max-w-2xl mx-auto">
                 Evalúa en 4 pasos la estructura financiera, contingencias tributarias y potencial de franquiciabilidad o digitalización de tu organización.
               </p>
             </div>
