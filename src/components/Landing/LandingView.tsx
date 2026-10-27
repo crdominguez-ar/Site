@@ -4,6 +4,7 @@ import { BUSINESS_VERTICALS } from '../../data/verticals';
 import { PartnerProfile } from '../About/PartnerProfile';
 import { InteractiveDiagnostic } from '../Diagnostic/InteractiveDiagnostic';
 import { ExecutiveVideoSection } from '../Video/ExecutiveVideoSection';
+import { HeroCarousel } from './HeroCarousel';
 
 interface LandingViewProps {
   onSelectTab: (tab: 'landing' | 'solutions' | 'simulators' | 'diagnostic' | 'blog' | 'portal' | 'crm' | 'seo') => void;
@@ -13,100 +14,11 @@ interface LandingViewProps {
 export const LandingView: React.FC<LandingViewProps> = ({ onSelectTab, onOpenConsultationModal }) => {
   return (
     <div className="w-full space-y-0 pb-0 bg-white text-slate-900">
-      {/* Block 1: Hero Section (Ancho Completo, Luminous & Clear) */}
-      <section className="relative w-full min-h-[560px] lg:min-h-[640px] flex flex-col justify-between bg-white overflow-hidden border-b border-slate-200">
-        {/* Full-bleed background photography with daylight luminous scrim */}
-        <div className="absolute inset-0 z-0">
-          <img
-            src="/src/assets/images/hero_patagonia_consultancy_1793059908678.jpg"
-            alt="Estudio Contable Domínguez & Lambrecht - Consultoría Estratégica en Patagonia"
-            referrerPolicy="no-referrer"
-            className="w-full h-full object-cover object-center opacity-30"
-          />
-          <div className="absolute inset-0 bg-gradient-to-r from-white via-white/95 to-white/70" />
-          <div className="absolute inset-0 bg-gradient-to-t from-white via-transparent to-white/40" />
-        </div>
-
-        {/* Hero Content spanning edge-to-edge with high-legibility dark typography */}
-        <div className="relative z-10 w-full px-6 sm:px-12 lg:px-20 xl:px-24 pt-20 pb-16 lg:pt-28 lg:pb-20 max-w-5xl space-y-5">
-          <div className="flex items-center gap-2 text-xs font-mono font-bold text-[#0078D4] uppercase tracking-wider">
-            <span>Trelew, Chubut</span>
-            <span aria-hidden="true">·</span>
-            <span>Patagonia Argentina</span>
-            <span aria-hidden="true">·</span>
-            <span className="text-slate-700">Cr. Carlos Rodrigo Domínguez</span>
-          </div>
-
-          <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black text-slate-950 tracking-tight leading-[1.1] text-balance">
-            Consultoría de Negocios Estratégica & Dirección Financiera
-          </h1>
-
-          <p className="text-base sm:text-lg text-slate-700 leading-relaxed max-w-3xl font-normal">
-            Superamos la gestoría administrativa tradicional. Desarrollamos arquitectura contable, fiscal y de dirección financiera moderna para PyMEs patagónicas, franquicias, exportadores de software y empresas 100% IA (Zero-Human Companies).
-          </p>
-
-          <div className="flex flex-wrap items-center gap-3.5 pt-3">
-            <button
-              type="button"
-              onClick={() => onSelectTab('solutions')}
-              className="px-6 py-3 bg-[#0078D4] hover:bg-[#106EBE] active:bg-[#005A9E] text-white font-bold text-xs sm:text-sm rounded-md transition-all shadow-md flex items-center gap-2"
-            >
-              <span>Conocer Soluciones & Servicios</span>
-              <ArrowRight className="w-4 h-4" />
-            </button>
-
-            <button
-              type="button"
-              onClick={() => onSelectTab('diagnostic')}
-              className="px-6 py-3 bg-white hover:bg-slate-50 text-slate-900 border border-slate-300 font-semibold text-xs sm:text-sm rounded-md transition-colors flex items-center gap-2 shadow-sm"
-            >
-              <span>Diagnóstico de Empresa</span>
-              <ChevronRight className="w-4 h-4 text-slate-500" />
-            </button>
-          </div>
-        </div>
-
-        {/* 4-Column KPI strip in clean luminous light design */}
-        <div className="relative z-10 w-full border-t border-slate-200 bg-white/95 backdrop-blur-md">
-          <div className="w-full px-6 sm:px-12 lg:px-20 xl:px-24 grid grid-cols-2 lg:grid-cols-4 divide-y lg:divide-y-0 lg:divide-x divide-slate-200">
-            <div className="py-6 sm:pr-8">
-              <span className="text-2xl sm:text-4xl font-black text-slate-900 font-mono tabular-nums block">
-                18+
-              </span>
-              <span className="text-xs text-slate-600 mt-1 block font-medium">
-                Años de experiencia financiera y tributaria en Patagonia
-              </span>
-            </div>
-
-            <div className="py-6 sm:px-8">
-              <span className="text-2xl sm:text-4xl font-black text-[#0078D4] font-mono tabular-nums block">
-                5
-              </span>
-              <span className="text-xs text-slate-600 mt-1 block font-medium">
-                Ejes estratégicos de negocio
-              </span>
-            </div>
-
-            <div className="py-6 sm:px-8">
-              <span className="text-2xl sm:text-4xl font-black text-slate-900 font-mono tabular-nums block">
-                100%
-              </span>
-              <span className="text-xs text-slate-600 mt-1 block font-medium">
-                Blindaje legal Ley CCyC 1512-1524 & AFIP
-              </span>
-            </div>
-
-            <div className="py-6 sm:pl-8">
-              <span className="text-2xl sm:text-4xl font-black text-[#107C41] font-mono tabular-nums block">
-                USD 45M+
-              </span>
-              <span className="text-xs text-slate-600 mt-1 block font-medium">
-                En flujos de caja y modelos evaluados
-              </span>
-            </div>
-          </div>
-        </div>
-      </section>
+      {/* Block 1: Hero Carousel Full-Width (Multi-slide, Video-enabled, Microsoft Clean Style) */}
+      <HeroCarousel 
+        onSelectTab={onSelectTab} 
+        onOpenConsultationModal={onOpenConsultationModal} 
+      />
 
       {/* Block 2: Executive YouTube Video Player (Tone: Soft Clean Gray #F8FAFC) */}
       <ExecutiveVideoSection />

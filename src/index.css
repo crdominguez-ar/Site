@@ -44,3 +44,13 @@
 ::-webkit-scrollbar-thumb:hover {
   background: rgba(148, 163, 184, 1);
 }
+
+@keyframes progressBar {
+  0% {
+    width: 0%;
+  }
+  100% {
+    width: 100%;
+  }
+}
+
