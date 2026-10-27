@@ -1,0 +1,6 @@
+{
+  "name": "Estudio Contable Domínguez & Lambrecht",
+  "description": "Plataforma integral de consultoría de negocios estratégica, tributaria y financiera liderada por el Cr. Carlos Rodrigo Domínguez en Trelew, Chubut.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
