@@ -1,7 +1,21 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { UserRole } from '../../types';
 import { BrandLogo } from '../Common/BrandLogo';
-import { MessageCircle } from 'lucide-react';
+import { 
+  MessageCircle, 
+  Menu, 
+  X, 
+  Home, 
+  Briefcase, 
+  Calculator, 
+  FileCheck, 
+  BookOpen, 
+  Lock, 
+  LayoutDashboard, 
+  Search,
+  ChevronRight,
+  ShieldAlert
+} from 'lucide-react';
 
 interface NavbarProps {
   currentTab: 'landing' | 'solutions' | 'simulators' | 'diagnostic' | 'blog' | 'portal' | 'crm' | 'seo' | 'dashboard';
@@ -18,136 +32,65 @@ export const Navbar: React.FC<NavbarProps> = ({
   setCurrentRole,
   onOpenConsultationModal,
 }) => {
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  const navItems = [
+    { id: 'landing', label: 'Inicio', icon: Home },
+    { id: 'solutions', label: 'Soluciones', icon: Briefcase },
+    { id: 'simulators', label: 'Simuladores', icon: Calculator },
+    { id: 'diagnostic', label: 'Diagnóstico', icon: FileCheck },
+    { id: 'blog', label: 'Blog & Podcast', icon: BookOpen },
+    { id: 'portal', label: 'Portal Clientes', icon: Lock },
+    { id: 'dashboard', label: 'Dashboard & CRM', icon: LayoutDashboard },
+    { id: 'seo', label: 'Auditoría SEO', icon: Search },
+  ] as const;
+
+  const handleNavClick = (tab: typeof navItems[number]['id']) => {
+    setCurrentTab(tab);
+    setIsMobileMenuOpen(false);
+  };
+
   return (
-    <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200 fluent-shadow-card w-full">
-      <div className="w-full px-6 sm:px-12 lg:px-20 h-16 flex items-center justify-between gap-6">
-        {/* Zone 1: Clean Executive Logo Cr Dominguez (Solo) */}
+    <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200 fluent-shadow-card w-full max-w-full">
+      <div className="w-full px-4 sm:px-8 lg:px-16 xl:px-20 h-16 flex items-center justify-between gap-4">
+        {/* Zone 1: Brand Logo Cr Dominguez (Solo) */}
         <button
           type="button"
-          onClick={() => setCurrentTab('landing')}
+          onClick={() => handleNavClick('landing')}
           className="flex items-center text-left whitespace-nowrap shrink-0 group focus:outline-none cursor-pointer"
           aria-label="Ir al inicio - Cr Dominguez"
         >
           <BrandLogo size="md" variant="light" showSubtitle={true} />
         </button>
 
-        {/* Zone 2: Navigation Links (Microsoft Pivot Tabs) */}
-        <nav className="hidden xl:flex items-center gap-1 text-xs font-semibold text-slate-600">
-          <button
-            type="button"
-            onClick={() => setCurrentTab('landing')}
-            className={`px-3 py-5 transition-colors whitespace-nowrap relative hover:text-slate-950 ${
-              currentTab === 'landing' ? 'text-slate-950 font-bold' : 'text-slate-600'
-            }`}
-          >
-            Inicio
-            {currentTab === 'landing' && (
-              <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#0078D4]" />
-            )}
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setCurrentTab('solutions')}
-            className={`px-3 py-5 transition-colors whitespace-nowrap relative hover:text-slate-950 ${
-              currentTab === 'solutions' ? 'text-slate-950 font-bold' : 'text-slate-600'
-            }`}
-          >
-            Soluciones
-            {currentTab === 'solutions' && (
-              <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#0078D4]" />
-            )}
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setCurrentTab('simulators')}
-            className={`px-3 py-5 transition-colors whitespace-nowrap relative hover:text-slate-950 ${
-              currentTab === 'simulators' ? 'text-slate-950 font-bold' : 'text-slate-600'
-            }`}
-          >
-            Simuladores
-            {currentTab === 'simulators' && (
-              <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#0078D4]" />
-            )}
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setCurrentTab('diagnostic')}
-            className={`px-3 py-5 transition-colors whitespace-nowrap relative hover:text-slate-950 ${
-              currentTab === 'diagnostic' ? 'text-slate-950 font-bold' : 'text-slate-600'
-            }`}
-          >
-            Diagnóstico
-            {currentTab === 'diagnostic' && (
-              <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#0078D4]" />
-            )}
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setCurrentTab('blog')}
-            className={`px-3 py-5 transition-colors whitespace-nowrap relative hover:text-slate-950 ${
-              currentTab === 'blog' ? 'text-slate-950 font-bold' : 'text-slate-600'
-            }`}
-          >
-            Blog & Podcast
-            {currentTab === 'blog' && (
-              <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#0078D4]" />
-            )}
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setCurrentTab('portal')}
-            className={`px-3 py-5 transition-colors whitespace-nowrap relative hover:text-slate-950 ${
-              currentTab === 'portal' ? 'text-slate-950 font-bold' : 'text-slate-600'
-            }`}
-          >
-            Portal Clientes
-            {currentTab === 'portal' && (
-              <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#0078D4]" />
-            )}
-          </button>
-
-          {/* Dashboard (with integrated CRM & Widgets) */}
-          <button
-            type="button"
-            onClick={() => setCurrentTab('dashboard')}
-            className={`px-3 py-5 transition-colors whitespace-nowrap relative hover:text-slate-950 flex items-center gap-1.5 ${
-              currentTab === 'dashboard' ? 'text-[#0078D4] font-bold' : 'text-slate-700'
-            }`}
-          >
-            <span className="w-2 h-2 rounded-full bg-[#0078D4]" />
-            <span>Dashboard</span>
-            {currentTab === 'dashboard' && (
-              <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#0078D4]" />
-            )}
-          </button>
-
-          {/* Control & Auditoría de Posicionamiento Orgánico */}
-          <button
-            type="button"
-            onClick={() => setCurrentTab('seo')}
-            title="Control & Auditoría de Posicionamiento Orgánico"
-            className={`px-3 py-5 transition-colors whitespace-nowrap relative hover:text-slate-950 flex items-center gap-1.5 ${
-              currentTab === 'seo' ? 'text-slate-950 font-bold' : 'text-slate-600'
-            }`}
-          >
-            <span className="hidden 2xl:inline">Control & Auditoría de Posicionamiento Orgánico</span>
-            <span className="2xl:hidden">Control & Auditoría SEO</span>
-            {currentTab === 'seo' && (
-              <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#0078D4]" />
-            )}
-          </button>
+        {/* Zone 2: Desktop Navigation Links (Microsoft Pivot Tabs) - hidden on mobile/tablet */}
+        <nav className="hidden xl:flex items-center gap-0.5 text-xs font-semibold text-slate-600">
+          {navItems.map((item) => {
+            const isActive = currentTab === item.id;
+            return (
+              <button
+                key={item.id}
+                type="button"
+                onClick={() => handleNavClick(item.id)}
+                className={`px-3 py-5 transition-colors whitespace-nowrap relative hover:text-slate-950 flex items-center gap-1.5 cursor-pointer ${
+                  isActive ? 'text-slate-950 font-bold' : 'text-slate-600'
+                }`}
+              >
+                {item.id === 'dashboard' && <span className="w-2 h-2 rounded-full bg-[#0078D4]" />}
+                <span>{item.label}</span>
+                {isActive && (
+                  <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#0078D4]" />
+                )}
+              </button>
+            );
+          })}
         </nav>
 
-        {/* Zone 3: 1 primary action + role toggle */}
-        <div className="flex items-center gap-3 shrink-0">
-          {/* Tenant role selector with comprehensive RBAC hierarchy */}
+        {/* Zone 3: Desktop Actions & Role Selector */}
+        <div className="hidden sm:flex items-center gap-2.5 shrink-0">
+          {/* Tenant role selector */}
           <div className="flex items-center bg-slate-50 border border-slate-200 rounded-md px-2.5 py-1.5 text-xs text-slate-700 shadow-xs">
-            <span className="hidden sm:inline text-[11px] text-slate-500 font-mono mr-1.5">
+            <span className="hidden md:inline text-[11px] text-slate-500 font-mono mr-1.5">
               Rol:
             </span>
             <select
@@ -168,11 +111,11 @@ export const Navbar: React.FC<NavbarProps> = ({
             href="https://wa.me/5492804567890?text=Hola%20Cr.%20Dom%C3%ADnguez,%20quisiera%20realizar%20una%20consulta%20profesional"
             target="_blank"
             rel="noopener noreferrer"
-            className="hidden sm:inline-flex items-center gap-1.5 px-3 py-2 text-xs font-bold text-white bg-[#25D366] hover:bg-[#20ba59] active:bg-[#128C7E] rounded-md transition-colors whitespace-nowrap shrink-0 shadow-sm"
+            className="hidden lg:inline-flex items-center gap-1.5 px-3 py-2 text-xs font-bold text-white bg-[#25D366] hover:bg-[#20ba59] active:bg-[#128C7E] rounded-md transition-colors whitespace-nowrap shrink-0 shadow-sm"
             title="Escribir por WhatsApp directamente al Cr. Carlos Domínguez"
           >
             <MessageCircle className="w-3.5 h-3.5" />
-            <span className="hidden lg:inline">WhatsApp</span>
+            <span>WhatsApp</span>
           </a>
 
           {/* Microsoft Azure Blue Primary Button */}
@@ -184,67 +127,102 @@ export const Navbar: React.FC<NavbarProps> = ({
             Solicitar Asesoría
           </button>
         </div>
+
+        {/* Mobile Hamburger Toggle Button (Visible on < xl) */}
+        <div className="flex xl:hidden items-center gap-2">
+          <a
+            href="https://wa.me/5492804567890?text=Hola%20Cr.%20Dom%C3%ADnguez,%20quisiera%20realizar%20una%20consulta%20profesional"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="p-2 bg-[#25D366] text-white rounded-md transition-colors shadow-sm"
+            aria-label="WhatsApp"
+          >
+            <MessageCircle className="w-4 h-4" />
+          </a>
+
+          <button
+            type="button"
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            className="p-2 rounded-md border border-slate-200 text-slate-700 hover:text-slate-950 hover:bg-slate-100 transition-colors cursor-pointer"
+            aria-label={isMobileMenuOpen ? 'Cerrar menú' : 'Abrir menú'}
+          >
+            {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+          </button>
+        </div>
       </div>
 
-      {/* Mobile secondary navigation strip */}
-      <div className="xl:hidden flex items-center justify-around px-2 py-2 bg-slate-50 border-t border-slate-200 text-[11px] font-semibold text-slate-600 overflow-x-auto gap-1">
-        <button
-          type="button"
-          onClick={() => setCurrentTab('landing')}
-          className={`px-2 py-1 whitespace-nowrap ${currentTab === 'landing' ? 'text-[#0078D4] font-bold' : ''}`}
-        >
-          Inicio
-        </button>
-        <button
-          type="button"
-          onClick={() => setCurrentTab('solutions')}
-          className={`px-2 py-1 whitespace-nowrap ${currentTab === 'solutions' ? 'text-[#0078D4] font-bold' : ''}`}
-        >
-          Soluciones
-        </button>
-        <button
-          type="button"
-          onClick={() => setCurrentTab('simulators')}
-          className={`px-2 py-1 whitespace-nowrap ${currentTab === 'simulators' ? 'text-[#0078D4] font-bold' : ''}`}
-        >
-          Simuladores
-        </button>
-        <button
-          type="button"
-          onClick={() => setCurrentTab('diagnostic')}
-          className={`px-2 py-1 whitespace-nowrap ${currentTab === 'diagnostic' ? 'text-[#0078D4] font-bold' : ''}`}
-        >
-          Diagnóstico
-        </button>
-        <button
-          type="button"
-          onClick={() => setCurrentTab('blog')}
-          className={`px-2 py-1 whitespace-nowrap ${currentTab === 'blog' ? 'text-[#0078D4] font-bold' : ''}`}
-        >
-          Blog
-        </button>
-        <button
-          type="button"
-          onClick={() => setCurrentTab('portal')}
-          className={`px-2 py-1 whitespace-nowrap ${currentTab === 'portal' ? 'text-[#0078D4] font-bold' : ''}`}
-        >
-          Portal
-        </button>
-        <button
-          type="button"
-          onClick={() => setCurrentTab('dashboard')}
-          className={`px-2 py-1 whitespace-nowrap ${currentTab === 'dashboard' ? 'text-[#0078D4] font-bold' : ''}`}
-        >
-          Dashboard
-        </button>
-        <button
-          type="button"
-          onClick={() => setCurrentTab('seo')}
-          className={`px-2 py-1 whitespace-nowrap ${currentTab === 'seo' ? 'text-[#0078D4] font-bold' : ''}`}
-        >
-          Auditoría SEO
-        </button>
-      </div>
+      {/* Mobile Drawer / Slide-Down Navigation */}
+      {isMobileMenuOpen && (
+        <div className="xl:hidden w-full bg-white border-b border-slate-200 px-4 py-5 shadow-2xl space-y-4 animate-in slide-in-from-top-2 duration-200">
+          {/* Navigation Links Grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
+            {navItems.map((item) => {
+              const Icon = item.icon;
+              const isActive = currentTab === item.id;
+              return (
+                <button
+                  key={item.id}
+                  type="button"
+                  onClick={() => handleNavClick(item.id)}
+                  className={`w-full flex items-center justify-between px-3.5 py-3 rounded-lg text-xs font-bold transition-all text-left cursor-pointer min-h-[44px] ${
+                    isActive
+                      ? 'bg-blue-50 text-[#0078D4] border border-blue-200 shadow-xs'
+                      : 'text-slate-700 hover:bg-slate-50 border border-transparent'
+                  }`}
+                >
+                  <div className="flex items-center gap-2.5">
+                    <Icon className={`w-4 h-4 ${isActive ? 'text-[#0078D4]' : 'text-slate-500'}`} />
+                    <span>{item.label}</span>
+                  </div>
+                  <ChevronRight className={`w-4 h-4 ${isActive ? 'text-[#0078D4]' : 'text-slate-400'}`} />
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Role selector on mobile */}
+          <div className="p-3 bg-slate-50 border border-slate-200 rounded-lg space-y-1.5">
+            <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-slate-500 block">
+              Rol Activo del Sistema:
+            </span>
+            <select
+              value={currentRole}
+              onChange={(e) => setCurrentRole(e.target.value as UserRole)}
+              className="w-full bg-white border border-slate-300 rounded-md px-3 py-2 text-xs font-semibold text-slate-900 focus:outline-none focus:border-[#0078D4]"
+            >
+              <option value="super_admin">Super Admin (Cr. Domínguez)</option>
+              <option value="admin">Admin de Gestión</option>
+              <option value="consultor_staff">Consultor Staff Senior</option>
+              <option value="auditor_externo">Auditor Externo CCyC</option>
+              <option value="cliente">Cliente (Portal Privado)</option>
+            </select>
+          </div>
+
+          {/* Mobile CTA Buttons */}
+          <div className="flex flex-col gap-2 pt-2">
+            <button
+              type="button"
+              onClick={() => {
+                setIsMobileMenuOpen(false);
+                onOpenConsultationModal();
+              }}
+              className="w-full py-3 text-xs font-bold text-white bg-[#0078D4] hover:bg-[#106EBE] active:bg-[#005A9E] rounded-lg transition-colors text-center shadow-sm cursor-pointer min-h-[44px]"
+            >
+              Solicitar Asesoría Estratégica
+            </button>
+
+            <a
+              href="https://wa.me/5492804567890?text=Hola%20Cr.%20Dom%C3%ADnguez,%20quisiera%20realizar%20una%20consulta%20profesional"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="w-full py-2.5 text-xs font-bold text-white bg-[#25D366] hover:bg-[#20ba59] active:bg-[#128C7E] rounded-lg transition-colors text-center shadow-sm flex items-center justify-center gap-2 cursor-pointer min-h-[44px]"
+            >
+              <MessageCircle className="w-4 h-4" />
+              <span>Chatear por WhatsApp Directo</span>
+            </a>
+          </div>
+        </div>
+      )}
     </header>
   );
 };

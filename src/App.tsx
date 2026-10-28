@@ -65,7 +65,7 @@ export default function App() {
         )}
 
         {currentTab === 'solutions' && (
-          <div className="w-full px-6 sm:px-12 lg:px-20 py-10 sm:py-14">
+          <div className="w-full px-4 sm:px-8 lg:px-16 xl:px-20 py-8 sm:py-12">
             <SolutionsView
               onOpenConsultationModal={() => setIsConsultationModalOpen(true)}
               onOpenDiagnostic={() => handleTabChange('diagnostic')}
@@ -75,13 +75,13 @@ export default function App() {
         )}
 
         {currentTab === 'simulators' && (
-          <div className="w-full px-6 sm:px-12 lg:px-20 py-10 sm:py-14">
+          <div className="w-full px-4 sm:px-8 lg:px-16 xl:px-20 py-8 sm:py-12">
             <CalculatorsSuite />
           </div>
         )}
 
         {currentTab === 'diagnostic' && (
-          <div className="w-full px-6 sm:px-12 lg:px-20 py-10 sm:py-14 space-y-6">
+          <div className="w-full px-4 sm:px-8 lg:px-16 xl:px-20 py-8 sm:py-12 space-y-6">
             <div className="text-center space-y-2 mb-8">
               <span className="text-xs font-mono font-semibold uppercase tracking-wider text-[#0078D4]">
                 Auditoría Inicial Automatizada
@@ -98,13 +98,13 @@ export default function App() {
         )}
 
         {currentTab === 'blog' && (
-          <div className="w-full px-6 sm:px-12 lg:px-20 py-10 sm:py-14">
+          <div className="w-full px-4 sm:px-8 lg:px-16 xl:px-20 py-8 sm:py-12">
             <BlogView />
           </div>
         )}
 
         {currentTab === 'portal' && (
-          <div className="w-full px-6 sm:px-12 lg:px-20 py-10 sm:py-14">
+          <div className="w-full px-4 sm:px-8 lg:px-16 xl:px-20 py-8 sm:py-12">
             <ClientPortal />
           </div>
         )}
@@ -120,7 +120,7 @@ export default function App() {
         )}
 
         {currentTab === 'seo' && (
-          <div className="w-full px-6 sm:px-12 lg:px-20 py-10 sm:py-14">
+          <div className="w-full px-4 sm:px-8 lg:px-16 xl:px-20 py-8 sm:py-12">
             <SEOControlPanel />
           </div>
         )}

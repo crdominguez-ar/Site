@@ -43,11 +43,11 @@ import {
   DashboardWidgetConfig, 
   WidgetId 
 } from '../../types';
-import { BUSINESS_VERTICALS } from '../../data/verticals';
 import { InternalCRM } from '../CRM/InternalCRM';
+import { WebCMSEditor } from './WebCMSEditor';
 
 interface WidgetizableDashboardProps {
-  initialView?: 'widgets' | 'crm';
+  initialView?: 'widgets' | 'crm' | 'cms';
   onNavigateTab: (tab: 'landing' | 'solutions' | 'simulators' | 'diagnostic' | 'blog' | 'portal' | 'crm' | 'seo') => void;
   onOpenConsultationModal: () => void;
 }
@@ -68,7 +68,7 @@ export const WidgetizableDashboard: React.FC<WidgetizableDashboardProps> = ({
   onNavigateTab, 
   onOpenConsultationModal 
 }) => {
-  const [dashboardView, setDashboardView] = useState<'widgets' | 'crm'>(initialView);
+  const [dashboardView, setDashboardView] = useState<'widgets' | 'crm' | 'cms'>(initialView);
 
   useEffect(() => {
     if (initialView) {
@@ -305,7 +305,7 @@ export const WidgetizableDashboard: React.FC<WidgetizableDashboardProps> = ({
   return (
     <div className="w-full space-y-8 bg-[#F8FAFC] pb-16">
       {/* Top Executive Header */}
-      <div className="w-full bg-white border-b border-slate-200 px-6 sm:px-12 lg:px-20 py-8 shadow-xs">
+      <div className="w-full bg-white border-b border-slate-200 px-4 sm:px-8 lg:px-16 xl:px-20 py-6 sm:py-8 shadow-xs">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
           <div>
             <div className="flex items-center gap-2 text-xs font-mono font-bold text-[#0078D4] uppercase tracking-wider mb-1.5">
@@ -324,8 +324,8 @@ export const WidgetizableDashboard: React.FC<WidgetizableDashboardProps> = ({
 
           {/* Action Toolbar: View Switcher, Customizer & Role Identity */}
           <div className="flex flex-wrap items-center gap-3">
-            {/* View Switcher: Widgets vs CRM Integrado */}
-            <div className="flex items-center bg-slate-100 p-1 rounded-lg border border-slate-200 shadow-2xs">
+            {/* View Switcher: Widgets vs CRM vs CMS */}
+            <div className="flex flex-wrap items-center bg-slate-100 p-1 rounded-lg border border-slate-200 shadow-2xs">
               <button
                 type="button"
                 onClick={() => setDashboardView('widgets')}
@@ -352,6 +352,18 @@ export const WidgetizableDashboard: React.FC<WidgetizableDashboardProps> = ({
                 <span className="ml-0.5 px-1.5 py-0.2 bg-blue-100 text-[#0078D4] rounded-full text-[10px] font-bold">
                   {leads.length}
                 </span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setDashboardView('cms')}
+                className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
+                  dashboardView === 'cms'
+                    ? 'bg-white text-[#0078D4] shadow-xs'
+                    : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                <Sliders className="w-3.5 h-3.5 text-[#0078D4]" />
+                <span>Editor Web (CMS)</span>
               </button>
             </div>
 
@@ -457,15 +469,36 @@ export const WidgetizableDashboard: React.FC<WidgetizableDashboardProps> = ({
         )}
       </div>
 
-      {/* Main Content: CRM Integrado or Widgets Board */}
-      {dashboardView === 'crm' ? (
-        <div className="w-full px-6 sm:px-12 lg:px-20 space-y-4">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white border border-slate-200 rounded-xl px-5 py-3 shadow-xs">
+      {/* Main Content: CMS, CRM Integrado or Widgets Board */}
+      {dashboardView === 'cms' ? (
+        <div className="w-full px-4 sm:px-8 lg:px-16 xl:px-20 space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white border border-slate-200 rounded-xl px-4 sm:px-5 py-3 shadow-xs">
+            <div className="flex items-center gap-2 text-xs font-semibold text-slate-700">
+              <Sliders className="w-4 h-4 text-[#0078D4]" />
+              <span>Gestor de Contenido Web & Sliders (CMS)</span>
+              <span className="hidden sm:inline text-slate-400">·</span>
+              <span className="hidden sm:inline text-slate-500 font-normal">Edición en tiempo real de textos, fotos y enlaces de la web</span>
+            </div>
+            <button
+              type="button"
+              onClick={() => setDashboardView('widgets')}
+              className="text-xs font-bold text-[#0078D4] hover:underline flex items-center gap-1.5 cursor-pointer self-start sm:self-auto"
+            >
+              <LayoutDashboard className="w-3.5 h-3.5" />
+              <span>Volver a Vista Widgets</span>
+            </button>
+          </div>
+
+          <WebCMSEditor onPreviewSite={() => onNavigateTab('landing')} />
+        </div>
+      ) : dashboardView === 'crm' ? (
+        <div className="w-full px-4 sm:px-8 lg:px-16 xl:px-20 space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white border border-slate-200 rounded-xl px-4 sm:px-5 py-3 shadow-xs">
             <div className="flex items-center gap-2 text-xs font-semibold text-slate-700">
               <Users className="w-4 h-4 text-[#0078D4]" />
               <span>Módulo CRM Integrado</span>
-              <span className="text-slate-400">·</span>
-              <span className="text-slate-500 font-normal">Pipeline de Oportunidades & Gestión de Clientes en Vivo</span>
+              <span className="hidden sm:inline text-slate-400">·</span>
+              <span className="hidden sm:inline text-slate-500 font-normal">Pipeline de Oportunidades & Gestión de Clientes en Vivo</span>
             </div>
             <button
               type="button"
@@ -480,7 +513,7 @@ export const WidgetizableDashboard: React.FC<WidgetizableDashboardProps> = ({
           <InternalCRM currentRole={currentUser.role} />
         </div>
       ) : (
-        <div className="w-full px-6 sm:px-12 lg:px-20 space-y-6">
+        <div className="w-full px-4 sm:px-8 lg:px-16 xl:px-20 space-y-6">
           
           {/* ROW 1: CRM Pipeline & Quick Actions (Full width) */}
           {isWidgetVisible('crm_pipeline') && (

@@ -67,7 +67,7 @@ export const SolutionsView: React.FC<SolutionsViewProps> = ({
       </div>
 
       {/* Solutions Navigation Grid (Microsoft Command Pivot Tabs) */}
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2.5 sm:gap-3">
         {(Object.keys(BUSINESS_VERTICALS) as BusinessVertical[]).map((vKey) => {
           const item = BUSINESS_VERTICALS[vKey];
           const isSelected = selectedVertical === vKey;

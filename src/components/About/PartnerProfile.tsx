@@ -1,49 +1,59 @@
-import React from 'react';
-import { MapPin } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { MapPin, Shield, CheckCircle } from 'lucide-react';
+import carlosPortrait from '../../assets/images/carlos_dominguez_portrait_1793059909952.jpg';
+import { contentService, SiteContent } from '../../lib/contentService';
 
 export const PartnerProfile: React.FC = () => {
+  const [content, setContent] = useState<SiteContent>(() => contentService.getContent());
+
+  useEffect(() => {
+    const unsub = contentService.subscribe((updated) => setContent(updated));
+    return () => unsub();
+  }, []);
+
+  const profile = content.profile;
+
   return (
     <div id="estudio" className="w-full">
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
         {/* Left: Portrait */}
         <div className="lg:col-span-4 flex flex-col items-center lg:items-start text-center lg:text-left">
-          <div className="relative w-64 h-64 sm:w-72 sm:h-72 rounded-2xl overflow-hidden border border-slate-200 shadow-md mb-4 group bg-white">
+          <div className="relative w-56 h-56 sm:w-64 sm:h-64 lg:w-72 lg:h-72 rounded-2xl overflow-hidden border border-slate-200 shadow-md mb-4 group bg-white">
             <img
-              src="/src/assets/images/carlos_dominguez_portrait_1793059909952.jpg"
-              alt="Cr. Carlos Rodrigo Domínguez"
-              referrerPolicy="no-referrer"
+              src={carlosPortrait}
+              alt={profile.founderName}
               className="w-full h-full object-cover object-top transition-transform duration-500 group-hover:scale-105"
             />
           </div>
 
           <h3 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
-            Cr. Carlos Rodrigo Domínguez
+            {profile.founderName}
           </h3>
           <p className="text-xs text-[#0078D4] font-mono mt-0.5 font-semibold">
-            Socio Director · Matrícula Profesional CPCE Chubut
+            {profile.matricula}
           </p>
           <div className="flex items-center gap-1.5 text-xs text-slate-500 mt-2">
-            <MapPin className="w-3.5 h-3.5 text-slate-500" />
+            <MapPin className="w-3.5 h-3.5 text-slate-500 shrink-0" />
             <span>Trelew, Chubut, Patagonia Argentina</span>
           </div>
         </div>
 
         {/* Right: Editorial Bio and Strategic Manifest */}
-        <div className="lg:col-span-8 space-y-5">
+        <div className="lg:col-span-8 space-y-4 sm:space-y-5">
           <div className="text-xs uppercase tracking-wider text-[#0078D4] font-semibold font-mono">
-            Manifiesto & Liderazgo
+            {profile.badge}
           </div>
 
-          <h2 className="text-2xl sm:text-4xl font-extrabold text-slate-900 tracking-tight text-balance leading-tight">
-            "La contabilidad que genera valor estratégico, no meras declaraciones juradas a mes vencido."
+          <h2 className="text-xl sm:text-3xl lg:text-4xl font-extrabold text-slate-900 tracking-tight text-balance leading-tight">
+            {profile.quote}
           </h2>
 
-          <p className="text-sm sm:text-base text-slate-600 leading-relaxed font-normal">
-            En un entorno macroeconómico dinámico y en plena revolución de modelos autónomos de inteligencia artificial, el rol del contador y director financiero debe elevarse. En <strong className="text-slate-900 font-semibold">Cr Dominguez · Consultoría Estratégica</strong> no operamos como una gestoría administrativa tradicional: actuamos como socios estratégicos de las empresas que impulsan el desarrollo de la Patagonia y el ecosistema global.
+          <p className="text-xs sm:text-sm lg:text-base text-slate-600 leading-relaxed font-normal">
+            {profile.manifesto}
           </p>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
-            <div className="p-5 bg-white border border-slate-200 rounded-xl shadow-sm">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 pt-2">
+            <div className="p-4 sm:p-5 bg-white border border-slate-200 rounded-xl shadow-xs">
               <span className="text-xs font-bold text-slate-900 block mb-1">
                 Rigor Normativo & Jurídico
               </span>
@@ -52,7 +62,7 @@ export const PartnerProfile: React.FC = () => {
               </p>
             </div>
 
-            <div className="p-5 bg-white border border-slate-200 rounded-xl shadow-sm">
+            <div className="p-4 sm:p-5 bg-white border border-slate-200 rounded-xl shadow-xs">
               <span className="text-xs font-bold text-slate-900 block mb-1">
                 CFO & Modelado Financiero
               </span>
@@ -60,14 +70,6 @@ export const PartnerProfile: React.FC = () => {
                 Dirección financiera basada en datos: flujos de fondos descontados (VAN/TIR), margen de contribución, preservación de caja y presupuestos dinámicos a 12 meses.
               </p>
             </div>
-          </div>
-
-          <div className="pt-3 flex flex-wrap items-center gap-4 text-xs text-slate-500 border-t border-slate-200">
-            <span>Sede Central: Trelew, Chubut</span>
-            <span>·</span>
-            <span>Atención Directa: crdominguez.ar@gmail.com</span>
-            <span>·</span>
-            <span className="text-[#0078D4] font-semibold">Consultoría Presencial & Remota Latam</span>
           </div>
         </div>
       </div>
