@@ -16,7 +16,7 @@ export const CalculatorsSuite: React.FC = () => {
           <div className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-[#0078D4] font-mono mb-1">
             <span>Herramientas Analíticas</span>
             <span>·</span>
-            <span>Estudio Domínguez & Lambrecht</span>
+            <span>Cr Dominguez</span>
           </div>
           <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
             Simuladores Interactivos de Viabilidad Económica

@@ -6,14 +6,14 @@ import {
 
 export const SEOControlPanel: React.FC = () => {
   const [metaTitle, setMetaTitle] = useState<string>(
-    'Estudio Contable Domínguez & Lambrecht | Consultoría Estratégica & CFO'
+    'Cr Dominguez | Consultoría Estratégica & Dirección Financiera CFO'
   );
   const [metaDescription, setMetaDescription] = useState<string>(
-    'Consultoría financiera, tributaria y de negocios estratégica en Trelew, Chubut. Liderado por el Cr. Carlos Rodrigo Domínguez. Costos PyME, SaaS, Franquicias Ley CCyC y Empresas 100% IA.'
+    'Consultoría financiera, tributaria y de negocios estratégica en Trelew, Chubut. Liderado por el Cr. Carlos Rodrigo Domínguez. Costos PyME, SaaS, Franquicias Ley CCyC y Nuevas Economías.'
   );
-  const [canonicalUrl, setCanonicalUrl] = useState<string>('https://dominguez-lambrecht.com.ar');
+  const [canonicalUrl, setCanonicalUrl] = useState<string>('https://crdominguez.ar');
   const [keywords, setKeywords] = useState<string>(
-    'estudio contable trelew, carlos rodrigo dominguez, consultoria negocios chubut, cfo fraccional patagonia, franquicias ccyc 1512, factura e exportacion servicios, costos pyme, empresas ia zhc'
+    'cr dominguez, estudio contable trelew, carlos rodrigo dominguez, consultoria negocios chubut, cfo fraccional patagonia, franquicias ccyc 1512, factura e exportacion servicios, costos pyme'
   );
   
   const [activePreview, setActivePreview] = useState<'google' | 'social' | 'schema'>('google');
@@ -328,7 +328,7 @@ export const SEOControlPanel: React.FC = () => {
                 <pre>{`{
   "@context": "https://schema.org",
   "@type": "AccountingService",
-  "name": "Estudio Contable Domínguez & Lambrecht",
+  "name": "Cr Dominguez - Consultoría Estratégica & CFO",
   "founder": {
     "@type": "Person",
     "name": "Carlos Rodrigo Domínguez",

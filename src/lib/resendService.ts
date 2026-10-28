@@ -1,6 +1,6 @@
 /**
  * Resend.com Free Tier Email Integration Service
- * Estudio Contable Domínguez & Lambrecht
+ * Cr Dominguez · Consultoría Estratégica & CFO
  * Plan Free: 3,000 emails/mes · 100 emails/día
  */
 
@@ -9,7 +9,7 @@ import { ResendConfig, ResendEmailLog, Lead, DeliverableReport } from '../types'
 const DEFAULT_CONFIG: ResendConfig = {
   apiKey: 're_patagonia_free_tier_live_key',
   senderEmail: 'onboarding@resend.dev',
-  senderName: 'Estudio Domínguez & Lambrecht',
+  senderName: 'Cr Dominguez · Consultoría Estratégica',
   dailyQuotaUsed: 14,
   dailyQuotaMax: 100,
   monthlyQuotaUsed: 328,
@@ -191,7 +191,7 @@ class ResendService {
     const subject = `[Resend Free] Nuevo Lead Calificado: ${lead.companyName} (${lead.priority.toUpperCase()})`;
     const html = `
       <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e2e8f0; rounded: 8px;">
-        <h2 style="color: #0078D4; margin-top: 0;">Nuevo Lead en Estudio Domínguez & Lambrecht</h2>
+        <h2 style="color: #0078D4; margin-top: 0;">Nuevo Lead en Cr Dominguez</h2>
         <p><strong>Empresa:</strong> ${lead.companyName}</p>
         <p><strong>Contacto:</strong> ${lead.contactName} (${lead.email})</p>
         <p><strong>Teléfono:</strong> ${lead.phone}</p>
@@ -233,7 +233,7 @@ class ResendService {
           'csanmartin@pesquerasancarlos.com.ar',
         ];
 
-    const subject = `Nuevo Análisis: ${post.title} · Estudio D&L`;
+    const subject = `Nuevo Análisis: ${post.title} · Cr Dominguez`;
     const html = `
       <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 620px; margin: 0 auto; padding: 24px; border: 1px solid #e2e8f0; border-radius: 8px;">
         <div style="margin-bottom: 20px;">
@@ -251,7 +251,7 @@ class ResendService {
         </div>
         <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 28px 0 16px;" />
         <p style="font-size: 11px; color: #94a3b8; text-align: center;">
-          Estudio Contable Domínguez & Lambrecht · Consultoría Estratégica & Dirección Financiera.<br />
+          Cr Dominguez · Consultoría Estratégica & Dirección Financiera.<br />
           Distribución gestionada con Resend.com (Plan Free).
         </p>
       </div>

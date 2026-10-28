@@ -468,7 +468,7 @@ export const BlogView: React.FC = () => {
             </div>
 
             <div className="pt-2 flex justify-between items-center text-xs text-slate-500">
-              <span>Estudio Contable Domínguez & Lambrecht (Trelew, Chubut)</span>
+              <span>Cr Dominguez · Consultoría Estratégica (Trelew, Chubut)</span>
               <button
                 type="button"
                 onClick={() => setActivePost(null)}

@@ -271,7 +271,7 @@ export const FranchiseEvaluationCalculator: React.FC = () => {
 
           <div className="pt-4 border-t border-slate-200 mt-4 flex items-center justify-between text-xs text-slate-500">
             <span>Área: Derecho & Finanzas Corporativas</span>
-            <span className="text-[#0078D4] font-medium">Estudio Domínguez & Lambrecht</span>
+            <span className="text-[#0078D4] font-medium">Cr Dominguez</span>
           </div>
         </div>
       </div>

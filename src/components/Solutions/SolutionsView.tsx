@@ -37,7 +37,7 @@ export const SolutionsView: React.FC<SolutionsViewProps> = ({
           <div className="flex items-center gap-2 text-xs font-mono font-semibold uppercase tracking-wider text-[#0078D4]">
             <span>Soluciones Estratégicas</span>
             <span>·</span>
-            <span>Estudio Contable Domínguez & Lambrecht</span>
+            <span>Cr Dominguez</span>
           </div>
           <h1 className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight">
             Ingeniería Financiera, Tributaria & Modelos de Negocio

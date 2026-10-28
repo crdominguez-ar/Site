@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Play, Video, Settings2, CheckCircle2 } from 'lucide-react';
+import boardroomImg from '../../assets/images/strategic_financial_boardroom_1793059909387.jpg';
 
 export const ExecutiveVideoSection: React.FC = () => {
   // Default high-caliber business/finance overview video, with user-customizable ID
@@ -80,8 +81,8 @@ export const ExecutiveVideoSection: React.FC = () => {
               {!isPlaying ? (
                 <div className="relative w-full h-full group cursor-pointer" onClick={() => setIsPlaying(true)}>
                   <img
-                    src="/src/assets/images/strategic_financial_boardroom_1793059909387.jpg"
-                    alt="Presentación Ejecutiva Estudio Domínguez & Lambrecht"
+                    src={boardroomImg}
+                    alt="Presentación Ejecutiva · Cr Dominguez"
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-slate-900/30 to-transparent" />

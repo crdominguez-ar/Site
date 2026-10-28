@@ -125,7 +125,7 @@ export const InteractiveDiagnostic: React.FC<InteractiveDiagnosticProps> = ({
                 Paso 1: Selecciona la vertical que mejor describe tu actividad
               </h3>
               <p className="text-sm text-slate-600">
-                Cada modelo de negocio en Estudio Domínguez & Lambrecht cuenta con una metodología financiera específica.
+                Cada modelo de negocio en Cr Dominguez cuenta con una metodología financiera específica.
               </p>
             </div>
 
@@ -426,7 +426,7 @@ export const InteractiveDiagnostic: React.FC<InteractiveDiagnosticProps> = ({
                     Diagnóstico Inicial Generado con Éxito
                   </h3>
                   <p className="text-xs text-slate-500">
-                    Ingresado en el CRM de Estudio Contable Domínguez & Lambrecht
+                    Ingresado en el CRM Ejecutivo de Cr Dominguez
                   </p>
                 </div>
               </div>

@@ -174,8 +174,8 @@ export const WidgetizableDashboard: React.FC<WidgetizableDashboardProps> = ({
     try {
       const res = await resendService.sendEmail({
         to: [testEmailTo],
-        subject: 'Verificación de Integración Resend.com · Estudio D&L',
-        text: 'La conexión con Resend.com (Plan Free) está operando correctamente desde el Estudio Contable Domínguez & Lambrecht.',
+        subject: 'Verificación de Integración Resend.com · Cr Dominguez',
+        text: 'La conexión con Resend.com (Plan Free) está operando correctamente desde Cr Dominguez.',
         html: `
           <div style="font-family: sans-serif; padding: 20px; border: 1px solid #e2e8f0; border-radius: 8px;">
             <h3 style="color: #0078D4;">Prueba Exitosa de Resend.com</h3>
@@ -1129,7 +1129,7 @@ export const WidgetizableDashboard: React.FC<WidgetizableDashboardProps> = ({
                         </td>
 
                         <td className="py-3 px-4 text-slate-600 font-medium">
-                          {user.department || user.companyName || 'Estudio Domínguez & Lambrecht'}
+                          {user.department || user.companyName || 'Cr Dominguez · Consultoría Estratégica'}
                         </td>
 
                         <td className="py-3 px-4">

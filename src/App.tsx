@@ -16,6 +16,7 @@ import { InternalCRM } from './components/CRM/InternalCRM';
 import { SEOControlPanel } from './components/SEO/SEOControlPanel';
 import { WidgetizableDashboard } from './components/Dashboard/WidgetizableDashboard';
 import { ConsultationModal } from './components/Modals/ConsultationModal';
+import { WhatsAppButton } from './components/Common/WhatsAppButton';
 import { UserRole } from './types';
 import { userService } from './lib/userService';
 
@@ -136,6 +137,9 @@ export default function App() {
 
       {/* Footer */}
       <Footer onNavigate={handleTabChange} />
+
+      {/* Floating WhatsApp Direct Connect Button */}
+      <WhatsAppButton />
     </div>
   );
 }

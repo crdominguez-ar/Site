@@ -75,7 +75,7 @@ export const ConsultationModal: React.FC<ConsultationModalProps> = ({ isOpen, on
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <span className="text-xs uppercase tracking-wider text-[#0078D4] font-mono font-semibold">
-                Estudio Contable Domínguez & Lambrecht
+                Cr Dominguez · Consultoría Estratégica
               </span>
               <h3 className="text-xl font-bold text-slate-900 mt-1">
                 Solicitud de Asesoría Estratégica

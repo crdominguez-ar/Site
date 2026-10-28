@@ -1,5 +1,7 @@
 import React from 'react';
 import { UserRole } from '../../types';
+import { BrandLogo } from '../Common/BrandLogo';
+import { MessageCircle } from 'lucide-react';
 
 interface NavbarProps {
   currentTab: 'landing' | 'solutions' | 'simulators' | 'diagnostic' | 'blog' | 'portal' | 'crm' | 'seo' | 'dashboard';
@@ -19,24 +21,14 @@ export const Navbar: React.FC<NavbarProps> = ({
   return (
     <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200 fluent-shadow-card w-full">
       <div className="w-full px-6 sm:px-12 lg:px-20 h-16 flex items-center justify-between gap-6">
-        {/* Zone 1: Clean Corporate Emblem D&L and Wordmark */}
+        {/* Zone 1: Clean Executive Logo Cr Dominguez (Solo) */}
         <button
           type="button"
           onClick={() => setCurrentTab('landing')}
-          className="flex items-center gap-3 text-left whitespace-nowrap shrink-0 group focus:outline-none"
+          className="flex items-center text-left whitespace-nowrap shrink-0 group focus:outline-none cursor-pointer"
+          aria-label="Ir al inicio - Cr Dominguez"
         >
-          <div className="w-8 h-8 rounded bg-gradient-to-br from-[#0078D4] to-[#005A9E] flex items-center justify-center text-white font-black text-xs tracking-wider shadow-sm">
-            D&L
-          </div>
-
-          <div className="flex items-baseline gap-2">
-            <span className="text-base font-bold tracking-tight text-slate-900 group-hover:text-[#0078D4] transition-colors">
-              Domínguez & Lambrecht
-            </span>
-            <span className="hidden sm:inline text-xs text-slate-500 font-mono">
-              | Consultoría Estratégica
-            </span>
-          </div>
+          <BrandLogo size="md" variant="light" showSubtitle={true} />
         </button>
 
         {/* Zone 2: Navigation Links (Microsoft Pivot Tabs) */}
@@ -156,7 +148,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           {/* Tenant role selector with comprehensive RBAC hierarchy */}
           <div className="flex items-center bg-slate-50 border border-slate-200 rounded-md px-2.5 py-1.5 text-xs text-slate-700 shadow-xs">
             <span className="hidden sm:inline text-[11px] text-slate-500 font-mono mr-1.5">
-              Rol Activo:
+              Rol:
             </span>
             <select
               value={currentRole}
@@ -164,12 +156,24 @@ export const Navbar: React.FC<NavbarProps> = ({
               className="bg-transparent text-slate-900 text-xs font-semibold focus:outline-none cursor-pointer"
             >
               <option value="super_admin" className="bg-white text-slate-900">Super Admin (Cr. Domínguez)</option>
-              <option value="admin" className="bg-white text-slate-900">Admin (Cra. Lambrecht)</option>
+              <option value="admin" className="bg-white text-slate-900">Admin de Gestión</option>
               <option value="consultor_staff" className="bg-white text-slate-900">Consultor Staff Senior</option>
               <option value="auditor_externo" className="bg-white text-slate-900">Auditor Externo CCyC</option>
               <option value="cliente" className="bg-white text-slate-900">Cliente (Portal Privado)</option>
             </select>
           </div>
+
+          {/* Quick WhatsApp Header Button */}
+          <a
+            href="https://wa.me/5492804567890?text=Hola%20Cr.%20Dom%C3%ADnguez,%20quisiera%20realizar%20una%20consulta%20profesional"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hidden sm:inline-flex items-center gap-1.5 px-3 py-2 text-xs font-bold text-white bg-[#25D366] hover:bg-[#20ba59] active:bg-[#128C7E] rounded-md transition-colors whitespace-nowrap shrink-0 shadow-sm"
+            title="Escribir por WhatsApp directamente al Cr. Carlos Domínguez"
+          >
+            <MessageCircle className="w-3.5 h-3.5" />
+            <span className="hidden lg:inline">WhatsApp</span>
+          </a>
 
           {/* Microsoft Azure Blue Primary Button */}
           <button

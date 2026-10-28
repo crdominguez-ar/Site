@@ -31,7 +31,7 @@ export const LandingView: React.FC<LandingViewProps> = ({ onSelectTab, onOpenCon
               <div className="flex items-center gap-1.5 text-xs font-mono font-bold uppercase tracking-wider text-[#0078D4] mb-1">
                 <span>Soluciones Empresariales</span>
                 <span>·</span>
-                <span className="text-slate-500">Estudio Domínguez & Lambrecht</span>
+                <span className="text-slate-600 font-semibold">Cr Dominguez</span>
               </div>
               <h2 className="text-2xl sm:text-4xl font-black text-slate-950 tracking-tight">
                 Cinco Ejes de Consultoría Estratégica
