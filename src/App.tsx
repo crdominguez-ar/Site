@@ -14,15 +14,22 @@ import { BlogView } from './components/Blog/BlogView';
 import { ClientPortal } from './components/Portal/ClientPortal';
 import { InternalCRM } from './components/CRM/InternalCRM';
 import { SEOControlPanel } from './components/SEO/SEOControlPanel';
+import { WidgetizableDashboard } from './components/Dashboard/WidgetizableDashboard';
 import { ConsultationModal } from './components/Modals/ConsultationModal';
 import { UserRole } from './types';
+import { userService } from './lib/userService';
 
 export default function App() {
-  const [currentTab, setCurrentTab] = useState<'landing' | 'solutions' | 'simulators' | 'diagnostic' | 'blog' | 'portal' | 'crm' | 'seo'>('landing');
-  const [currentRole, setCurrentRole] = useState<UserRole>('admin');
+  const [currentTab, setCurrentTab] = useState<'landing' | 'solutions' | 'simulators' | 'diagnostic' | 'blog' | 'portal' | 'crm' | 'seo' | 'dashboard'>('landing');
+  const [currentRole, setCurrentRole] = useState<UserRole>(() => userService.getCurrentUser().role);
   const [isConsultationModalOpen, setIsConsultationModalOpen] = useState<boolean>(false);
 
-  const handleTabChange = (tab: 'landing' | 'solutions' | 'simulators' | 'diagnostic' | 'blog' | 'portal' | 'crm' | 'seo') => {
+  const handleRoleChange = (role: UserRole) => {
+    setCurrentRole(role);
+    userService.setCurrentRole(role);
+  };
+
+  const handleTabChange = (tab: 'landing' | 'solutions' | 'simulators' | 'diagnostic' | 'blog' | 'portal' | 'crm' | 'seo' | 'dashboard') => {
     setCurrentTab(tab);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -34,7 +41,7 @@ export default function App() {
         currentTab={currentTab}
         setCurrentTab={handleTabChange}
         currentRole={currentRole}
-        setCurrentRole={setCurrentRole}
+        setCurrentRole={handleRoleChange}
         onOpenConsultationModal={() => setIsConsultationModalOpen(true)}
       />
 
@@ -45,6 +52,15 @@ export default function App() {
             onSelectTab={handleTabChange}
             onOpenConsultationModal={() => setIsConsultationModalOpen(true)}
           />
+        )}
+
+        {currentTab === 'dashboard' && (
+          <div className="w-full">
+            <WidgetizableDashboard
+              onNavigateTab={handleTabChange}
+              onOpenConsultationModal={() => setIsConsultationModalOpen(true)}
+            />
+          </div>
         )}
 
         {currentTab === 'solutions' && (
@@ -93,8 +109,12 @@ export default function App() {
         )}
 
         {currentTab === 'crm' && (
-          <div className="w-full px-6 sm:px-12 lg:px-20 py-10 sm:py-14">
-            <InternalCRM currentRole={currentRole} />
+          <div className="w-full">
+            <WidgetizableDashboard
+              initialView="crm"
+              onNavigateTab={handleTabChange}
+              onOpenConsultationModal={() => setIsConsultationModalOpen(true)}
+            />
           </div>
         )}
 

@@ -2,8 +2,11 @@ import React, { useState } from 'react';
 import { 
   BookOpen, Video, Headphones, 
   Search, ExternalLink, 
-  ArrowRight, Globe, X, CheckCircle2, AlertCircle
+  ArrowRight, Globe, X, CheckCircle2, AlertCircle,
+  Mail, Plus, Send, Sparkles
 } from 'lucide-react';
+import { resendService } from '../../lib/resendService';
+
 
 export interface BlogPost {
   id: string;
@@ -115,6 +118,17 @@ export const BlogView: React.FC = () => {
   const [wpEndpoint, setWpEndpoint] = useState<string>('https://tu-sitio-wordpress.com/wp-json/wp/v2/posts');
   const [wpStatus, setWpStatus] = useState<'idle' | 'testing' | 'connected' | 'error'>('idle');
 
+  // New Post Modal & Resend.com dispatch state
+  const [showNewPostModal, setShowNewPostModal] = useState<boolean>(false);
+  const [newTitle, setNewTitle] = useState<string>('');
+  const [newCategory, setNewCategory] = useState<BlogPost['category']>('Tributario');
+  const [newExcerpt, setNewExcerpt] = useState<string>('');
+  const [newContent, setNewContent] = useState<string>('');
+  const [newTags, setNewTags] = useState<string>('Patagonia, AFIP, Estrategia');
+  const [notifyResend, setNotifyResend] = useState<boolean>(true);
+  const [isPublishing, setIsPublishing] = useState<boolean>(false);
+  const [publishFeedback, setPublishFeedback] = useState<string | null>(null);
+
   const categories = ['Todas', 'Tributario', 'Finanzas & CFO', 'Franquicias', 'Economía del Conocimiento', 'Empresas 100% IA'];
 
   const filteredPosts = posts.filter((p) => {
@@ -125,6 +139,59 @@ export const BlogView: React.FC = () => {
       p.tags.some((t) => t.toLowerCase().includes(searchQuery.toLowerCase()));
     return matchesCat && matchesSearch;
   });
+
+  const handlePublishPost = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newTitle || !newContent) return;
+
+    setIsPublishing(true);
+    setPublishFeedback(null);
+
+    const newPost: BlogPost = {
+      id: `post-${Date.now()}`,
+      title: newTitle,
+      slug: newTitle.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
+      excerpt: newExcerpt || newContent.slice(0, 160) + '...',
+      content: newContent,
+      category: newCategory,
+      author: 'Cr. Carlos Rodrigo Domínguez',
+      date: new Date().toLocaleDateString('es-AR', { day: '2-digit', month: 'short', year: 'numeric' }),
+      readTime: `${Math.max(3, Math.ceil(newContent.split(' ').length / 180))} min lectura`,
+      featuredImage: '/src/assets/images/strategic_financial_boardroom_1793059909387.jpg',
+      tags: newTags.split(',').map((t) => t.trim()).filter(Boolean),
+    };
+
+    setPosts([newPost, ...posts]);
+
+    let resendNotice = '';
+    if (notifyResend) {
+      try {
+        const res = await resendService.sendBlogNewsletter({
+          title: newPost.title,
+          excerpt: newPost.excerpt,
+          category: newPost.category,
+          author: newPost.author,
+          slug: newPost.slug,
+        });
+        resendNotice = ` · Notificado por Resend.com Free a ${res.count} clientes suscritos`;
+      } catch (err: any) {
+        console.warn('Resend notification notice', err);
+      }
+    }
+
+    setPublishFeedback(`Artículo publicado con éxito${resendNotice}.`);
+    setIsPublishing(false);
+    
+    // Reset form after 2 seconds
+    setTimeout(() => {
+      setShowNewPostModal(false);
+      setNewTitle('');
+      setNewExcerpt('');
+      setNewContent('');
+      setPublishFeedback(null);
+    }, 1800);
+  };
+
 
   const handleTestWordPress = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -180,6 +247,15 @@ export const BlogView: React.FC = () => {
           </div>
 
           <div className="flex flex-wrap items-center gap-3">
+            <button
+              type="button"
+              onClick={() => setShowNewPostModal(true)}
+              className="px-4 py-2 bg-[#0078D4] hover:bg-[#106EBE] text-white text-xs font-bold rounded-md transition-colors flex items-center gap-2 shadow-xs cursor-pointer"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              <span>Redactar Artículo (+ Resend Free)</span>
+            </button>
+
             <button
               type="button"
               onClick={() => setShowWpModal(true)}

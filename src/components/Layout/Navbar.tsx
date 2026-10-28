@@ -2,8 +2,8 @@ import React from 'react';
 import { UserRole } from '../../types';
 
 interface NavbarProps {
-  currentTab: 'landing' | 'solutions' | 'simulators' | 'diagnostic' | 'blog' | 'portal' | 'crm' | 'seo';
-  setCurrentTab: (tab: 'landing' | 'solutions' | 'simulators' | 'diagnostic' | 'blog' | 'portal' | 'crm' | 'seo') => void;
+  currentTab: 'landing' | 'solutions' | 'simulators' | 'diagnostic' | 'blog' | 'portal' | 'crm' | 'seo' | 'dashboard';
+  setCurrentTab: (tab: 'landing' | 'solutions' | 'simulators' | 'diagnostic' | 'blog' | 'portal' | 'crm' | 'seo' | 'dashboard') => void;
   currentRole: UserRole;
   setCurrentRole: (role: UserRole) => void;
   onOpenConsultationModal: () => void;
@@ -119,27 +119,32 @@ export const Navbar: React.FC<NavbarProps> = ({
             )}
           </button>
 
+          {/* Dashboard (with integrated CRM & Widgets) */}
           <button
             type="button"
-            onClick={() => setCurrentTab('crm')}
-            className={`px-3 py-5 transition-colors whitespace-nowrap relative hover:text-slate-950 ${
-              currentTab === 'crm' ? 'text-slate-950 font-bold' : 'text-slate-600'
+            onClick={() => setCurrentTab('dashboard')}
+            className={`px-3 py-5 transition-colors whitespace-nowrap relative hover:text-slate-950 flex items-center gap-1.5 ${
+              currentTab === 'dashboard' ? 'text-[#0078D4] font-bold' : 'text-slate-700'
             }`}
           >
-            CRM Dynamics
-            {currentTab === 'crm' && (
+            <span className="w-2 h-2 rounded-full bg-[#0078D4]" />
+            <span>Dashboard</span>
+            {currentTab === 'dashboard' && (
               <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#0078D4]" />
             )}
           </button>
 
+          {/* Control & Auditoría de Posicionamiento Orgánico */}
           <button
             type="button"
             onClick={() => setCurrentTab('seo')}
-            className={`px-3 py-5 transition-colors whitespace-nowrap relative hover:text-slate-950 ${
+            title="Control & Auditoría de Posicionamiento Orgánico"
+            className={`px-3 py-5 transition-colors whitespace-nowrap relative hover:text-slate-950 flex items-center gap-1.5 ${
               currentTab === 'seo' ? 'text-slate-950 font-bold' : 'text-slate-600'
             }`}
           >
-            Control SEO
+            <span className="hidden 2xl:inline">Control & Auditoría de Posicionamiento Orgánico</span>
+            <span className="2xl:hidden">Control & Auditoría SEO</span>
             {currentTab === 'seo' && (
               <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#0078D4]" />
             )}
@@ -148,19 +153,21 @@ export const Navbar: React.FC<NavbarProps> = ({
 
         {/* Zone 3: 1 primary action + role toggle */}
         <div className="flex items-center gap-3 shrink-0">
-          {/* Tenant role selector in light corporate style */}
-          <div className="flex items-center bg-slate-50 border border-slate-200 rounded-md px-2.5 py-1.5 text-xs text-slate-700">
+          {/* Tenant role selector with comprehensive RBAC hierarchy */}
+          <div className="flex items-center bg-slate-50 border border-slate-200 rounded-md px-2.5 py-1.5 text-xs text-slate-700 shadow-xs">
             <span className="hidden sm:inline text-[11px] text-slate-500 font-mono mr-1.5">
-              Entorno:
+              Rol Activo:
             </span>
             <select
               value={currentRole}
               onChange={(e) => setCurrentRole(e.target.value as UserRole)}
-              className="bg-transparent text-slate-800 text-xs font-semibold focus:outline-none cursor-pointer"
+              className="bg-transparent text-slate-900 text-xs font-semibold focus:outline-none cursor-pointer"
             >
-              <option value="admin" className="bg-white text-slate-900">Socio (Cr. Domínguez)</option>
-              <option value="consultant" className="bg-white text-slate-900">Consultor Staff</option>
-              <option value="client" className="bg-white text-slate-900">Cliente (Portal)</option>
+              <option value="super_admin" className="bg-white text-slate-900">Super Admin (Cr. Domínguez)</option>
+              <option value="admin" className="bg-white text-slate-900">Admin (Cra. Lambrecht)</option>
+              <option value="consultor_staff" className="bg-white text-slate-900">Consultor Staff Senior</option>
+              <option value="auditor_externo" className="bg-white text-slate-900">Auditor Externo CCyC</option>
+              <option value="cliente" className="bg-white text-slate-900">Cliente (Portal Privado)</option>
             </select>
           </div>
 
@@ -168,7 +175,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           <button
             type="button"
             onClick={onOpenConsultationModal}
-            className="px-4 py-2 text-xs font-bold text-white bg-[#0078D4] hover:bg-[#106EBE] active:bg-[#005A9E] rounded-md transition-colors whitespace-nowrap shrink-0 shadow-sm"
+            className="px-4 py-2 text-xs font-bold text-white bg-[#0078D4] hover:bg-[#106EBE] active:bg-[#005A9E] rounded-md transition-colors whitespace-nowrap shrink-0 shadow-sm cursor-pointer"
           >
             Solicitar Asesoría
           </button>
@@ -221,17 +228,17 @@ export const Navbar: React.FC<NavbarProps> = ({
         </button>
         <button
           type="button"
-          onClick={() => setCurrentTab('crm')}
-          className={`px-2 py-1 whitespace-nowrap ${currentTab === 'crm' ? 'text-[#0078D4] font-bold' : ''}`}
+          onClick={() => setCurrentTab('dashboard')}
+          className={`px-2 py-1 whitespace-nowrap ${currentTab === 'dashboard' ? 'text-[#0078D4] font-bold' : ''}`}
         >
-          CRM
+          Dashboard
         </button>
         <button
           type="button"
           onClick={() => setCurrentTab('seo')}
           className={`px-2 py-1 whitespace-nowrap ${currentTab === 'seo' ? 'text-[#0078D4] font-bold' : ''}`}
         >
-          SEO
+          Auditoría SEO
         </button>
       </div>
     </header>

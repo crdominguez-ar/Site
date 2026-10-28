@@ -34,7 +34,7 @@ export const LandingView: React.FC<LandingViewProps> = ({ onSelectTab, onOpenCon
                 <span className="text-slate-500">Estudio Domínguez & Lambrecht</span>
               </div>
               <h2 className="text-2xl sm:text-4xl font-black text-slate-950 tracking-tight">
-                Cinco Ejes de Consultoría Integral
+                Cinco Ejes de Consultoría Estratégica
               </h2>
               <p className="text-xs sm:text-sm text-slate-600 mt-1.5 max-w-3xl leading-relaxed">
                 Metodologías analíticas adaptadas a la escala real de cada negocio. De la cooperativa regional a las arquitecturas autónomas de IA.

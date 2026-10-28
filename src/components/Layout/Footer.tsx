@@ -2,7 +2,7 @@ import React from 'react';
 import { MapPin, Mail } from 'lucide-react';
 
 interface FooterProps {
-  onNavigate: (tab: 'landing' | 'solutions' | 'simulators' | 'diagnostic' | 'blog' | 'portal' | 'crm' | 'seo') => void;
+  onNavigate: (tab: 'landing' | 'solutions' | 'simulators' | 'diagnostic' | 'blog' | 'portal' | 'crm' | 'seo' | 'dashboard') => void;
 }
 
 export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
@@ -88,10 +88,10 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
               <li>
                 <button
                   type="button"
-                  onClick={() => onNavigate('crm')}
+                  onClick={() => onNavigate('dashboard')}
                   className="hover:text-[#0078D4] transition-colors"
                 >
-                  Consola Interna & Pipeline CRM
+                  Dashboard Ejecutivo & CRM
                 </button>
               </li>
               <li>
@@ -100,7 +100,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
                   onClick={() => onNavigate('seo')}
                   className="hover:text-[#0078D4] transition-colors"
                 >
-                  Control SEO & Metadatos
+                  Control & Auditoría de Posicionamiento Orgánico
                 </button>
               </li>
             </ul>

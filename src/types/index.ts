@@ -3,7 +3,72 @@
  * Trelew, Chubut, Patagonia Argentina
  */
 
-export type UserRole = 'admin' | 'consultant' | 'client';
+export type UserRole = 
+  | 'super_admin' 
+  | 'admin' 
+  | 'consultor_staff' 
+  | 'auditor_externo' 
+  | 'cliente'
+  | 'consultant'
+  | 'client';
+
+export interface SystemUser {
+  id: string;
+  name: string;
+  email: string;
+  role: UserRole;
+  title: string;
+  avatarUrl?: string;
+  clientId?: string;
+  companyName?: string;
+  isActive: boolean;
+  lastLogin: string;
+  phone?: string;
+  department?: string;
+}
+
+export interface ResendEmailLog {
+  id: string;
+  to: string[];
+  from: string;
+  subject: string;
+  type: 'lead_notification' | 'blog_newsletter' | 'report_delivery' | 'ticket_response' | 'system_test';
+  status: 'delivered' | 'sent' | 'queued' | 'simulated';
+  createdAt: string;
+  previewText: string;
+  responseId?: string;
+}
+
+export interface ResendConfig {
+  apiKey: string;
+  senderEmail: string;
+  senderName: string;
+  dailyQuotaUsed: number;
+  dailyQuotaMax: number;
+  monthlyQuotaUsed: number;
+  monthlyQuotaMax: number;
+  isVerifiedDomain: boolean;
+  isConfigured: boolean;
+}
+
+export type WidgetId = 
+  | 'crm_pipeline' 
+  | 'crm_tasks' 
+  | 'seo_health' 
+  | 'seo_queries' 
+  | 'resend_email' 
+  | 'blog_publishing' 
+  | 'user_management' 
+  | 'financial_kpis';
+
+export interface DashboardWidgetConfig {
+  id: WidgetId;
+  title: string;
+  category: 'negocio' | 'marketing' | 'operaciones' | 'usuarios';
+  enabled: boolean;
+  order: number;
+  width: 'half' | 'full';
+}
 
 export type BusinessVertical = 
   | 'tradicional_pyme'
