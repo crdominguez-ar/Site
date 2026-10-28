@@ -8,13 +8,13 @@ import { ResendConfig, ResendEmailLog, Lead, DeliverableReport } from '../types'
 
 const DEFAULT_CONFIG: ResendConfig = {
   apiKey: 're_patagonia_free_tier_live_key',
-  senderEmail: 'onboarding@resend.dev',
+  senderEmail: 'carlos@crdominguez.ar',
   senderName: 'Cr Dominguez · Consultoría Estratégica',
   dailyQuotaUsed: 14,
   dailyQuotaMax: 100,
   monthlyQuotaUsed: 328,
   monthlyQuotaMax: 3000,
-  isVerifiedDomain: false,
+  isVerifiedDomain: true,
   isConfigured: true,
 };
 
@@ -22,7 +22,7 @@ const INITIAL_LOGS: ResendEmailLog[] = [
   {
     id: 'resend-log-01',
     to: ['crdominguez.ar@gmail.com'],
-    from: 'onboarding@resend.dev',
+    from: 'carlos@crdominguez.ar',
     subject: 'Nuevo Lead Calificado: AeroDrone Logistics ZHC (Score: 95/100)',
     type: 'lead_notification',
     status: 'delivered',
@@ -33,7 +33,7 @@ const INITIAL_LOGS: ResendEmailLog[] = [
   {
     id: 'resend-log-02',
     to: ['m.vallejos@lanapatagonica.com.ar'],
-    from: 'onboarding@resend.dev',
+    from: 'carlos@crdominguez.ar',
     subject: 'Dictamen de Costos & Punto de Equilibrio Operativo Listo',
     type: 'report_delivery',
     status: 'delivered',
@@ -43,8 +43,8 @@ const INITIAL_LOGS: ResendEmailLog[] = [
   },
   {
     id: 'resend-log-03',
-    to: ['clientes-boletin@dominguezlambrecht.com.ar'],
-    from: 'onboarding@resend.dev',
+    to: ['clientes-boletin@crdominguez.ar'],
+    from: 'carlos@crdominguez.ar',
     subject: 'Boletín Tributario: Franquicias bajo la lupa del CCyC (Art. 1512-1524)',
     type: 'blog_newsletter',
     status: 'delivered',

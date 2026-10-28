@@ -1,7 +1,7 @@
 /**
-  * User & Role Management Service (RBAC)
-  * Estudio Contable Domínguez & Lambrecht
-  */
+ * User & Role Management Service (RBAC)
+ * Cr Dominguez · Consultoría Estratégica & CFO
+ */
 
 import { SystemUser, UserRole } from '../types';
 
@@ -9,9 +9,9 @@ const INITIAL_USERS: SystemUser[] = [
   {
     id: 'usr-001',
     name: 'Cr. Carlos Rodrigo Domínguez',
-    email: 'crdominguez.ar@gmail.com',
+    email: 'carlos@crdominguez.ar',
     role: 'super_admin',
-    title: 'Socio Fundador & Director de Consultoría',
+    title: 'Director de Consultoría & CFO',
     department: 'Dirección General & Estrategia',
     phone: '+54 9 280 442-1980',
     isActive: true,
@@ -20,10 +20,10 @@ const INITIAL_USERS: SystemUser[] = [
   },
   {
     id: 'usr-002',
-    name: 'Cra. María Florencia Lambrecht',
-    email: 'florencia.lambrecht@dominguezlambrecht.com.ar',
+    name: 'Administración & Auditoría Contable',
+    email: 'administracion@crdominguez.ar',
     role: 'admin',
-    title: 'Socia Administradora & Auditoría Tributaria',
+    title: 'Coordinación Administrativa & Compliance Fiscal',
     department: 'Compliance Fiscal & Sociedades',
     phone: '+54 9 280 455-8812',
     isActive: true,
@@ -32,7 +32,7 @@ const INITIAL_USERS: SystemUser[] = [
   {
     id: 'usr-003',
     name: 'Lic. Lucas Benítez',
-    email: 'lucas.benitez@dominguezlambrecht.com.ar',
+    email: 'lucas.benitez@crdominguez.ar',
     role: 'consultor_staff',
     title: 'Consultor Senior de Costos & Finanzas PyME',
     department: 'Modelado Financiero & Flujos',

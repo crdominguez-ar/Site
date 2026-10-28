@@ -1,6 +1,6 @@
 /**
  * Supabase Client Integration with Real RLS Support and Resilient Local Fallback
- * Estudio Contable Domínguez & Lambrecht
+ * Cr Dominguez · Consultoría Estratégica & CFO
  */
 
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
@@ -228,7 +228,7 @@ const SEED_REPORTS: DeliverableReport[] = [
       { label: 'Costo Fijo Absorbido', value: '100%' },
     ],
     fileSize: '1.9 MB (PDF)',
-    author: 'Equipo Consultor D&L',
+    author: 'Equipo Consultor Cr Dominguez',
   },
   {
     id: 'rep-304',

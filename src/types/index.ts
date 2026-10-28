@@ -1,5 +1,5 @@
 /**
- * Domain types for Estudio Contable Domínguez & Lambrecht
+ * Domain types for Cr Dominguez · Consultoría Estratégica & CFO
  * Trelew, Chubut, Patagonia Argentina
  */
 
