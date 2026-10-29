@@ -41,124 +41,146 @@ export const LandingView: React.FC<LandingViewProps> = ({ onSelectTab, onOpenCon
       {/* Block 2: Executive YouTube Video Player */}
       <ExecutiveVideoSection />
 
-      {/* Block 3: 5 Strategic Axes (Tone: Pure Crisp White #FFFFFF) */}
-      <section className="w-full bg-white border-b border-slate-200 py-12 sm:py-16 lg:py-20 px-4 sm:px-8 lg:px-16 xl:px-20">
-        <div className="w-full space-y-8 sm:space-y-10 max-w-7xl mx-auto">
+      {/* Block 3: 5 Strategic Axes - Bento Block Architecture with Full Solid Color Blocks & High Contrast */}
+      <section className="w-full bg-[#080E18] text-white border-b border-slate-800 py-14 sm:py-20 px-4 sm:px-8 lg:px-16 xl:px-20 relative overflow-hidden">
+        {/* Subtle architectural ambient light */}
+        <div className="absolute top-0 right-1/4 w-96 h-96 bg-blue-600/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute bottom-0 left-1/4 w-96 h-96 bg-purple-600/10 rounded-full blur-3xl pointer-events-none" />
+
+        <div className="w-full space-y-8 sm:space-y-10 max-w-7xl mx-auto relative z-10">
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
             <div>
-              <div className="flex items-center gap-1.5 text-xs font-mono font-bold uppercase tracking-wider text-[#0078D4] mb-1">
-                <span>Soluciones Empresariales</span>
+              <div className="flex items-center gap-2 text-xs font-mono font-bold uppercase tracking-wider text-[#38BDF8] mb-2">
+                <span className="w-2 h-2 rounded-full bg-[#38BDF8] animate-pulse" />
+                <span>Cinco Divisiones Especializadas</span>
                 <span>·</span>
-                <span className="text-slate-600 font-semibold">{content.profile.founderName}</span>
+                <span className="text-slate-400 font-semibold">{content.profile.founderName}</span>
               </div>
-              <h2 className="text-2xl sm:text-4xl font-black text-slate-950 tracking-tight">
-                Cinco Ejes de Consultoría Estratégica
+              <h2 className="text-2xl sm:text-4xl font-black text-white tracking-tight">
+                Arquitectura de Soluciones Estratégicas
               </h2>
-              <p className="text-xs sm:text-sm text-slate-600 mt-1.5 max-w-3xl leading-relaxed">
-                Metodologías analíticas adaptadas a la escala real de cada negocio. De la cooperativa regional a las arquitecturas autónomas de IA.
+              <p className="text-xs sm:text-sm text-slate-300 mt-2 max-w-3xl leading-relaxed font-normal">
+                Diseño en bloques modulares con metodologías financieras, tributarias y normativas ejecutadas con máxima precisión analítica.
               </p>
             </div>
 
             <button
               type="button"
               onClick={() => onSelectTab('solutions')}
-              className="text-xs font-bold text-[#0078D4] hover:underline flex items-center gap-1.5 transition-colors shrink-0 cursor-pointer self-start md:self-auto"
+              className="px-4 py-2 bg-white/10 hover:bg-white text-white hover:text-slate-950 text-xs font-bold rounded-md transition-all flex items-center gap-2 shrink-0 cursor-pointer border border-white/20 self-start md:self-auto"
             >
-              <span>Ver desarrollo de servicios</span>
+              <span>Ver alcance detallado</span>
               <ChevronRight className="w-4 h-4" />
             </button>
           </div>
 
-          {/* Grid with Representative Color Backgrounds - Modern, Integrated, Clean rounded-lg */}
+          {/* Bento Modular Block Grid with Full Solid Color Backgrounds (Fondos Plenos) */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6">
             {content.axes.map((axis, idx) => {
               const Icon = getAxisIcon(idx);
-              const axisThemes = [
+              const bentoBlocks = [
                 {
-                  bg: 'bg-blue-50/60 hover:bg-blue-50/90',
-                  border: 'border-blue-200/90 hover:border-[#0078D4]',
-                  badgeBg: 'bg-blue-100 text-blue-900 border-blue-200',
+                  span: 'col-span-1 md:col-span-2',
+                  bg: 'bg-[#0D223F]',
+                  border: 'border-blue-700/60 hover:border-[#38BDF8]',
+                  tagColor: 'text-[#38BDF8]',
+                  tagBg: 'bg-blue-950/80 border-blue-800',
                   iconBg: 'bg-[#0078D4] text-white',
-                  accent: '#0078D4',
-                  topBar: 'bg-[#0078D4]',
+                  btnStyle: 'bg-[#0078D4] hover:bg-[#106EBE] text-white',
+                  accentDot: 'text-[#38BDF8]',
+                  isLead: true,
                 },
                 {
-                  bg: 'bg-emerald-50/60 hover:bg-emerald-50/90',
-                  border: 'border-emerald-200/90 hover:border-[#107C41]',
-                  badgeBg: 'bg-emerald-100 text-emerald-900 border-emerald-200',
+                  span: 'col-span-1',
+                  bg: 'bg-[#0A3324]',
+                  border: 'border-emerald-700/60 hover:border-[#4ADE80]',
+                  tagColor: 'text-[#4ADE80]',
+                  tagBg: 'bg-emerald-950/80 border-emerald-800',
                   iconBg: 'bg-[#107C41] text-white',
-                  accent: '#107C41',
-                  topBar: 'bg-[#107C41]',
+                  btnStyle: 'bg-[#107C41] hover:bg-[#0E6A37] text-white',
+                  accentDot: 'text-[#4ADE80]',
+                  isLead: false,
                 },
                 {
-                  bg: 'bg-amber-50/60 hover:bg-amber-50/90',
-                  border: 'border-amber-200/90 hover:border-amber-600',
-                  badgeBg: 'bg-amber-100 text-amber-950 border-amber-200',
+                  span: 'col-span-1',
+                  bg: 'bg-[#3D1E0C]',
+                  border: 'border-amber-700/60 hover:border-[#FBBF24]',
+                  tagColor: 'text-[#FBBF24]',
+                  tagBg: 'bg-amber-950/80 border-amber-800',
                   iconBg: 'bg-amber-600 text-white',
-                  accent: '#D97706',
-                  topBar: 'bg-amber-600',
+                  btnStyle: 'bg-[#D97706] hover:bg-[#B45309] text-white',
+                  accentDot: 'text-[#FBBF24]',
+                  isLead: false,
                 },
                 {
-                  bg: 'bg-indigo-50/60 hover:bg-indigo-50/90',
-                  border: 'border-indigo-200/90 hover:border-indigo-600',
-                  badgeBg: 'bg-indigo-100 text-indigo-950 border-indigo-200',
+                  span: 'col-span-1',
+                  bg: 'bg-[#191D45]',
+                  border: 'border-indigo-700/60 hover:border-[#818CF8]',
+                  tagColor: 'text-[#818CF8]',
+                  tagBg: 'bg-indigo-950/80 border-indigo-800',
                   iconBg: 'bg-indigo-600 text-white',
-                  accent: '#4F46E5',
-                  topBar: 'bg-indigo-600',
+                  btnStyle: 'bg-[#4F46E5] hover:bg-[#4338CA] text-white',
+                  accentDot: 'text-[#818CF8]',
+                  isLead: false,
                 },
                 {
-                  bg: 'bg-purple-50/60 hover:bg-purple-50/90',
-                  border: 'border-purple-200/90 hover:border-purple-600',
-                  badgeBg: 'bg-purple-100 text-purple-950 border-purple-200',
+                  span: 'col-span-1',
+                  bg: 'bg-[#291048]',
+                  border: 'border-purple-700/60 hover:border-[#C084FC]',
+                  tagColor: 'text-[#C084FC]',
+                  tagBg: 'bg-purple-950/80 border-purple-800',
                   iconBg: 'bg-purple-600 text-white',
-                  accent: '#7C3AED',
-                  topBar: 'bg-purple-600',
+                  btnStyle: 'bg-[#7C3AED] hover:bg-[#6D28D9] text-white',
+                  accentDot: 'text-[#C084FC]',
+                  isLead: false,
                 },
               ];
-              const theme = axisThemes[idx % axisThemes.length];
+              const block = bentoBlocks[idx % bentoBlocks.length];
 
               return (
                 <div 
                   key={axis.id}
-                  className={`${theme.bg} border ${theme.border} rounded-lg p-5 sm:p-6 flex flex-col justify-between transition-all shadow-xs hover:shadow-sm relative overflow-hidden`}
+                  className={`${block.span} ${block.bg} border ${block.border} rounded-lg p-6 sm:p-7 flex flex-col justify-between transition-all duration-300 shadow-md hover:shadow-xl relative overflow-hidden group`}
                 >
-                  {/* Subtle top indicator bar */}
-                  <div className={`absolute top-0 left-0 right-0 h-1 ${theme.topBar}`} />
-
                   <div>
-                    <div className="flex items-center justify-between text-xs text-slate-600 font-mono mb-4 pt-1">
-                      <span className={`px-2 py-0.5 rounded text-[11px] font-bold border ${theme.badgeBg}`}>
+                    {/* Top Monospace Tag & Icon */}
+                    <div className="flex items-center justify-between text-xs font-mono mb-4">
+                      <span className={`px-2.5 py-1 rounded text-[11px] font-bold border uppercase tracking-wider ${block.tagColor} ${block.tagBg}`}>
                         {axis.number} · {axis.category}
                       </span>
-                      <div className={`p-1.5 rounded-md ${theme.iconBg} shadow-2xs`}>
+                      <div className={`p-2 rounded-md ${block.iconBg} shadow-sm group-hover:scale-110 transition-transform`}>
                         <Icon className="w-4 h-4" />
                       </div>
                     </div>
 
-                    <h3 className="text-base sm:text-lg font-bold text-slate-900 mb-2">
+                    {/* High-Contrast Bold Headline */}
+                    <h3 className={`font-black text-white tracking-tight mb-2.5 ${block.isLead ? 'text-xl sm:text-2xl' : 'text-lg'}`}>
                       {axis.title}
                     </h3>
-                    <p className="text-xs text-slate-700 leading-relaxed mb-4">
+
+                    {/* High-Contrast Body Text */}
+                    <p className={`text-slate-300 leading-relaxed mb-5 ${block.isLead ? 'text-xs sm:text-sm max-w-2xl' : 'text-xs'}`}>
                       {axis.description}
                     </p>
 
-                    <ul className="text-xs text-slate-700 space-y-2 mb-6">
-                      {axis.keyAspects.slice(0, 3).map((item, i) => (
-                        <li key={i} className="flex items-start gap-2">
-                          <span style={{ color: theme.accent }} className="font-black text-sm leading-none mt-0.5">▪</span>
-                          <span className="font-medium">{item}</span>
+                    {/* Aspects Checklist with stark contrast */}
+                    <ul className="text-xs text-slate-200 space-y-2 mb-6">
+                      {axis.keyAspects.slice(0, block.isLead ? 3 : 2).map((item, i) => (
+                        <li key={i} className="flex items-start gap-2.5">
+                          <span className={`${block.accentDot} font-black text-sm leading-none mt-0.5`}>■</span>
+                          <span className="font-medium text-slate-200">{item}</span>
                         </li>
                       ))}
                     </ul>
                   </div>
 
-                  <div className="pt-3.5 border-t border-slate-200/80 flex items-center justify-between text-xs">
-                    <span className="text-[11px] text-slate-500 font-mono">Acceso Directo</span>
+                  {/* Bottom Action Bar */}
+                  <div className="pt-4 border-t border-white/10 flex items-center justify-between">
+                    <span className="text-[11px] text-slate-400 font-mono">Solución Integrada</span>
                     <button
                       type="button"
                       onClick={() => onSelectTab(axis.ctaTab)}
-                      className="hover:underline font-bold cursor-pointer flex items-center gap-1"
-                      style={{ color: theme.accent }}
+                      className={`px-3.5 py-2 ${block.btnStyle} rounded-md text-xs font-bold transition-all flex items-center gap-1.5 shadow-sm cursor-pointer`}
                     >
                       <span>{axis.ctaLabel}</span>
                       <ArrowRight className="w-3.5 h-3.5" />
@@ -171,58 +193,86 @@ export const LandingView: React.FC<LandingViewProps> = ({ onSelectTab, onOpenCon
         </div>
       </section>
 
-      {/* Block 4: Case Studies (Tone: Subtle Light Gray #F8FAFC) */}
-      <section className="w-full bg-[#F8FAFC] border-b border-slate-200 py-12 sm:py-16 lg:py-20 px-4 sm:px-8 lg:px-16 xl:px-20">
+      {/* Block 4: Case Studies - Solid Modular Blocks with High-Contrast KPI Metrics */}
+      <section className="w-full bg-[#F1F5F9] border-b border-slate-200 py-14 sm:py-20 px-4 sm:px-8 lg:px-16 xl:px-20">
         <div className="w-full space-y-8 max-w-7xl mx-auto">
           <div>
-            <span className="text-xs font-mono font-bold uppercase tracking-wider text-[#0078D4]">
-              Casos de Estudio & Métricas Cuantitativas
-            </span>
-            <h2 className="text-2xl sm:text-4xl font-black text-slate-950 tracking-tight mt-1">
-              Impacto Comprobado en Empresas de la Patagonia
+            <div className="flex items-center gap-2 text-xs font-mono font-bold uppercase tracking-wider text-[#0078D4] mb-2">
+              <span className="w-2 h-2 rounded-full bg-[#0078D4]" />
+              <span>Resultados Comprobados & Auditorías Reales</span>
+            </div>
+            <h2 className="text-2xl sm:text-4xl font-black text-slate-950 tracking-tight">
+              Impacto Cuantitativo en Empresas Patagónicas
             </h2>
-            <p className="text-xs sm:text-sm text-slate-600 mt-1 max-w-3xl leading-relaxed">
-              Metodología financiera aplicada con rigor normativo y resultados auditados.
+            <p className="text-xs sm:text-sm text-slate-600 mt-2 max-w-3xl leading-relaxed">
+              Métricas auditadas con respaldo normativo, reestructuración financiera y optimización fiscal demostrable.
             </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-5 sm:gap-6">
-            <div className="p-5 sm:p-6 bg-blue-50/40 border border-blue-200/80 rounded-lg space-y-3 shadow-xs">
-              <span className="text-xs font-mono font-bold text-[#0078D4]">Cooperativa Industrial · Trelew</span>
-              <h4 className="text-sm font-bold text-slate-900">
-                Determinación de Costos Ocultos y Punto de Equilibrio
-              </h4>
-              <p className="text-xs text-slate-600 leading-relaxed">
-                Se estructuró una matriz de costeo marginal que reclasificó gastos fijos, incrementando el margen de contribución un 18.4% en 6 meses.
-              </p>
-              <div className="pt-3 border-t border-slate-200/70 text-xs font-mono text-[#107C41] font-bold">
-                +18.4% Margen Operativo Neto
+            {/* Case Block 1: Deep Navy Solid */}
+            <div className="p-6 bg-[#0D223F] border border-blue-800/80 rounded-lg text-white space-y-4 shadow-md flex flex-col justify-between">
+              <div className="space-y-3">
+                <span className="px-2.5 py-1 bg-blue-950 text-[#38BDF8] border border-blue-800 rounded text-[11px] font-mono font-bold uppercase tracking-wider inline-block">
+                  Industrial · Trelew
+                </span>
+                <h4 className="text-base font-bold text-white tracking-tight leading-snug">
+                  Costos Ocultos y Punto de Equilibrio Marginal
+                </h4>
+                <p className="text-xs text-slate-300 leading-relaxed">
+                  Reclasificación analítica de costos fijos y absorción industrial que incrementó el margen de contribución en 6 meses de intervención.
+                </p>
+              </div>
+              <div className="pt-4 border-t border-blue-800/60">
+                <span className="text-[10px] font-mono uppercase tracking-wider text-slate-400 block mb-0.5">Resultado Auditado</span>
+                <div className="text-2xl sm:text-3xl font-black font-mono text-[#38BDF8]">
+                  +18.4%
+                </div>
+                <span className="text-[11px] text-slate-300 font-medium">Margen Operativo Neto Certificado</span>
               </div>
             </div>
 
-            <div className="p-5 sm:p-6 bg-emerald-50/40 border border-emerald-200/80 rounded-lg space-y-3 shadow-xs">
-              <span className="text-xs font-mono font-bold text-[#107C41]">SaaS B2B Tech · Puerto Madryn</span>
-              <h4 className="text-sm font-bold text-slate-900">
-                Liquidación de Factura E & Registro Economía del Conocimiento
-              </h4>
-              <p className="text-xs text-slate-600 leading-relaxed">
-                Encuadre fiscal con cupo legal en dólares, bono de crédito fiscal para cargas sociales y deducción de retenciones internacionales.
-              </p>
-              <div className="pt-3 border-t border-slate-200/70 text-xs font-mono text-[#107C41] font-bold">
-                USD 48,000 / año Ahorro Impositivo
+            {/* Case Block 2: Deep Emerald Solid */}
+            <div className="p-6 bg-[#0A3324] border border-emerald-800/80 rounded-lg text-white space-y-4 shadow-md flex flex-col justify-between">
+              <div className="space-y-3">
+                <span className="px-2.5 py-1 bg-emerald-950 text-[#4ADE80] border border-emerald-800 rounded text-[11px] font-mono font-bold uppercase tracking-wider inline-block">
+                  SaaS Tech · Puerto Madryn
+                </span>
+                <h4 className="text-base font-bold text-white tracking-tight leading-snug">
+                  Factura E & Economía del Conocimiento
+                </h4>
+                <p className="text-xs text-slate-300 leading-relaxed">
+                  Encuadre fiscal integral con cupo legal de divisas, bono fiscal para contribuciones patronales y deducción de retenciones transfronterizas.
+                </p>
+              </div>
+              <div className="pt-4 border-t border-emerald-800/60">
+                <span className="text-[10px] font-mono uppercase tracking-wider text-slate-400 block mb-0.5">Ahorro Impositivo</span>
+                <div className="text-2xl sm:text-3xl font-black font-mono text-[#4ADE80]">
+                  USD 48,000 / año
+                </div>
+                <span className="text-[11px] text-slate-300 font-medium">Optimización Fiscal y Cambiaria</span>
               </div>
             </div>
 
-            <div className="p-5 sm:p-6 bg-amber-50/40 border border-amber-200/80 rounded-lg space-y-3 shadow-xs">
-              <span className="text-xs font-mono font-bold text-[#D97706]">Red Comercial · Valle de Chubut</span>
-              <h4 className="text-sm font-bold text-slate-900">
-                Auditoría Precontractual de Franquicia (CCyC 1512-1524)
-              </h4>
-              <p className="text-xs text-slate-600 leading-relaxed">
-                Identificación de cláusulas abusivas de exclusividad y recálculo del Payback real de 12 a 19 meses, renegociando el canon inicial un 25%.
-              </p>
-              <div className="pt-3 border-t border-slate-200/70 text-xs font-mono text-[#D97706] font-bold">
-                25% Reducción en Canon Inicial
+            {/* Case Block 3: Deep Amber Solid */}
+            <div className="p-6 bg-[#3D1E0C] border border-amber-800/80 rounded-lg text-white space-y-4 shadow-md flex flex-col justify-between">
+              <div className="space-y-3">
+                <span className="px-2.5 py-1 bg-amber-950 text-[#FBBF24] border border-amber-800 rounded text-[11px] font-mono font-bold uppercase tracking-wider inline-block">
+                  Red Comercial · Valle Chubut
+                </span>
+                <h4 className="text-base font-bold text-white tracking-tight leading-snug">
+                  Auditoría Precontractual de Franquicia (CCyC)
+                </h4>
+                <p className="text-xs text-slate-300 leading-relaxed">
+                  Identificación de cláusulas abusivas de exclusividad, recálculo de Payback real y renegociación formal del canon de ingreso inicial.
+                </p>
+              </div>
+              <div className="pt-4 border-t border-amber-800/60">
+                <span className="text-[10px] font-mono uppercase tracking-wider text-slate-400 block mb-0.5">Beneficio Negociado</span>
+                <div className="text-2xl sm:text-3xl font-black font-mono text-[#FBBF24]">
+                  -25% Reducción
+                </div>
+                <span className="text-[11px] text-slate-300 font-medium">Canon Inicial Directo Ahorrado</span>
               </div>
             </div>
           </div>
