@@ -92,6 +92,9 @@ export const InternalCRM: React.FC<InternalCRMProps> = ({ currentRole, initialSu
   // Filters & Search
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedVertical, setSelectedVertical] = useState<BusinessVertical | 'all'>('all');
+  const [priorityFilter, setPriorityFilter] = useState<'all' | 'alta' | 'media' | 'baja'>('all');
+  const [sourceFilter, setSourceFilter] = useState<string>('all');
+  const [locationFilter, setLocationFilter] = useState<string>('all');
   const [contactTypeFilter, setContactTypeFilter] = useState<'all' | 'empresa' | 'individual'>('all');
   const [contactStatusFilter, setContactStatusFilter] = useState<ContactRelationshipStatus | 'all'>('all');
   const [departmentFilter, setDepartmentFilter] = useState<CompanyDepartment | 'all'>('all');
@@ -210,6 +213,15 @@ export const InternalCRM: React.FC<InternalCRMProps> = ({ currentRole, initialSu
 
   useEffect(() => {
     loadData();
+
+    const handleOpportunityCreated = () => {
+      loadData();
+    };
+
+    window.addEventListener('cr_opportunity_created', handleOpportunityCreated);
+    return () => {
+      window.removeEventListener('cr_opportunity_created', handleOpportunityCreated);
+    };
   }, []);
 
   const handleCopy = (text: string, label: string) => {
@@ -797,12 +809,20 @@ export const InternalCRM: React.FC<InternalCRMProps> = ({ currentRole, initialSu
 
   // Filtered Leads
   const filteredLeads = leads.filter((l) => {
+    const q = searchQuery.toLowerCase();
     const matchesSearch = 
-      l.companyName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      l.contactName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      l.notes.toLowerCase().includes(searchQuery.toLowerCase());
+      l.companyName.toLowerCase().includes(q) ||
+      l.contactName.toLowerCase().includes(q) ||
+      (l.opportunityTitle && l.opportunityTitle.toLowerCase().includes(q)) ||
+      (l.source && l.source.toLowerCase().includes(q)) ||
+      (l.location && l.location.toLowerCase().includes(q)) ||
+      (l.identifiedProblem && l.identifiedProblem.toLowerCase().includes(q)) ||
+      l.notes.toLowerCase().includes(q);
     const matchesVertical = selectedVertical === 'all' || l.vertical === selectedVertical;
-    return matchesSearch && matchesVertical;
+    const matchesPriority = priorityFilter === 'all' || l.priority === priorityFilter;
+    const matchesSource = sourceFilter === 'all' || (l.source && l.source.toLowerCase().includes(sourceFilter.toLowerCase())) || (l.opportunityTitle && l.opportunityTitle.toLowerCase().includes(sourceFilter.toLowerCase()));
+    const matchesLocation = locationFilter === 'all' || (l.location && l.location.toLowerCase().includes(locationFilter.toLowerCase()));
+    return matchesSearch && matchesVertical && matchesPriority && matchesSource && matchesLocation;
   });
 
   // Filtered Contacts
@@ -1037,8 +1057,53 @@ export const InternalCRM: React.FC<InternalCRMProps> = ({ currentRole, initialSu
         {/* View Mode Switcher and Options */}
         <div className="flex flex-wrap items-center gap-2">
           {/* PIPELINE VIEW SWITCHER & COLUMN SETTINGS */}
+          {/* PIPELINE VIEW SWITCHER & COLUMN SETTINGS & ADVANCED FILTERS */}
           {activeTab === 'pipeline' && (
-            <div className="flex items-center gap-1.5">
+            <div className="flex flex-wrap items-center gap-1.5">
+              {/* Priority Filter */}
+              <select
+                value={priorityFilter}
+                onChange={(e) => setPriorityFilter(e.target.value as any)}
+                className="bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs text-slate-700 font-medium focus:outline-none focus:border-[#0078D4]"
+              >
+                <option value="all">Todas las Prioridades</option>
+                <option value="alta">Prioridad Alta</option>
+                <option value="media">Prioridad Media</option>
+                <option value="baja">Prioridad Baja</option>
+              </select>
+
+              {/* Source / Form Filter */}
+              <select
+                value={sourceFilter}
+                onChange={(e) => setSourceFilter(e.target.value)}
+                className="bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs text-slate-700 font-medium focus:outline-none focus:border-[#0078D4]"
+              >
+                <option value="all">Todos los Formularios / Orígenes</option>
+                <option value="Diagnóstico">Diagnóstico Estratégico</option>
+                <option value="Formulario de Asesoría">Formulario de Asesoría</option>
+                <option value="Punto de Equilibrio">Simulador Punto de Equilibrio</option>
+                <option value="Factura E">Simulador Factura E</option>
+                <option value="Franquicias">Simulador Franquicias CCyC</option>
+                <option value="ZHC">Simulador ZHC IA</option>
+              </select>
+
+              {/* Location Filter */}
+              <select
+                value={locationFilter}
+                onChange={(e) => setLocationFilter(e.target.value)}
+                className="bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs text-slate-700 font-medium focus:outline-none focus:border-[#0078D4]"
+              >
+                <option value="all">Todas las Localidades</option>
+                <option value="Trelew">Trelew</option>
+                <option value="Puerto Madryn">Puerto Madryn</option>
+                <option value="Rawson">Rawson</option>
+                <option value="Gaiman">Gaiman</option>
+                <option value="Comodoro">Comodoro Rivadavia</option>
+                <option value="Rada Tilly">Rada Tilly</option>
+                <option value="Esquel">Esquel</option>
+                <option value="Buenos Aires">Buenos Aires / CABA</option>
+              </select>
+
               <button
                 type="button"
                 onClick={() => {
@@ -1277,16 +1342,45 @@ export const InternalCRM: React.FC<InternalCRMProps> = ({ currentRole, initialSu
                               </span>
                             </div>
 
+                            {/* Origin & Priority Badges */}
+                            <div className="flex flex-wrap items-center gap-1 mb-1.5">
+                              {lead.source && (
+                                <span className="text-[9px] px-1.5 py-0.2 rounded font-semibold bg-blue-50 text-blue-700 border border-blue-200 truncate max-w-[160px]" title={lead.source}>
+                                  {lead.source}
+                                </span>
+                              )}
+                              <span className={`text-[9px] px-1.5 py-0.2 rounded font-bold uppercase ${
+                                lead.priority === 'alta' ? 'bg-rose-50 text-rose-700 border border-rose-200' :
+                                lead.priority === 'media' ? 'bg-amber-50 text-amber-700 border border-amber-200' :
+                                'bg-slate-50 text-slate-600 border border-slate-200'
+                              }`}>
+                                {lead.priority}
+                              </span>
+                            </div>
+
                             <h5 className="text-xs font-bold text-slate-900 group-hover:text-[#0078D4] transition-colors leading-tight mb-1 pr-3">
                               {lead.companyName}
                             </h5>
 
-                            <div className="flex items-center gap-1.5 text-[11px] text-slate-600 mb-2">
+                            <div className="flex items-center gap-1.5 text-[11px] text-slate-600 mb-1.5">
                               <User className="w-3 h-3 text-slate-400 shrink-0" />
                               <span className="truncate font-medium">{lead.contactName}</span>
                               {linkedEmployee && (
                                 <span className="text-[9px] px-1 py-0.2 rounded bg-blue-50 text-blue-700 border border-blue-200 shrink-0">
                                   {DEPARTMENT_CONFIG[linkedEmployee.department]?.short}
+                                </span>
+                              )}
+                            </div>
+
+                            {/* Location & Organization Scale */}
+                            <div className="flex items-center justify-between text-[10px] text-slate-500 mb-2">
+                              <div className="flex items-center gap-1 truncate max-w-[140px]">
+                                <MapPin className="w-3 h-3 text-slate-400 shrink-0" />
+                                <span className="truncate">{lead.location}</span>
+                              </div>
+                              {(lead.revenueRange || lead.employeeRange) && (
+                                <span className="text-[9px] font-mono text-slate-600 bg-slate-50 px-1 py-0.2 rounded border border-slate-200 shrink-0 ml-1">
+                                  {lead.revenueRange || lead.employeeRange}
                                 </span>
                               )}
                             </div>
@@ -1354,8 +1448,10 @@ export const InternalCRM: React.FC<InternalCRMProps> = ({ currentRole, initialSu
                     <tr>
                       <th className="py-3 px-4">Empresa / Razón Social</th>
                       <th className="py-3 px-4">Contacto / Decisor</th>
+                      <th className="py-3 px-4">Origen / Formulario</th>
                       <th className="py-3 px-4">Vertical</th>
                       <th className="py-3 px-4">Etapa del Pipeline</th>
+                      <th className="py-3 px-4">Prioridad</th>
                       <th className="py-3 px-4">Presupuesto</th>
                       <th className="py-3 px-4">Score</th>
                       <th className="py-3 px-4 text-right">Acciones</th>
@@ -1388,6 +1484,11 @@ export const InternalCRM: React.FC<InternalCRMProps> = ({ currentRole, initialSu
                               </span>
                             )}
                           </td>
+                          <td className="py-3 px-4">
+                            <span className="text-[10px] font-semibold text-slate-700 bg-slate-100 px-2 py-0.5 rounded border border-slate-200">
+                              {lead.source || 'Diagnóstico'}
+                            </span>
+                          </td>
                           <td className="py-3 px-4 font-semibold text-[#0078D4]">
                             {vert?.shortTitle || lead.vertical}
                           </td>
@@ -1403,6 +1504,15 @@ export const InternalCRM: React.FC<InternalCRMProps> = ({ currentRole, initialSu
                                 </option>
                               ))}
                             </select>
+                          </td>
+                          <td className="py-3 px-4">
+                            <span className={`text-[10px] px-2 py-0.5 rounded font-bold uppercase ${
+                              lead.priority === 'alta' ? 'bg-rose-50 text-rose-700 border border-rose-200' :
+                              lead.priority === 'media' ? 'bg-amber-50 text-amber-700 border border-amber-200' :
+                              'bg-slate-50 text-slate-600 border border-slate-200'
+                            }`}>
+                              {lead.priority}
+                            </span>
                           </td>
                           <td className="py-3 px-4 font-mono font-bold text-slate-900">
                             USD {lead.estimatedMonthlyBudgetUsd}

@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import { Calculator, CheckCircle2, AlertCircle } from 'lucide-react';
+import { LeadCaptureModal } from '../Common/LeadCaptureModal';
 
 export const BreakEvenCalculator: React.FC = () => {
+  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [fixedCosts, setFixedCosts] = useState<number>(15000000); // 15 millones ARS o equivalente
   const [unitPrice, setUnitPrice] = useState<number>(45000);
   const [unitVariableCost, setUnitVariableCost] = useState<number>(22000);
@@ -179,12 +181,41 @@ export const BreakEvenCalculator: React.FC = () => {
             </div>
           </div>
 
-          <div className="pt-4 border-t border-slate-200 mt-4 flex items-center justify-between text-xs text-slate-500">
-            <span>Metodología: Costeo Marginal D&L</span>
-            <span className="text-[#0078D4] font-medium">Validado por Cr. Rodrigo Domínguez</span>
+          <div className="pt-4 border-t border-slate-200 mt-4 space-y-3">
+            <button
+              type="button"
+              onClick={() => setIsModalOpen(true)}
+              className="w-full py-3 px-4 bg-[#0078D4] hover:bg-[#106EBE] text-white text-xs font-bold rounded-lg shadow-sm transition-all flex items-center justify-center gap-2 tracking-wide uppercase"
+            >
+              <CheckCircle2 className="w-4 h-4" />
+              Solicitar Dictamen Oficial de Punto de Equilibrio
+            </button>
+            <div className="flex items-center justify-between text-xs text-slate-500">
+              <span>Metodología: Costeo Marginal D&L</span>
+              <span className="text-[#0078D4] font-medium">Validado por Cr. Rodrigo Domínguez</span>
+            </div>
           </div>
         </div>
       </div>
+
+      <LeadCaptureModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        source="Simulador Punto de Equilibrio"
+        vertical="cfo_estrategico"
+        defaultOpportunityTitle="Auditoría de Punto de Equilibrio & Estructura de Costos"
+        identifiedProblemDefault={`Punto de Equilibrio: ${breakEvenUnits} unidades (${formatCurrency(breakEvenRevenue)}). Resultado operativo simulado: ${formatCurrency(operatingProfit)}.`}
+        calculatedMetrics={{
+          fixedCosts,
+          unitPrice,
+          unitVariableCost,
+          estimatedSales,
+          breakEvenUnits,
+          breakEvenRevenue,
+          operatingProfit,
+          contributionRatio,
+        }}
+      />
     </div>
   );
 };

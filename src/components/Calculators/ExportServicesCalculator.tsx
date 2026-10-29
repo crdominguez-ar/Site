@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
-import { Globe, ShieldAlert, TrendingUp } from 'lucide-react';
+import { Globe, ShieldAlert, TrendingUp, CheckCircle2 } from 'lucide-react';
+import { LeadCaptureModal } from '../Common/LeadCaptureModal';
 
 export const ExportServicesCalculator: React.FC = () => {
+  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [monthlyInvoicedUsd, setMonthlyInvoicedUsd] = useState<number>(6500);
   const [platformFeePercent, setPlatformFeePercent] = useState<number>(3.5);
   const [annualFreeQuotaUsd] = useState<number>(24000); // Cupo de exportación de servicios de libre disponibilidad para personas humanas / simplificado
@@ -169,12 +171,40 @@ export const ExportServicesCalculator: React.FC = () => {
             </div>
           </div>
 
-          <div className="pt-4 border-t border-slate-200 mt-4 flex items-center justify-between text-xs text-slate-500">
-            <span>Encuadre: Com. BCRA & Ley 27.506</span>
-            <span className="text-[#107C41] font-semibold">Asesoría Tributaria Digital D&L</span>
+          <div className="pt-4 border-t border-slate-200 mt-4 space-y-3">
+            <button
+              type="button"
+              onClick={() => setIsModalOpen(true)}
+              className="w-full py-3 px-4 bg-[#107C41] hover:bg-[#0e6837] text-white text-xs font-bold rounded-lg shadow-sm transition-all flex items-center justify-center gap-2 tracking-wide uppercase"
+            >
+              <CheckCircle2 className="w-4 h-4" />
+              Solicitar Encuadre Factura E & Divisas en el CRM
+            </button>
+            <div className="flex items-center justify-between text-xs text-slate-500">
+              <span>Encuadre: Com. BCRA & Ley 27.506</span>
+              <span className="text-[#107C41] font-semibold">Asesoría Tributaria Digital D&L</span>
+            </div>
           </div>
         </div>
       </div>
+
+      <LeadCaptureModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        source="Simulador Factura E"
+        vertical="digital_saas"
+        defaultOpportunityTitle="Encuadre Cambiario & Fiscal Factura E"
+        identifiedProblemDefault={`Facturación: USD ${monthlyInvoicedUsd}/mes. Excedente cupo MULC: USD ${excessSubjectToMulcOrFinancial}. Régimen Economía del Conocimiento: ${isKnowledgeEconomyEligible ? 'Elegible' : 'No elegible'}.`}
+        calculatedMetrics={{
+          monthlyInvoicedUsd,
+          annualInvoicedUsd,
+          platformFeesAnnual,
+          netInvoicedAnnual,
+          quotaFreeUsd,
+          excessSubjectToMulcOrFinancial,
+          taxSavingsEstimateUsd,
+        }}
+      />
     </div>
   );
 };

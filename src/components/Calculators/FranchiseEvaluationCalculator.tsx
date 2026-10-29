@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { Scale, ShieldCheck, AlertTriangle } from 'lucide-react';
+import { Scale, ShieldCheck, AlertTriangle, CheckCircle2 } from 'lucide-react';
+import { LeadCaptureModal } from '../Common/LeadCaptureModal';
 
 interface LegalCheckItem {
   id: string;
@@ -55,6 +56,7 @@ const CCYC_CHECKLIST: LegalCheckItem[] = [
 ];
 
 export const FranchiseEvaluationCalculator: React.FC = () => {
+  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [initialInvestmentUsd, setInitialInvestmentUsd] = useState<number>(45000);
   const [monthlyExpectedRevenueUsd, setMonthlyExpectedRevenueUsd] = useState<number>(18000);
   const [netMarginPercent, setNetMarginPercent] = useState<number>(18);
@@ -269,12 +271,42 @@ export const FranchiseEvaluationCalculator: React.FC = () => {
             </div>
           </div>
 
-          <div className="pt-4 border-t border-slate-200 mt-4 flex items-center justify-between text-xs text-slate-500">
-            <span>Área: Derecho & Finanzas Corporativas</span>
-            <span className="text-[#0078D4] font-medium">Cr Dominguez</span>
+          <div className="pt-4 border-t border-slate-200 mt-4 space-y-3">
+            <button
+              type="button"
+              onClick={() => setIsModalOpen(true)}
+              className="w-full py-3 px-4 bg-[#0078D4] hover:bg-[#106EBE] text-white text-xs font-bold rounded-lg shadow-sm transition-all flex items-center justify-center gap-2 tracking-wide uppercase"
+            >
+              <CheckCircle2 className="w-4 h-4" />
+              Solicitar Auditoría COF & Dictamen CCyC en el CRM
+            </button>
+            <div className="flex items-center justify-between text-xs text-slate-500">
+              <span>Área: Derecho & Finanzas Corporativas</span>
+              <span className="text-[#0078D4] font-medium">Cr Dominguez</span>
+            </div>
           </div>
         </div>
       </div>
+
+      <LeadCaptureModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        source="Simulador Franquicias CCyC"
+        vertical="franquicias"
+        defaultOpportunityTitle="Auditoría Legal COF & Factibilidad de Franquicia"
+        identifiedProblemDefault={`Inversión estimada: USD ${initialInvestmentUsd.toLocaleString()}. Payback: ${paybackMonths.toFixed(1)} meses. Cumplimiento legal CCyC: ${legalComplianceScore}%. Dictamen: ${isLegalSafe ? 'Viable' : 'Riesgos detectados'}.`}
+        calculatedMetrics={{
+          initialInvestmentUsd,
+          monthlyExpectedRevenueUsd,
+          netMarginPercent,
+          monthlyRoyaltyPercent,
+          netMonthlyCashFlow,
+          paybackMonths,
+          annualRoi,
+          legalComplianceScore,
+          isLegalSafe,
+        }}
+      />
     </div>
   );
 };

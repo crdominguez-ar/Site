@@ -103,6 +103,8 @@ export interface Lead {
   id: string;
   contactId?: string; // Linked CRM contact
   employeeId?: string; // Linked employee inside company contact
+  opportunityTitle?: string;
+  source?: string;
   companyName: string;
   contactName: string;
   email: string;
@@ -112,6 +114,10 @@ export interface Lead {
   stage: LeadStage;
   priority: 'alta' | 'media' | 'baja';
   estimatedMonthlyBudgetUsd: number;
+  dealValue?: number;
+  revenueRange?: string;
+  employeeRange?: string;
+  identifiedProblem?: string;
   notes: string;
   score: number; // 0 - 100 calculated from diagnostic completeness
   diagnosticData?: Record<string, any>;

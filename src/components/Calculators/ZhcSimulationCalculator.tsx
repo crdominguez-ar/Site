@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
-import { Cpu, Layers } from 'lucide-react';
+import { Cpu, Layers, CheckCircle2 } from 'lucide-react';
+import { LeadCaptureModal } from '../Common/LeadCaptureModal';
 
 export const ZhcSimulationCalculator: React.FC = () => {
+  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [agentLoopsCount, setAgentLoopsCount] = useState<number>(4);
   const [tokensPerMonthMillions, setTokensPerMonthMillions] = useState<number>(120);
   const [costPerMillionTokens, setCostPerMillionTokens] = useState<number>(1.5);
@@ -173,12 +175,42 @@ export const ZhcSimulationCalculator: React.FC = () => {
             </div>
           </div>
 
-          <div className="pt-4 border-t border-slate-200 mt-4 flex items-center justify-between text-xs text-slate-500">
-            <span>Vanguardia: ZHC & Governança Cripto</span>
-            <span className="text-[#8764B8] font-medium">Asesoría Cr. Carlos Rodrigo Domínguez</span>
+          <div className="pt-4 border-t border-slate-200 mt-4 space-y-3">
+            <button
+              type="button"
+              onClick={() => setIsModalOpen(true)}
+              className="w-full py-3 px-4 bg-[#8764B8] hover:bg-[#7351a0] text-white text-xs font-bold rounded-lg shadow-sm transition-all flex items-center justify-center gap-2 tracking-wide uppercase"
+            >
+              <CheckCircle2 className="w-4 h-4" />
+              Solicitar Enclave Jurídico & Costos LLM en el CRM
+            </button>
+            <div className="flex items-center justify-between text-xs text-slate-500">
+              <span>Vanguardia: ZHC & Governança Cripto</span>
+              <span className="text-[#8764B8] font-medium">Asesoría Cr. Carlos Rodrigo Domínguez</span>
+            </div>
           </div>
         </div>
       </div>
+
+      <LeadCaptureModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        source="Simulador ZHC IA"
+        vertical="ia_zhc"
+        defaultOpportunityTitle="Enclave Jurídico & Arquitectura ZHC (Zero-Human Company)"
+        dealValue={Math.round(totalZhcMonthlyCostUsd)}
+        identifiedProblemDefault={`Simulación ZHC: ${agentLoopsCount} agentes autónomos, ${tokensPerMonthMillions}M tokens/mes. Ahorro estimado: USD ${Math.round(annualSavingsUsd)}/año (${efficiencyRatio.toFixed(0)}%). Requiere encuadre fiscal de tesorería y sustancia legal.`}
+        calculatedMetrics={{
+          agentLoopsCount,
+          tokensPerMonthMillions,
+          costPerMillionTokens,
+          humanFteReplaced,
+          totalZhcMonthlyCostUsd,
+          traditionalMonthlyCostUsd,
+          annualSavingsUsd,
+          efficiencyRatio,
+        }}
+      />
     </div>
   );
 };

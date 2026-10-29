@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { BusinessVertical, Lead } from '../../types';
+import { BusinessVertical, Lead, ContactType, CompanyDepartment } from '../../types';
 import { BUSINESS_VERTICALS } from '../../data/verticals';
-import { dbRepository } from '../../lib/supabaseClient';
-import { ArrowRight, CheckCircle2, Sparkles, Building2, Globe, Scale, LineChart, Cpu, Loader2 } from 'lucide-react';
+import { leadCaptureService } from '../../lib/leadCaptureService';
+import { ArrowRight, CheckCircle2, Sparkles, Building2, Globe, Scale, LineChart, Cpu, Loader2, Users, Briefcase } from 'lucide-react';
 
 interface InteractiveDiagnosticProps {
   onLeadCreated?: (lead: Lead) => void;
@@ -21,9 +21,13 @@ export const InteractiveDiagnostic: React.FC<InteractiveDiagnosticProps> = ({
   const [mainChallenge, setMainChallenge] = useState<string>('costos_rentabilidad');
   const [entityType, setEntityType] = useState<string>('srl_sa');
   
-  // Contact
+  // Contact & Structure
+  const [contactType, setContactType] = useState<ContactType>('empresa');
   const [companyName, setCompanyName] = useState<string>('');
   const [contactName, setContactName] = useState<string>('');
+  const [roleTitle, setRoleTitle] = useState<string>('Dirección General / Titular');
+  const [department, setDepartment] = useState<CompanyDepartment>('direccion_gerencia');
+  const [employeeRange, setEmployeeRange] = useState<string>('6-20');
   const [email, setEmail] = useState<string>('');
   const [phone, setPhone] = useState<string>('');
   const [location, setLocation] = useState<string>('Trelew, Chubut');
@@ -52,25 +56,44 @@ export const InteractiveDiagnostic: React.FC<InteractiveDiagnosticProps> = ({
       let calculatedScore = 75;
       if (annualTurnover === 'more_500k') calculatedScore += 15;
       if (vertical === 'ia_zhc' || vertical === 'cfo_estrategico') calculatedScore += 10;
+      if (employeeRange === '21-50' || employeeRange === '50+') calculatedScore += 5;
 
-      const created = await dbRepository.createLead({
+      const estimatedBudget = annualTurnover === 'more_500k' ? 2500 : 1200;
+
+      const result = await leadCaptureService.captureOpportunityFromForm({
+        source: 'Diagnóstico Estratégico',
+        opportunityTitle: `Diagnóstico: ${companyName} (${verticalConfig.shortTitle})`,
         companyName,
         contactName,
         email,
         phone: phone || '+54 280 400-0000',
+        whatsappNumber: phone,
+        roleTitle,
+        contactType,
+        department,
         location: location || 'Trelew, Chubut',
         vertical,
-        stage: 'nuevo',
         priority: calculatedScore > 85 ? 'alta' : 'media',
         score: Math.min(100, calculatedScore),
-        estimatedMonthlyBudgetUsd: annualTurnover === 'more_500k' ? 2500 : 1200,
-        notes: `Interés: ${verticalConfig.shortTitle} | Ubicación: ${location} | Desafío: ${mainChallenge} | Personería: ${entityType}`,
+        estimatedMonthlyBudgetUsd: estimatedBudget,
+        revenueRange: annualTurnover === 'more_500k' ? '> USD 200k/año' : annualTurnover === '50k_200k' ? 'USD 50k - 200k/año' : '< USD 50k/año',
+        employeeRange,
+        identifiedProblem: `Desafío: ${mainChallenge} | Personería: ${entityType}`,
+        notes: `Diagnóstico interactivo completado. Vertical: ${verticalConfig.title}. Tipo: ${contactType}. Área: ${department}. Rango personal: ${employeeRange}.`,
+        technicalDetails: {
+          annualTurnover,
+          mainChallenge,
+          entityType,
+          employeeRange,
+          department,
+          contactType,
+        },
       });
 
-      setSubmittedLead(created);
+      setSubmittedLead(result.lead);
       setStep(4);
       if (onLeadCreated) {
-        onLeadCreated(created);
+        onLeadCreated(result.lead);
       }
     } catch (err) {
       console.error('Error al guardar lead de diagnóstico:', err);
@@ -315,24 +338,63 @@ export const InteractiveDiagnostic: React.FC<InteractiveDiagnosticProps> = ({
               </p>
             </div>
 
+            {/* Contact Type Toggle */}
+            <div className="bg-slate-50 p-4 rounded-xl border border-slate-200">
+              <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">
+                Estructura de la Organización / Tipo de Contacto
+              </label>
+              <div className="grid grid-cols-2 gap-3">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setContactType('empresa');
+                    setRoleTitle('Dirección General / Titular');
+                  }}
+                  className={`flex items-center justify-center gap-2 py-2.5 px-4 rounded-lg text-xs font-semibold border transition-all ${
+                    contactType === 'empresa'
+                      ? 'bg-blue-600 text-white border-blue-600 shadow-xs'
+                      : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-100'
+                  }`}
+                >
+                  <Building2 className="w-4 h-4" />
+                  Empresa / Corporativo
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setContactType('individual');
+                    setRoleTitle('Profesional Independiente / Socio');
+                  }}
+                  className={`flex items-center justify-center gap-2 py-2.5 px-4 rounded-lg text-xs font-semibold border transition-all ${
+                    contactType === 'individual'
+                      ? 'bg-blue-600 text-white border-blue-600 shadow-xs'
+                      : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-100'
+                  }`}
+                >
+                  <Users className="w-4 h-4" />
+                  Profesional / Individual
+                </button>
+              </div>
+            </div>
+
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">
-                  Razón Social / Nombre Comercial *
+                  {contactType === 'empresa' ? 'Razón Social / Nombre Comercial *' : 'Nombre del Proyecto / Actividad *'}
                 </label>
                 <input
                   type="text"
                   required
                   value={companyName}
                   onChange={(e) => setCompanyName(e.target.value)}
-                  placeholder="ej. Frío Sur Logística SRL"
+                  placeholder={contactType === 'empresa' ? 'ej. Frío Sur Logística SRL' : 'ej. Estudio Jurídico / Consultora'}
                   className="w-full bg-white border border-slate-300 rounded-lg px-4 py-2.5 text-slate-900 text-sm focus:border-[#0078D4] focus:outline-none"
                 />
               </div>
 
               <div>
                 <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">
-                  Nombre del Titular o Socio *
+                  Nombre del Titular o Contacto Decisor *
                 </label>
                 <input
                   type="text"
@@ -342,6 +404,38 @@ export const InteractiveDiagnostic: React.FC<InteractiveDiagnosticProps> = ({
                   placeholder="ej. Martín Rossi"
                   className="w-full bg-white border border-slate-300 rounded-lg px-4 py-2.5 text-slate-900 text-sm focus:border-[#0078D4] focus:outline-none"
                 />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">
+                  Cargo / Rol del Decisor
+                </label>
+                <input
+                  type="text"
+                  value={roleTitle}
+                  onChange={(e) => setRoleTitle(e.target.value)}
+                  placeholder="ej. Socio Gerente / Director Financiero"
+                  className="w-full bg-white border border-slate-300 rounded-lg px-4 py-2.5 text-slate-900 text-sm focus:border-[#0078D4] focus:outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">
+                  Área / Departamento Atendido
+                </label>
+                <select
+                  value={department}
+                  onChange={(e) => setDepartment(e.target.value as CompanyDepartment)}
+                  className="w-full bg-white border border-slate-300 rounded-lg px-4 py-2.5 text-slate-900 text-sm focus:border-[#0078D4] focus:outline-none"
+                >
+                  <option value="direccion_gerencia">Dirección General / Directorio</option>
+                  <option value="administracion_finanzas">Administración & Finanzas</option>
+                  <option value="compras_pagos">Compras & Cuentas por Pagar</option>
+                  <option value="logistica_operaciones">Logística & Operaciones</option>
+                  <option value="recursos_humanos">Recursos Humanos & Nóminas</option>
+                  <option value="legales_cumplimiento">Legales & Cumplimiento</option>
+                  <option value="comercial_ventas">Comercial & Ventas</option>
+                </select>
               </div>
 
               <div>
@@ -372,17 +466,44 @@ export const InteractiveDiagnostic: React.FC<InteractiveDiagnosticProps> = ({
               </div>
             </div>
 
-            <div>
-              <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">
-                Ubicación / Radicación de Operaciones
-              </label>
-              <input
-                type="text"
-                value={location}
-                onChange={(e) => setLocation(e.target.value)}
-                placeholder="Trelew / Puerto Madryn / Comodoro / Remoto"
-                className="w-full bg-white border border-slate-300 rounded-lg px-4 py-2.5 text-slate-900 text-sm focus:border-[#0078D4] focus:outline-none"
-              />
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">
+                  Nómina / Dotación de Empleados
+                </label>
+                <select
+                  value={employeeRange}
+                  onChange={(e) => setEmployeeRange(e.target.value)}
+                  className="w-full bg-white border border-slate-300 rounded-lg px-4 py-2.5 text-slate-900 text-sm focus:border-[#0078D4] focus:outline-none"
+                >
+                  <option value="1-5">1 a 5 colaboradores (Microempresa)</option>
+                  <option value="6-20">6 a 20 colaboradores (Pequeña)</option>
+                  <option value="21-50">21 a 50 colaboradores (Mediana tramo 1)</option>
+                  <option value="50+">Más de 50 colaboradores (Mediana tramo 2 / Corporación)</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">
+                  Ubicación / Radicación Principal
+                </label>
+                <select
+                  value={location}
+                  onChange={(e) => setLocation(e.target.value)}
+                  className="w-full bg-white border border-slate-300 rounded-lg px-4 py-2.5 text-slate-900 text-sm focus:border-[#0078D4] focus:outline-none"
+                >
+                  <option value="Trelew, Chubut">Trelew, Chubut</option>
+                  <option value="Puerto Madryn, Chubut">Puerto Madryn, Chubut</option>
+                  <option value="Rawson, Chubut">Rawson, Chubut</option>
+                  <option value="Gaiman, Chubut">Gaiman, Chubut</option>
+                  <option value="Comodoro Rivadavia, Chubut">Comodoro Rivadavia, Chubut</option>
+                  <option value="Rada Tilly, Chubut">Rada Tilly, Chubut</option>
+                  <option value="Esquel, Chubut">Esquel, Chubut</option>
+                  <option value="Buenos Aires / CABA">Buenos Aires / CABA</option>
+                  <option value="Resto de Argentina / Remoto">Resto de Argentina / Remoto</option>
+                  <option value="Internacional / ZHC">Internacional / Exterior</option>
+                </select>
+              </div>
             </div>
 
             <div className="flex justify-between pt-4 border-t border-slate-200">
