@@ -43,7 +43,8 @@ import {
   ResendConfig, 
   ResendEmailLog, 
   DashboardWidgetConfig, 
-  WidgetId 
+  WidgetId,
+  PipelineStageConfig
 } from '../../types';
 import { InternalCRM } from '../CRM/InternalCRM';
 import { WebCMSEditor } from './WebCMSEditor';
@@ -131,6 +132,14 @@ export const WidgetizableDashboard: React.FC<WidgetizableDashboardProps> = ({
   const [quickTaskTitle, setQuickTaskTitle] = useState('');
   const [quickTaskCompany, setQuickTaskCompany] = useState('');
 
+  const [pipelineStages, setPipelineStages] = useState<PipelineStageConfig[]>([
+    { id: 'nuevo', label: 'Nuevo Diagnóstico', countColor: 'text-blue-700 bg-blue-100', bgBadge: 'bg-blue-50 border-blue-200', enabled: true, order: 1 },
+    { id: 'diagnostico', label: 'Evaluación Técnica', countColor: 'text-indigo-700 bg-indigo-100', bgBadge: 'bg-indigo-50 border-indigo-200', enabled: true, order: 2 },
+    { id: 'propuesta', label: 'Propuesta / Modelo', countColor: 'text-sky-700 bg-sky-100', bgBadge: 'bg-sky-50 border-sky-200', enabled: true, order: 3 },
+    { id: 'negociacion', label: 'Negociación Socio', countColor: 'text-amber-700 bg-amber-100', bgBadge: 'bg-amber-50 border-amber-200', enabled: true, order: 4 },
+    { id: 'activo', label: 'Cliente Activo', countColor: 'text-emerald-700 bg-emerald-100', bgBadge: 'bg-emerald-50 border-emerald-200', enabled: true, order: 5 },
+  ]);
+
   const loadAllData = async () => {
     const l = await dbRepository.getLeads();
     const t = await dbRepository.getTasks();
@@ -140,6 +149,17 @@ export const WidgetizableDashboard: React.FC<WidgetizableDashboardProps> = ({
     setCurrentUser(userService.getCurrentUser());
     setResendConfig(resendService.getConfig());
     setResendLogs(resendService.getLogs());
+
+    if (typeof window !== 'undefined') {
+      const savedStages = localStorage.getItem('cr_pipeline_stages_config');
+      if (savedStages) {
+        try {
+          setPipelineStages(JSON.parse(savedStages));
+        } catch {
+          // ignore
+        }
+      }
+    }
   };
 
   useEffect(() => {
@@ -561,14 +581,13 @@ export const WidgetizableDashboard: React.FC<WidgetizableDashboardProps> = ({
               </div>
 
             {/* Stages Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
-              {[
-                { id: 'nuevo', label: 'Nuevo Diagnóstico', color: 'border-blue-400 bg-blue-50/40 text-blue-800' },
-                { id: 'diagnostico', label: 'Evaluación Técnica', color: 'border-indigo-400 bg-indigo-50/40 text-indigo-800' },
-                { id: 'propuesta', label: 'Propuesta / Modelo', color: 'border-sky-400 bg-sky-50/40 text-sky-800' },
-                { id: 'negociacion', label: 'Negociación Socio', color: 'border-amber-400 bg-amber-50/40 text-amber-800' },
-                { id: 'activo', label: 'Cliente Activo', color: 'border-emerald-400 bg-emerald-50/40 text-emerald-800' },
-              ].map((stage) => {
+            <div 
+              className="grid grid-cols-1 sm:grid-cols-2 gap-3"
+              style={{
+                gridTemplateColumns: `repeat(${Math.max(pipelineStages.filter((s) => s.enabled).length, 1)}, minmax(0, 1fr))`
+              }}
+            >
+              {pipelineStages.filter((s) => s.enabled).map((stage) => {
                 const stageLeads = leads.filter((l) => l.stage === stage.id);
                 const totalStageBudget = stageLeads.reduce((acc, curr) => acc + (curr.estimatedMonthlyBudgetUsd || 0), 0);
 

@@ -14,7 +14,8 @@ import {
   CompanyDepartment,
   CompanyEmployee,
   MeetingPlatform, 
-  MeetingType 
+  MeetingType,
+  PipelineStageConfig
 } from '../../types';
 import { BUSINESS_VERTICALS } from '../../data/verticals';
 import { 
@@ -23,7 +24,8 @@ import {
   ExternalLink, Copy, FileText, ChevronLeft, ChevronRight, Download, 
   Building2, MapPin, Tag, Check, Trash2, Edit3, Shield, ArrowUpRight,
   Send, Sparkles, Briefcase, ChevronDown, ChevronUp, Star, Layers,
-  Globe, AlertCircle, TrendingUp
+  Globe, AlertCircle, TrendingUp, LayoutGrid, List, SlidersHorizontal,
+  GripVertical, Settings2, RotateCcw, Eye, EyeOff
 } from 'lucide-react';
 
 interface InternalCRMProps {
@@ -31,12 +33,12 @@ interface InternalCRMProps {
   initialSubTab?: 'pipeline' | 'contacts' | 'calendar' | 'tasks';
 }
 
-const STAGES: { id: LeadStage; label: string; countColor: string; bgBadge: string }[] = [
-  { id: 'nuevo', label: 'Nuevo Diagnóstico', countColor: 'text-[#0078D4]', bgBadge: 'bg-blue-50 border-blue-200' },
-  { id: 'diagnostico', label: 'Evaluación Técnica', countColor: 'text-indigo-600', bgBadge: 'bg-indigo-50 border-indigo-200' },
-  { id: 'propuesta', label: 'Propuesta / Modelo', countColor: 'text-cyan-700', bgBadge: 'bg-cyan-50 border-cyan-200' },
-  { id: 'negociacion', label: 'Negociación Socio', countColor: 'text-amber-700', bgBadge: 'bg-amber-50 border-amber-200' },
-  { id: 'activo', label: 'Cliente Activo', countColor: 'text-[#107C41]', bgBadge: 'bg-emerald-50 border-emerald-200' },
+const DEFAULT_STAGES: PipelineStageConfig[] = [
+  { id: 'nuevo', label: 'Nuevo Diagnóstico', countColor: 'text-[#0078D4]', bgBadge: 'bg-blue-50 border-blue-200', enabled: true, order: 1 },
+  { id: 'diagnostico', label: 'Evaluación Técnica', countColor: 'text-indigo-600', bgBadge: 'bg-indigo-50 border-indigo-200', enabled: true, order: 2 },
+  { id: 'propuesta', label: 'Propuesta / Modelo', countColor: 'text-cyan-700', bgBadge: 'bg-cyan-50 border-cyan-200', enabled: true, order: 3 },
+  { id: 'negociacion', label: 'Negociación Socio', countColor: 'text-amber-700', bgBadge: 'bg-amber-50 border-amber-200', enabled: true, order: 4 },
+  { id: 'activo', label: 'Cliente Activo', countColor: 'text-[#107C41]', bgBadge: 'bg-emerald-50 border-emerald-200', enabled: true, order: 5 },
 ];
 
 export const DEPARTMENT_CONFIG: Record<CompanyDepartment, { label: string; color: string; short: string }> = {
@@ -55,12 +57,37 @@ export const DEPARTMENT_CONFIG: Record<CompanyDepartment, { label: string; color
 export const InternalCRM: React.FC<InternalCRMProps> = ({ currentRole, initialSubTab = 'pipeline' }) => {
   const [activeTab, setActiveTab] = useState<'pipeline' | 'contacts' | 'calendar' | 'tasks'>(initialSubTab);
 
+  // View modes
+  const [pipelineViewMode, setPipelineViewMode] = useState<'kanban' | 'table'>('kanban');
+  const [contactsViewMode, setContactsViewMode] = useState<'cards' | 'table'>('cards');
+
   // Core Data
   const [leads, setLeads] = useState<Lead[]>([]);
   const [tasks, setTasks] = useState<CRMTask[]>([]);
   const [contacts, setContacts] = useState<CRMContact[]>([]);
   const [meetings, setMeetings] = useState<CRMMeeting[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // Pipeline Stage Customization
+  const [pipelineStages, setPipelineStages] = useState<PipelineStageConfig[]>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('cr_pipeline_stages_config');
+      if (saved) {
+        try {
+          return JSON.parse(saved);
+        } catch (e) {
+          console.error(e);
+        }
+      }
+    }
+    return DEFAULT_STAGES;
+  });
+  const [showStageSettingsModal, setShowStageSettingsModal] = useState(false);
+  const [tempStages, setTempStages] = useState<PipelineStageConfig[]>(DEFAULT_STAGES);
+
+  // Drag and Drop State
+  const [draggingLeadId, setDraggingLeadId] = useState<string | null>(null);
+  const [dragOverStageId, setDragOverStageId] = useState<LeadStage | null>(null);
 
   // Filters & Search
   const [searchQuery, setSearchQuery] = useState('');
@@ -125,9 +152,6 @@ export const InternalCRM: React.FC<InternalCRMProps> = ({ currentRole, initialSu
   const [newEmpIsPrimary, setNewEmpIsPrimary] = useState(false);
   const [newEmpNotes, setNewEmpNotes] = useState('');
 
-  // Contact Detail Drawer State
-  const [viewingContact, setViewingContact] = useState<CRMContact | null>(null);
-
   // Meeting Scheduler Modal State
   const [showMeetingModal, setShowMeetingModal] = useState(false);
   const [meetingTitle, setMeetingTitle] = useState('');
@@ -172,7 +196,6 @@ export const InternalCRM: React.FC<InternalCRMProps> = ({ currentRole, initialSu
       setContacts(c);
       setMeetings(m);
 
-      // Pre-expand companies with employees by default for great overview
       const defaultExpanded: Record<string, boolean> = {};
       c.forEach((contact) => {
         if (contact.type === 'empresa' && contact.employees && contact.employees.length > 0) {
@@ -218,6 +241,61 @@ export const InternalCRM: React.FC<InternalCRMProps> = ({ currentRole, initialSu
     }
   };
 
+  // Drag and drop handlers for Kanban cards
+  const handleDragStart = (e: React.DragEvent, leadId: string) => {
+    e.dataTransfer.setData('text/plain', leadId);
+    e.dataTransfer.effectAllowed = 'move';
+    setDraggingLeadId(leadId);
+  };
+
+  const handleDragEnd = () => {
+    setDraggingLeadId(null);
+    setDragOverStageId(null);
+  };
+
+  const handleDragOver = (e: React.DragEvent, stageId: LeadStage) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    if (dragOverStageId !== stageId) {
+      setDragOverStageId(stageId);
+    }
+  };
+
+  const handleDragLeave = (e: React.DragEvent, stageId: LeadStage) => {
+    if (dragOverStageId === stageId) {
+      setDragOverStageId(null);
+    }
+  };
+
+  const handleDrop = async (e: React.DragEvent, stageId: LeadStage) => {
+    e.preventDefault();
+    const leadId = e.dataTransfer.getData('text/plain') || draggingLeadId;
+    setDraggingLeadId(null);
+    setDragOverStageId(null);
+
+    if (leadId) {
+      await handleStageChange(leadId, stageId);
+      const stageObj = pipelineStages.find((s) => s.id === stageId);
+      setCopyFeedback(`Oportunidad movida a: ${stageObj?.label || stageId}`);
+      setTimeout(() => setCopyFeedback(null), 3000);
+    }
+  };
+
+  // Pipeline stage customization save
+  const handleSaveStageSettings = () => {
+    setPipelineStages(tempStages);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('cr_pipeline_stages_config', JSON.stringify(tempStages));
+    }
+    setShowStageSettingsModal(false);
+    setCopyFeedback('¡Estructura de columnas del Pipeline actualizada!');
+    setTimeout(() => setCopyFeedback(null), 3000);
+  };
+
+  const handleResetStageSettings = () => {
+    setTempStages(DEFAULT_STAGES);
+  };
+
   // Task completion toggle
   const handleToggleTask = async (taskId: string) => {
     await dbRepository.toggleTaskCompletion(taskId);
@@ -243,7 +321,7 @@ export const InternalCRM: React.FC<InternalCRMProps> = ({ currentRole, initialSu
     await loadData();
   };
 
-  // Handle open Create Lead Modal (optionally prefilled with a contact!)
+  // Handle open Create Lead Modal
   const handleOpenCreateLeadModal = (prefilledContact?: CRMContact, prefilledEmployee?: CompanyEmployee) => {
     if (prefilledContact) {
       setLeadSourceMode('from_contact');
@@ -286,7 +364,6 @@ export const InternalCRM: React.FC<InternalCRMProps> = ({ currentRole, initialSu
     setShowLeadModal(true);
   };
 
-  // React to contact selection change inside Lead Modal
   const handleContactSelectForLead = (contactId: string) => {
     setSelectedContactForLead(contactId);
     setSelectedEmployeeForLead('');
@@ -301,7 +378,6 @@ export const InternalCRM: React.FC<InternalCRMProps> = ({ currentRole, initialSu
     }
   };
 
-  // React to employee selection inside Lead Modal
   const handleEmployeeSelectForLead = (empId: string) => {
     setSelectedEmployeeForLead(empId);
     const c = contacts.find((contact) => contact.id === selectedContactForLead);
@@ -319,14 +395,13 @@ export const InternalCRM: React.FC<InternalCRMProps> = ({ currentRole, initialSu
     }
   };
 
-  // Create Lead (from existing contact or brand new)
+  // Create Lead
   const handleCreateLead = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newLeadCompany || !newLeadContact) return;
 
     let finalContactId = selectedContactForLead;
 
-    // If source mode was brand new, register contact first
     if (leadSourceMode === 'new_company') {
       const cleanPhone = (newLeadPhone || '').replace(/[^0-9]/g, '');
       const cleanWhatsapp = cleanPhone.startsWith('54') ? cleanPhone : cleanPhone.length > 6 ? `549${cleanPhone}` : '';
@@ -363,7 +438,6 @@ export const InternalCRM: React.FC<InternalCRMProps> = ({ currentRole, initialSu
       notes: newLeadNotes || `Alta directa desde el CRM por dirección ejecutiva (${BUSINESS_VERTICALS[newLeadVertical].shortTitle}).`,
     });
 
-    // Update the contact with this lead
     if (finalContactId) {
       await dbRepository.updateContact(finalContactId, {
         leadId: createdLead.id,
@@ -373,13 +447,13 @@ export const InternalCRM: React.FC<InternalCRMProps> = ({ currentRole, initialSu
     }
 
     setShowLeadModal(false);
-    setCopyFeedback('¡Oportunidad creada y vinculada con éxito al contacto!');
+    setCopyFeedback('¡Oportunidad creada y vinculada con éxito!');
     setTimeout(() => setCopyFeedback(null), 3000);
     await loadData();
     setActiveTab('pipeline');
   };
 
-  // Create Contact (Empresa vs Individual)
+  // Create Contact
   const handleCreateContact = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!contactName || !contactCompany) return;
@@ -459,7 +533,7 @@ export const InternalCRM: React.FC<InternalCRMProps> = ({ currentRole, initialSu
       }
     }
 
-    const updated = await dbRepository.addEmployeeToContact(activeCompanyForEmployee.id, {
+    await dbRepository.addEmployeeToContact(activeCompanyForEmployee.id, {
       name: newEmpName,
       department: newEmpDept,
       roleTitle: newEmpRole || DEPARTMENT_CONFIG[newEmpDept].short,
@@ -469,10 +543,6 @@ export const InternalCRM: React.FC<InternalCRMProps> = ({ currentRole, initialSu
       isPrimaryContact: newEmpIsPrimary,
       notes: newEmpNotes,
     });
-
-    if (viewingContact && viewingContact.id === activeCompanyForEmployee.id) {
-      setViewingContact(updated);
-    }
 
     setNewEmpName('');
     setNewEmpRole('');
@@ -487,12 +557,8 @@ export const InternalCRM: React.FC<InternalCRMProps> = ({ currentRole, initialSu
     await loadData();
   };
 
-  // Remove employee
   const handleRemoveEmployee = async (contactId: string, employeeId: string) => {
-    const updated = await dbRepository.removeEmployeeFromContact(contactId, employeeId);
-    if (viewingContact && viewingContact.id === contactId) {
-      setViewingContact(updated);
-    }
+    await dbRepository.removeEmployeeFromContact(contactId, employeeId);
     await loadData();
   };
 
@@ -516,7 +582,6 @@ export const InternalCRM: React.FC<InternalCRMProps> = ({ currentRole, initialSu
     setShowMeetingModal(true);
   };
 
-  // Generate Auto Video Link
   const generateMeetingUrl = (platform: MeetingPlatform, title: string): string => {
     const slug = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').slice(0, 24);
     const randomHex = Math.random().toString(36).substring(2, 7);
@@ -534,7 +599,6 @@ export const InternalCRM: React.FC<InternalCRMProps> = ({ currentRole, initialSu
     }
   };
 
-  // Create Meeting
   const handleCreateMeeting = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!meetingTitle) return;
@@ -597,7 +661,6 @@ export const InternalCRM: React.FC<InternalCRMProps> = ({ currentRole, initialSu
     setActiveTab('calendar');
   };
 
-  // Google Calendar URL Generator
   const getGoogleCalendarUrl = (m: CRMMeeting): string => {
     const startClean = `${m.date.replace(/-/g, '')}T${m.startTime.replace(/:/g, '')}00`;
     const endClean = `${m.date.replace(/-/g, '')}T${m.endTime.replace(/:/g, '')}00`;
@@ -609,7 +672,6 @@ export const InternalCRM: React.FC<InternalCRMProps> = ({ currentRole, initialSu
     return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${titleEnc}&dates=${startClean}/${endClean}&details=${detailsEnc}&location=${locationEnc}`;
   };
 
-  // Download .ICS calendar file
   const handleDownloadIcs = (m: CRMMeeting) => {
     const startIso = `${m.date.replace(/-/g, '')}T${m.startTime.replace(/:/g, '')}00`;
     const endIso = `${m.date.replace(/-/g, '')}T${m.endTime.replace(/:/g, '')}00`;
@@ -644,7 +706,6 @@ export const InternalCRM: React.FC<InternalCRMProps> = ({ currentRole, initialSu
     URL.revokeObjectURL(url);
   };
 
-  // WhatsApp Instant Message
   const handleSendWhatsApp = (contact: CRMContact, employee?: CompanyEmployee, messageTemplate: 'general' | 'reunion' | 'propuesta' = 'general') => {
     const targetName = employee ? employee.name : contact.name;
     const waNumber = employee?.whatsappNumber || contact.whatsappNumber;
@@ -664,7 +725,6 @@ export const InternalCRM: React.FC<InternalCRMProps> = ({ currentRole, initialSu
     window.open(targetUrl, '_blank');
   };
 
-  // Open Direct Email Composer
   const handleOpenEmailComposer = (contact: CRMContact, employee?: CompanyEmployee) => {
     const targetName = employee ? employee.name : contact.name;
     const targetEmail = employee ? employee.email : contact.email;
@@ -677,7 +737,6 @@ export const InternalCRM: React.FC<InternalCRMProps> = ({ currentRole, initialSu
     setShowEmailModal(true);
   };
 
-  // Send Direct Email via Resend
   const handleSendDirectEmail = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!emailRecipient || !emailSubject) return;
@@ -726,7 +785,6 @@ export const InternalCRM: React.FC<InternalCRMProps> = ({ currentRole, initialSu
     }
   };
 
-  // Save Minutes
   const handleSaveMinutes = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!activeMeetingForMinutes) return;
@@ -782,6 +840,7 @@ export const InternalCRM: React.FC<InternalCRMProps> = ({ currentRole, initialSu
     return matchesSearch;
   });
 
+  const enabledStages = pipelineStages.filter((s) => s.enabled);
   const totalPipelineBudget = leads.reduce((acc, curr) => acc + (curr.estimatedMonthlyBudgetUsd || 0), 0);
   const companyCount = contacts.filter((c) => c.type === 'empresa').length;
   const individualCount = contacts.filter((c) => c.type === 'individual').length;
@@ -807,13 +866,13 @@ export const InternalCRM: React.FC<InternalCRMProps> = ({ currentRole, initialSu
                 Cr Dominguez · Suite CRM 360°
               </span>
               <span className="text-xs text-slate-400">|</span>
-              <span className="text-xs text-slate-500 font-medium">Empresas con Departamentos · Contactos · Oportunidades · Meet</span>
+              <span className="text-xs text-slate-500 font-medium">Pipeline Drag & Drop · Vistas Tarjetas/Listado · Columnas Editables</span>
             </div>
             <h2 className="text-xl font-bold text-slate-900 mt-1">
               Gestión Comercial, Estructura de Empresas & Agenda Ejecutiva
             </h2>
             <p className="text-xs text-slate-600 mt-0.5">
-              Identificación clara de Empresas y Personas, áreas departamentales (Administración, Finanzas, Logística, Envíos, Pagos), vinculación con el pipeline y agendamiento de videollamadas.
+              Administración de oportunidades con arrastre interactivo, alternancia de vistas en tarjetas o listados compactos y columnas configurables.
             </p>
           </div>
 
@@ -945,7 +1004,7 @@ export const InternalCRM: React.FC<InternalCRMProps> = ({ currentRole, initialSu
         </div>
       </div>
 
-      {/* GLOBAL SEARCH & FILTER BAR */}
+      {/* TOOLBAR: SEARCH, FILTERS & VIEW MODE SWITCHERS */}
       <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3 bg-white p-3.5 rounded-xl border border-slate-200 shadow-xs">
         <div className="relative flex-1">
           <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
@@ -975,8 +1034,56 @@ export const InternalCRM: React.FC<InternalCRMProps> = ({ currentRole, initialSu
           )}
         </div>
 
-        {/* Filters */}
+        {/* View Mode Switcher and Options */}
         <div className="flex flex-wrap items-center gap-2">
+          {/* PIPELINE VIEW SWITCHER & COLUMN SETTINGS */}
+          {activeTab === 'pipeline' && (
+            <div className="flex items-center gap-1.5">
+              <button
+                type="button"
+                onClick={() => {
+                  setTempStages(pipelineStages);
+                  setShowStageSettingsModal(true);
+                }}
+                className="px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-lg flex items-center gap-1.5 transition-colors cursor-pointer border border-slate-200"
+                title="Configurar y renombrar columnas, achicar o expandir embudo"
+              >
+                <Settings2 className="w-3.5 h-3.5 text-[#0078D4]" />
+                <span>Columnas ({enabledStages.length}/{pipelineStages.length})</span>
+              </button>
+
+              <div className="flex items-center bg-slate-100 p-0.5 rounded-lg border border-slate-200">
+                <button
+                  type="button"
+                  onClick={() => setPipelineViewMode('kanban')}
+                  className={`px-2.5 py-1 rounded text-xs font-semibold flex items-center gap-1 transition-all ${
+                    pipelineViewMode === 'kanban'
+                      ? 'bg-white text-[#0078D4] shadow-2xs font-bold'
+                      : 'text-slate-600 hover:text-slate-900'
+                  }`}
+                  title="Vista Tablero Kanban con Arrastre y Soltado"
+                >
+                  <LayoutGrid className="w-3.5 h-3.5" />
+                  <span className="hidden sm:inline">Kanban</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPipelineViewMode('table')}
+                  className={`px-2.5 py-1 rounded text-xs font-semibold flex items-center gap-1 transition-all ${
+                    pipelineViewMode === 'table'
+                      ? 'bg-white text-[#0078D4] shadow-2xs font-bold'
+                      : 'text-slate-600 hover:text-slate-900'
+                  }`}
+                  title="Vista Tabla / Listado compacto"
+                >
+                  <List className="w-3.5 h-3.5" />
+                  <span className="hidden sm:inline">Listado</span>
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* CONTACTS VIEW SWITCHER */}
           {activeTab === 'contacts' && (
             <>
               {/* Type Filter */}
@@ -1026,19 +1133,35 @@ export const InternalCRM: React.FC<InternalCRMProps> = ({ currentRole, initialSu
                 ))}
               </select>
 
-              {/* Relationship Status Filter */}
-              <select
-                value={contactStatusFilter}
-                onChange={(e) => setContactStatusFilter(e.target.value as any)}
-                className="bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs text-slate-700 font-medium focus:outline-none focus:border-[#0078D4]"
-              >
-                <option value="all">Todos los Vínculos</option>
-                <option value="lead">Leads Calificados</option>
-                <option value="cliente_activo">Clientes Activos</option>
-                <option value="partner">Partners Estratégicos</option>
-                <option value="proveedor">Proveedores</option>
-                <option value="ex_cliente">Ex-clientes</option>
-              </select>
+              {/* View Switcher: Cards vs Table */}
+              <div className="flex items-center bg-slate-100 p-0.5 rounded-lg border border-slate-200">
+                <button
+                  type="button"
+                  onClick={() => setContactsViewMode('cards')}
+                  className={`px-2.5 py-1 rounded text-xs font-semibold flex items-center gap-1 transition-all ${
+                    contactsViewMode === 'cards'
+                      ? 'bg-white text-[#0078D4] shadow-2xs font-bold'
+                      : 'text-slate-600 hover:text-slate-900'
+                  }`}
+                  title="Vista de Tarjetas con Estructura Expandible"
+                >
+                  <LayoutGrid className="w-3.5 h-3.5" />
+                  <span className="hidden sm:inline">Tarjetas</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setContactsViewMode('table')}
+                  className={`px-2.5 py-1 rounded text-xs font-semibold flex items-center gap-1 transition-all ${
+                    contactsViewMode === 'table'
+                      ? 'bg-white text-[#0078D4] shadow-2xs font-bold'
+                      : 'text-slate-600 hover:text-slate-900'
+                  }`}
+                  title="Vista de Listado Ejecutivo Compacto"
+                >
+                  <List className="w-3.5 h-3.5" />
+                  <span className="hidden sm:inline">Listado</span>
+                </button>
+              </div>
             </>
           )}
 
@@ -1059,464 +1182,700 @@ export const InternalCRM: React.FC<InternalCRMProps> = ({ currentRole, initialSu
       </div>
 
       {/* ========================================================================= */}
-      {/* VIEW 1: PIPELINE DE OPORTUNIDADES (KANBAN) */}
+      {/* VIEW 1: PIPELINE DE OPORTUNIDADES (KANBAN DRAG & DROP / LISTADO) */}
       {/* ========================================================================= */}
       {activeTab === 'pipeline' && (
         <div className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
-            {STAGES.map((stage) => {
-              const stageLeads = filteredLeads.filter((l) => l.stage === stage.id);
-              const stageBudget = stageLeads.reduce((acc, curr) => acc + (curr.estimatedMonthlyBudgetUsd || 0), 0);
+          {pipelineViewMode === 'kanban' ? (
+            /* KANBAN BOARD WITH DRAG AND DROP */
+            <div className={`grid gap-4 ${
+              enabledStages.length === 1 ? 'grid-cols-1' :
+              enabledStages.length === 2 ? 'grid-cols-1 md:grid-cols-2' :
+              enabledStages.length === 3 ? 'grid-cols-1 md:grid-cols-3' :
+              enabledStages.length === 4 ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-4' :
+              'grid-cols-1 md:grid-cols-3 lg:grid-cols-5'
+            }`}>
+              {enabledStages.map((stage) => {
+                const stageLeads = filteredLeads.filter((l) => l.stage === stage.id);
+                const stageBudget = stageLeads.reduce((acc, curr) => acc + (curr.estimatedMonthlyBudgetUsd || 0), 0);
+                const isOver = dragOverStageId === stage.id;
 
-              return (
-                <div key={stage.id} className="bg-slate-50/70 border border-slate-200 rounded-xl p-3 flex flex-col min-h-[520px]">
-                  {/* Column Header */}
-                  <div className="flex items-center justify-between pb-2.5 mb-3 border-b border-slate-200">
-                    <div className="flex items-center gap-1.5">
-                      <span className={`w-2 h-2 rounded-full ${
-                        stage.id === 'activo' ? 'bg-[#107C41]' :
-                        stage.id === 'negociacion' ? 'bg-amber-600' :
-                        stage.id === 'propuesta' ? 'bg-cyan-600' :
-                        stage.id === 'diagnostico' ? 'bg-indigo-600' : 'bg-[#0078D4]'
-                      }`} />
-                      <h4 className="text-xs font-bold text-slate-800">{stage.label}</h4>
+                return (
+                  <div
+                    key={stage.id}
+                    onDragOver={(e) => handleDragOver(e, stage.id)}
+                    onDragLeave={(e) => handleDragLeave(e, stage.id)}
+                    onDrop={(e) => handleDrop(e, stage.id)}
+                    className={`rounded-xl p-3 flex flex-col min-h-[540px] transition-all border ${
+                      isOver
+                        ? 'border-[#0078D4] bg-blue-50/70 ring-2 ring-blue-300'
+                        : 'border-slate-200/90 bg-slate-50/70'
+                    }`}
+                  >
+                    {/* Column Header */}
+                    <div className="flex items-center justify-between pb-2.5 mb-2.5 border-b border-slate-200">
+                      <div className="flex items-center gap-1.5 truncate">
+                        <span className={`w-2 h-2 rounded-full shrink-0 ${
+                          stage.id === 'activo' ? 'bg-[#107C41]' :
+                          stage.id === 'negociacion' ? 'bg-amber-600' :
+                          stage.id === 'propuesta' ? 'bg-cyan-600' :
+                          stage.id === 'diagnostico' ? 'bg-indigo-600' : 'bg-[#0078D4]'
+                        }`} />
+                        <h4 className="text-xs font-bold text-slate-800 truncate" title={stage.label}>
+                          {stage.label}
+                        </h4>
+                      </div>
+                      <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-white text-slate-700 border border-slate-200 shadow-2xs shrink-0">
+                        {stageLeads.length}
+                      </span>
                     </div>
-                    <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-white text-slate-700 border border-slate-200 shadow-2xs">
-                      {stageLeads.length}
-                    </span>
-                  </div>
 
-                  <div className="text-[10px] text-slate-500 font-mono mb-2 flex justify-between">
-                    <span>Proyectado:</span>
-                    <span className="font-bold text-slate-700">USD {stageBudget.toLocaleString()}/mes</span>
-                  </div>
+                    <div className="text-[10px] text-slate-500 font-mono mb-2 flex justify-between items-center">
+                      <span>Proyectado:</span>
+                      <span className="font-bold text-slate-700">USD {stageBudget.toLocaleString()}</span>
+                    </div>
 
-                  {/* Cards */}
-                  <div className="space-y-2.5 flex-1 overflow-y-auto pr-0.5">
-                    {stageLeads.map((lead) => {
+                    {/* Drop target indicator */}
+                    {isOver && (
+                      <div className="p-3 mb-2.5 rounded-lg border-2 border-dashed border-[#0078D4] bg-blue-100/60 text-[#0078D4] text-xs font-bold text-center animate-pulse">
+                        Soltar aquí para mover a {stage.label}
+                      </div>
+                    )}
+
+                    {/* Cards Container */}
+                    <div className="space-y-2.5 flex-1 overflow-y-auto pr-0.5">
+                      {stageLeads.map((lead) => {
+                        const vert = BUSINESS_VERTICALS[lead.vertical];
+                        const linkedContact = contacts.find((c) => c.id === lead.contactId || c.leadId === lead.id || c.companyName === lead.companyName);
+                        const linkedEmployee = linkedContact?.employees?.find((e) => e.id === lead.employeeId);
+                        const isDragging = draggingLeadId === lead.id;
+
+                        return (
+                          <div
+                            key={lead.id}
+                            draggable
+                            onDragStart={(e) => handleDragStart(e, lead.id)}
+                            onDragEnd={handleDragEnd}
+                            onClick={() => setSelectedLead(lead)}
+                            className={`bg-white border rounded-lg p-3 shadow-2xs hover:shadow-xs transition-all cursor-grab active:cursor-grabbing group relative ${
+                              isDragging
+                                ? 'opacity-40 border-dashed border-[#0078D4]'
+                                : 'border-slate-200 hover:border-[#0078D4]'
+                            }`}
+                          >
+                            {/* Drag Grip Handle */}
+                            <div className="absolute top-2.5 right-2 text-slate-300 group-hover:text-slate-500 cursor-grab" title="Arrastrar para avanzar o retroceder">
+                              <GripVertical className="w-3.5 h-3.5" />
+                            </div>
+
+                            <div className="flex items-start justify-between gap-1 mb-1.5 pr-4">
+                              <span className="text-[10px] font-bold uppercase tracking-wider text-[#0078D4] truncate block max-w-[120px]">
+                                {vert?.shortTitle || lead.vertical}
+                              </span>
+                              <span className="text-[10px] font-mono font-bold text-slate-700 bg-slate-100 px-1.5 py-0.5 rounded">
+                                USD {lead.estimatedMonthlyBudgetUsd}
+                              </span>
+                            </div>
+
+                            <h5 className="text-xs font-bold text-slate-900 group-hover:text-[#0078D4] transition-colors leading-tight mb-1 pr-3">
+                              {lead.companyName}
+                            </h5>
+
+                            <div className="flex items-center gap-1.5 text-[11px] text-slate-600 mb-2">
+                              <User className="w-3 h-3 text-slate-400 shrink-0" />
+                              <span className="truncate font-medium">{lead.contactName}</span>
+                              {linkedEmployee && (
+                                <span className="text-[9px] px-1 py-0.2 rounded bg-blue-50 text-blue-700 border border-blue-200 shrink-0">
+                                  {DEPARTMENT_CONFIG[linkedEmployee.department]?.short}
+                                </span>
+                              )}
+                            </div>
+
+                            <p className="text-[11px] text-slate-500 line-clamp-2 leading-relaxed mb-3">
+                              {lead.notes}
+                            </p>
+
+                            {/* Actions and Stage Dropdown */}
+                            <div className="flex items-center justify-between pt-2 border-t border-slate-100 text-[10px]" onClick={(e) => e.stopPropagation()}>
+                              <div className="flex items-center gap-1">
+                                {linkedContact && (
+                                  <button
+                                    type="button"
+                                    title="Enviar WhatsApp"
+                                    onClick={() => handleSendWhatsApp(linkedContact, linkedEmployee, 'propuesta')}
+                                    className="p-1 text-emerald-600 hover:bg-emerald-50 rounded transition-colors"
+                                  >
+                                    <MessageSquare className="w-3.5 h-3.5" />
+                                  </button>
+                                )}
+                                <button
+                                  type="button"
+                                  title="Agendar Videollamada"
+                                  onClick={() => handleOpenMeetingScheduler(linkedContact, linkedEmployee)}
+                                  className="p-1 text-[#0078D4] hover:bg-blue-50 rounded transition-colors"
+                                >
+                                  <Video className="w-3.5 h-3.5" />
+                                </button>
+                              </div>
+
+                              {/* Manual stage switcher dropdown (also works on mobile!) */}
+                              <select
+                                value={lead.stage}
+                                onChange={(e) => handleStageChange(lead.id, e.target.value as LeadStage)}
+                                className="text-[10px] bg-slate-50 border border-slate-200 rounded px-1.5 py-0.5 font-medium text-slate-700 hover:bg-slate-100 focus:outline-none"
+                              >
+                                {pipelineStages.map((s) => (
+                                  <option key={s.id} value={s.id}>
+                                    {s.label.split(' ')[0]}
+                                  </option>
+                                ))}
+                              </select>
+                            </div>
+                          </div>
+                        );
+                      })}
+
+                      {stageLeads.length === 0 && (
+                        <div className="h-28 border border-dashed border-slate-200 rounded-lg flex items-center justify-center text-[11px] text-slate-400 italic">
+                          Arrastra oportunidades aquí
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            /* HIGH-DENSITY LIST / TABLE VIEW FOR PIPELINE */
+            <div className="bg-white border border-slate-200 rounded-xl shadow-xs overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-xs">
+                  <thead className="bg-slate-50 border-b border-slate-200 text-slate-500 uppercase text-[10px] font-bold">
+                    <tr>
+                      <th className="py-3 px-4">Empresa / Razón Social</th>
+                      <th className="py-3 px-4">Contacto / Decisor</th>
+                      <th className="py-3 px-4">Vertical</th>
+                      <th className="py-3 px-4">Etapa del Pipeline</th>
+                      <th className="py-3 px-4">Presupuesto</th>
+                      <th className="py-3 px-4">Score</th>
+                      <th className="py-3 px-4 text-right">Acciones</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100">
+                    {filteredLeads.map((lead) => {
                       const vert = BUSINESS_VERTICALS[lead.vertical];
                       const linkedContact = contacts.find((c) => c.id === lead.contactId || c.leadId === lead.id || c.companyName === lead.companyName);
                       const linkedEmployee = linkedContact?.employees?.find((e) => e.id === lead.employeeId);
+                      const stageObj = pipelineStages.find((s) => s.id === lead.stage);
 
                       return (
-                        <div
+                        <tr
                           key={lead.id}
                           onClick={() => setSelectedLead(lead)}
-                          className="bg-white border border-slate-200 hover:border-[#0078D4] rounded-lg p-3 shadow-2xs hover:shadow-xs transition-all cursor-pointer group"
+                          className="hover:bg-slate-50/80 cursor-pointer transition-colors"
                         >
-                          <div className="flex items-start justify-between gap-1 mb-1.5">
-                            <span className="text-[10px] font-bold uppercase tracking-wider text-[#0078D4] truncate block max-w-[140px]">
-                              {vert?.shortTitle || lead.vertical}
-                            </span>
-                            <span className="text-[10px] font-mono font-bold text-slate-700 bg-slate-100 px-1.5 py-0.5 rounded">
-                              USD {lead.estimatedMonthlyBudgetUsd}
-                            </span>
-                          </div>
-
-                          <h5 className="text-xs font-bold text-slate-900 group-hover:text-[#0078D4] transition-colors leading-tight mb-1">
+                          <td className="py-3 px-4 font-bold text-slate-900">
                             {lead.companyName}
-                          </h5>
-
-                          <div className="flex items-center gap-1.5 text-[11px] text-slate-600 mb-2">
-                            <User className="w-3 h-3 text-slate-400 shrink-0" />
-                            <span className="truncate font-medium">{lead.contactName}</span>
+                            <span className="text-[10px] text-slate-400 block font-normal font-mono truncate max-w-[200px]">
+                              {lead.location}
+                            </span>
+                          </td>
+                          <td className="py-3 px-4">
+                            <div className="font-medium text-slate-800">{lead.contactName}</div>
                             {linkedEmployee && (
-                              <span className="text-[9px] px-1 py-0.2 rounded bg-blue-50 text-blue-700 border border-blue-200 shrink-0">
+                              <span className="text-[10px] text-blue-700 bg-blue-50 px-1.5 py-0.2 rounded font-semibold">
                                 {DEPARTMENT_CONFIG[linkedEmployee.department]?.short}
                               </span>
                             )}
-                          </div>
-
-                          <p className="text-[11px] text-slate-500 line-clamp-2 leading-relaxed mb-3">
-                            {lead.notes}
-                          </p>
-
-                          {/* Quick Actions in Card */}
-                          <div className="flex items-center justify-between pt-2 border-t border-slate-100 text-[10px]" onClick={(e) => e.stopPropagation()}>
-                            <div className="flex items-center gap-1">
+                          </td>
+                          <td className="py-3 px-4 font-semibold text-[#0078D4]">
+                            {vert?.shortTitle || lead.vertical}
+                          </td>
+                          <td className="py-3 px-4" onClick={(e) => e.stopPropagation()}>
+                            <select
+                              value={lead.stage}
+                              onChange={(e) => handleStageChange(lead.id, e.target.value as LeadStage)}
+                              className="text-xs bg-slate-50 border border-slate-200 rounded px-2 py-1 font-semibold text-slate-800 focus:outline-none focus:border-[#0078D4]"
+                            >
+                              {pipelineStages.map((s) => (
+                                <option key={s.id} value={s.id}>
+                                  {s.label}
+                                </option>
+                              ))}
+                            </select>
+                          </td>
+                          <td className="py-3 px-4 font-mono font-bold text-slate-900">
+                            USD {lead.estimatedMonthlyBudgetUsd}
+                          </td>
+                          <td className="py-3 px-4">
+                            <span className="font-bold text-emerald-600">{lead.score}/100</span>
+                          </td>
+                          <td className="py-3 px-4 text-right" onClick={(e) => e.stopPropagation()}>
+                            <div className="flex items-center justify-end gap-1.5">
                               {linkedContact && (
                                 <button
                                   type="button"
-                                  title="Ver ficha de contacto / empresa"
-                                  onClick={() => setViewingContact(linkedContact)}
-                                  className="p-1 text-slate-500 hover:text-indigo-600 hover:bg-indigo-50 rounded transition-colors"
-                                >
-                                  <Briefcase className="w-3.5 h-3.5" />
-                                </button>
-                              )}
-                              {linkedContact && (
-                                <button
-                                  type="button"
-                                  title="Enviar WhatsApp al contacto"
+                                  title="WhatsApp"
                                   onClick={() => handleSendWhatsApp(linkedContact, linkedEmployee, 'propuesta')}
-                                  className="p-1 text-emerald-600 hover:bg-emerald-50 rounded transition-colors"
+                                  className="p-1.5 text-emerald-600 hover:bg-emerald-50 rounded"
                                 >
                                   <MessageSquare className="w-3.5 h-3.5" />
                                 </button>
                               )}
+                              {linkedContact && (
+                                <button
+                                  type="button"
+                                  title="Email"
+                                  onClick={() => handleOpenEmailComposer(linkedContact, linkedEmployee)}
+                                  className="p-1.5 text-slate-600 hover:bg-slate-100 rounded"
+                                >
+                                  <Mail className="w-3.5 h-3.5" />
+                                </button>
+                              )}
                               <button
                                 type="button"
-                                title="Agendar Videollamada"
+                                title="Videollamada"
                                 onClick={() => handleOpenMeetingScheduler(linkedContact, linkedEmployee)}
-                                className="p-1 text-[#0078D4] hover:bg-blue-50 rounded transition-colors"
+                                className="p-1.5 text-[#0078D4] hover:bg-blue-50 rounded"
                               >
                                 <Video className="w-3.5 h-3.5" />
                               </button>
                             </div>
-
-                            {/* Stage Transition Selector */}
-                            <select
-                              value={lead.stage}
-                              onChange={(e) => handleStageChange(lead.id, e.target.value as LeadStage)}
-                              className="text-[10px] bg-slate-50 border border-slate-200 rounded px-1.5 py-0.5 font-medium text-slate-700 hover:bg-slate-100 focus:outline-none"
-                            >
-                              {STAGES.map((s) => (
-                                <option key={s.id} value={s.id}>
-                                  {s.label.split(' ')[0]}
-                                </option>
-                              ))}
-                            </select>
-                          </div>
-                        </div>
+                          </td>
+                        </tr>
                       );
                     })}
-
-                    {stageLeads.length === 0 && (
-                      <div className="h-28 border border-dashed border-slate-200 rounded-lg flex items-center justify-center text-[11px] text-slate-400 italic">
-                        Sin oportunidades en esta etapa
-                      </div>
-                    )}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
         </div>
       )}
 
       {/* ========================================================================= */}
-      {/* VIEW 2: AGENDA DE CONTACTOS (EMPRESAS CON ÁREAS & CONTACTOS INDIVIDUALES) */}
+      {/* VIEW 2: AGENDA DE CONTACTOS (CARDS vs LISTADO/TABLA) */}
       {/* ========================================================================= */}
       {activeTab === 'contacts' && (
         <div className="space-y-4">
-          <div className="grid grid-cols-1 gap-4">
-            {filteredContacts.map((contact) => {
-              const vert = BUSINESS_VERTICALS[contact.vertical];
-              const linkedLead = leads.find((l) => l.id === contact.leadId || l.contactId === contact.id);
-              const isExpanded = Boolean(expandedCompanyIds[contact.id]);
-              const isCompany = contact.type === 'empresa';
-              const employees = contact.employees || [];
+          {contactsViewMode === 'cards' ? (
+            /* CARDS VIEW */
+            <div className="grid grid-cols-1 gap-4">
+              {filteredContacts.map((contact) => {
+                const vert = BUSINESS_VERTICALS[contact.vertical];
+                const linkedLead = leads.find((l) => l.id === contact.leadId || l.contactId === contact.id);
+                const isExpanded = Boolean(expandedCompanyIds[contact.id]);
+                const isCompany = contact.type === 'empresa';
+                const employees = contact.employees || [];
 
-              const statusBadges: Record<ContactRelationshipStatus, { label: string; color: string }> = {
-                lead: { label: 'Lead Calificado', color: 'bg-blue-50 text-[#0078D4] border-blue-200' },
-                cliente_activo: { label: 'Cliente Activo', color: 'bg-emerald-50 text-[#107C41] border-emerald-200' },
-                partner: { label: 'Partner Estratégico', color: 'bg-purple-50 text-purple-700 border-purple-200' },
-                proveedor: { label: 'Proveedor', color: 'bg-slate-100 text-slate-700 border-slate-300' },
-                ex_cliente: { label: 'Ex Cliente', color: 'bg-amber-50 text-amber-700 border-amber-200' },
-              };
-              const badge = statusBadges[contact.status] || statusBadges.lead;
+                const statusBadges: Record<ContactRelationshipStatus, { label: string; color: string }> = {
+                  lead: { label: 'Lead Calificado', color: 'bg-blue-50 text-[#0078D4] border-blue-200' },
+                  cliente_activo: { label: 'Cliente Activo', color: 'bg-emerald-50 text-[#107C41] border-emerald-200' },
+                  partner: { label: 'Partner Estratégico', color: 'bg-purple-50 text-purple-700 border-purple-200' },
+                  proveedor: { label: 'Proveedor', color: 'bg-slate-100 text-slate-700 border-slate-300' },
+                  ex_cliente: { label: 'Ex Cliente', color: 'bg-amber-50 text-amber-700 border-amber-200' },
+                };
+                const badge = statusBadges[contact.status] || statusBadges.lead;
 
-              return (
-                <div
-                  key={contact.id}
-                  className={`bg-white border rounded-xl shadow-xs transition-all overflow-hidden ${
-                    isCompany ? 'border-slate-200 hover:border-indigo-300' : 'border-slate-200 hover:border-blue-300'
-                  }`}
-                >
-                  {/* Top Bar / Card Header */}
-                  <div className="p-5 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-                    <div className="flex items-start gap-3.5">
-                      {/* Avatar / Icon Badge */}
-                      <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 font-black text-sm border shadow-2xs ${
-                        isCompany
-                          ? 'bg-indigo-50 border-indigo-200 text-indigo-700'
-                          : 'bg-blue-50 border-blue-200 text-[#0078D4]'
-                      }`}>
-                        {isCompany ? (
-                          <Building2 className="w-6 h-6 text-indigo-600" />
-                        ) : (
-                          <User className="w-6 h-6 text-[#0078D4]" />
-                        )}
-                      </div>
-
-                      {/* Main Titles */}
-                      <div>
-                        <div className="flex flex-wrap items-center gap-2">
-                          <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border ${
-                            isCompany ? 'bg-indigo-50 text-indigo-700 border-indigo-200' : 'bg-slate-100 text-slate-700 border-slate-200'
-                          }`}>
-                            {isCompany ? 'Empresa / Razón Social' : 'Contacto Individual'}
-                          </span>
-                          <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold border ${badge.color}`}>
-                            {badge.label}
-                          </span>
-                          {contact.cuit && (
-                            <span className="text-[10px] text-slate-400 font-mono">
-                              CUIT: {contact.cuit}
-                            </span>
+                return (
+                  <div
+                    key={contact.id}
+                    className={`bg-white border rounded-xl shadow-xs transition-all overflow-hidden ${
+                      isCompany ? 'border-slate-200 hover:border-indigo-300' : 'border-slate-200 hover:border-blue-300'
+                    }`}
+                  >
+                    {/* Top Bar / Card Header */}
+                    <div className="p-5 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+                      <div className="flex items-start gap-3.5">
+                        <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 font-black text-sm border shadow-2xs ${
+                          isCompany
+                            ? 'bg-indigo-50 border-indigo-200 text-indigo-700'
+                            : 'bg-blue-50 border-blue-200 text-[#0078D4]'
+                        }`}>
+                          {isCompany ? (
+                            <Building2 className="w-6 h-6 text-indigo-600" />
+                          ) : (
+                            <User className="w-6 h-6 text-[#0078D4]" />
                           )}
                         </div>
 
-                        <h3 className="text-base font-bold text-slate-900 mt-0.5 leading-snug">
-                          {contact.companyName}
-                        </h3>
+                        <div>
+                          <div className="flex flex-wrap items-center gap-2">
+                            <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border ${
+                              isCompany ? 'bg-indigo-50 text-indigo-700 border-indigo-200' : 'bg-slate-100 text-slate-700 border-slate-200'
+                            }`}>
+                              {isCompany ? 'Empresa / Razón Social' : 'Contacto Individual'}
+                            </span>
+                            <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold border ${badge.color}`}>
+                              {badge.label}
+                            </span>
+                            {contact.cuit && (
+                              <span className="text-[10px] text-slate-400 font-mono">
+                                CUIT: {contact.cuit}
+                              </span>
+                            )}
+                          </div>
 
-                        <div className="flex flex-wrap items-center gap-2 mt-1 text-xs text-slate-600">
-                          <span className="font-semibold text-slate-800">
-                            {isCompany ? `Titular: ${contact.name}` : contact.name}
-                          </span>
-                          <span>·</span>
-                          <span className="text-slate-500">{contact.roleTitle}</span>
-                          <span>·</span>
-                          <span className="text-slate-500 flex items-center gap-1">
-                            <MapPin className="w-3 h-3 text-slate-400" />
-                            {contact.location}
-                          </span>
-                          <span>·</span>
-                          <span className="text-[#0078D4] font-medium flex items-center gap-1">
-                            <Shield className="w-3 h-3" />
-                            {vert?.shortTitle || contact.vertical}
-                          </span>
+                          <h3 className="text-base font-bold text-slate-900 mt-0.5 leading-snug">
+                            {contact.companyName}
+                          </h3>
+
+                          <div className="flex flex-wrap items-center gap-2 mt-1 text-xs text-slate-600">
+                            <span className="font-semibold text-slate-800">
+                              {isCompany ? `Titular: ${contact.name}` : contact.name}
+                            </span>
+                            <span>·</span>
+                            <span className="text-slate-500">{contact.roleTitle}</span>
+                            <span>·</span>
+                            <span className="text-slate-500 flex items-center gap-1">
+                              <MapPin className="w-3 h-3 text-slate-400" />
+                              {contact.location}
+                            </span>
+                            <span>·</span>
+                            <span className="text-[#0078D4] font-medium flex items-center gap-1">
+                              <Shield className="w-3 h-3" />
+                              {vert?.shortTitle || contact.vertical}
+                            </span>
+                          </div>
                         </div>
                       </div>
-                    </div>
 
-                    {/* Quick Contact & Action Buttons */}
-                    <div className="flex flex-wrap items-center gap-2 self-start lg:self-auto">
-                      {/* Create Opportunity button right from the contact! */}
-                      <button
-                        type="button"
-                        onClick={() => handleOpenCreateLeadModal(contact)}
-                        className="px-3 py-1.5 bg-blue-50 hover:bg-blue-100 text-[#0078D4] border border-blue-200 font-bold text-xs rounded-lg flex items-center gap-1.5 transition-colors cursor-pointer"
-                        title="Crear una nueva oportunidad en el pipeline para este contacto"
-                      >
-                        <TrendingUp className="w-3.5 h-3.5" />
-                        <span>+ Crear Oportunidad</span>
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={() => handleSendWhatsApp(contact, undefined, 'general')}
-                        className="px-2.5 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 font-bold text-xs rounded-lg flex items-center gap-1.5 transition-colors cursor-pointer"
-                      >
-                        <MessageSquare className="w-3.5 h-3.5 text-emerald-600" />
-                        <span>WhatsApp</span>
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={() => handleOpenEmailComposer(contact)}
-                        className="px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-lg flex items-center gap-1.5 transition-colors cursor-pointer"
-                      >
-                        <Mail className="w-3.5 h-3.5 text-slate-600" />
-                        <span>Email</span>
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={() => handleOpenMeetingScheduler(contact)}
-                        className="px-2.5 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 font-bold text-xs rounded-lg flex items-center gap-1.5 transition-colors cursor-pointer"
-                      >
-                        <Video className="w-3.5 h-3.5 text-indigo-600" />
-                        <span>Reunión</span>
-                      </button>
-
-                      {isCompany && (
+                      {/* Action Buttons */}
+                      <div className="flex flex-wrap items-center gap-2 self-start lg:self-auto">
                         <button
                           type="button"
-                          onClick={() => toggleCompanyExpand(contact.id)}
-                          className="px-2.5 py-1.5 bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-200 font-semibold text-xs rounded-lg flex items-center gap-1 transition-colors cursor-pointer"
+                          onClick={() => handleOpenCreateLeadModal(contact)}
+                          className="px-3 py-1.5 bg-blue-50 hover:bg-blue-100 text-[#0078D4] border border-blue-200 font-bold text-xs rounded-lg flex items-center gap-1.5 transition-colors cursor-pointer"
+                          title="Crear una nueva oportunidad en el pipeline para este contacto"
                         >
-                          <span>{employees.length} Colaboradores</span>
-                          {isExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+                          <TrendingUp className="w-3.5 h-3.5" />
+                          <span>+ Crear Oportunidad</span>
                         </button>
-                      )}
-                    </div>
-                  </div>
 
-                  {/* Pipeline link banner if associated */}
-                  {linkedLead && (
-                    <div className="px-5 py-2 bg-slate-50 border-t border-slate-100 flex flex-wrap items-center justify-between text-xs gap-2">
-                      <div className="flex items-center gap-2">
-                        <TrendingUp className="w-3.5 h-3.5 text-[#0078D4]" />
-                        <span className="font-semibold text-slate-700">Oportunidad activa en Pipeline:</span>
-                        <span className="font-bold text-[#0078D4] uppercase text-[11px]">
-                          Etapa: {STAGES.find((s) => s.id === linkedLead.stage)?.label || linkedLead.stage}
-                        </span>
-                        <span className="text-slate-400">·</span>
-                        <span className="font-mono text-slate-600 font-bold">USD {linkedLead.estimatedMonthlyBudgetUsd}/mes</span>
+                        <button
+                          type="button"
+                          onClick={() => handleSendWhatsApp(contact, undefined, 'general')}
+                          className="px-2.5 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 font-bold text-xs rounded-lg flex items-center gap-1.5 transition-colors cursor-pointer"
+                        >
+                          <MessageSquare className="w-3.5 h-3.5 text-emerald-600" />
+                          <span>WhatsApp</span>
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => handleOpenEmailComposer(contact)}
+                          className="px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-lg flex items-center gap-1.5 transition-colors cursor-pointer"
+                        >
+                          <Mail className="w-3.5 h-3.5 text-slate-600" />
+                          <span>Email</span>
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => handleOpenMeetingScheduler(contact)}
+                          className="px-2.5 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 font-bold text-xs rounded-lg flex items-center gap-1.5 transition-colors cursor-pointer"
+                        >
+                          <Video className="w-3.5 h-3.5 text-indigo-600" />
+                          <span>Reunión</span>
+                        </button>
+
+                        {isCompany && (
+                          <button
+                            type="button"
+                            onClick={() => toggleCompanyExpand(contact.id)}
+                            className="px-2.5 py-1.5 bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-200 font-semibold text-xs rounded-lg flex items-center gap-1 transition-colors cursor-pointer"
+                          >
+                            <span>{employees.length} Colaboradores</span>
+                            {isExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+                          </button>
+                        )}
                       </div>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setSelectedLead(linkedLead);
-                          setActiveTab('pipeline');
-                        }}
-                        className="text-[#0078D4] hover:underline font-bold text-[11px] flex items-center gap-1"
-                      >
-                        <span>Ver en Pipeline Kanban</span>
-                        <ArrowRight className="w-3 h-3" />
-                      </button>
                     </div>
-                  )}
 
-                  {/* EMPRESA EXPANDED: DEPARTMENTS & EMPLOYEES ROSTER */}
-                  {isCompany && isExpanded && (
-                    <div className="border-t border-slate-100 bg-slate-50/70 p-5 space-y-4 animate-in fade-in">
-                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                        <div>
-                          <h4 className="text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
-                            <Layers className="w-3.5 h-3.5 text-indigo-600" />
-                            <span>Estructura de la Empresa & Áreas de Atención</span>
-                          </h4>
-                          <p className="text-[11px] text-slate-500">
-                            Colaboradores en Administración, Finanzas, Logística, Envíos, Pagos y Gerencia
-                          </p>
+                    {/* Pipeline link banner if associated */}
+                    {linkedLead && (
+                      <div className="px-5 py-2 bg-slate-50 border-t border-slate-100 flex flex-wrap items-center justify-between text-xs gap-2">
+                        <div className="flex items-center gap-2">
+                          <TrendingUp className="w-3.5 h-3.5 text-[#0078D4]" />
+                          <span className="font-semibold text-slate-700">Oportunidad activa en Pipeline:</span>
+                          <span className="font-bold text-[#0078D4] uppercase text-[11px]">
+                            Etapa: {pipelineStages.find((s) => s.id === linkedLead.stage)?.label || linkedLead.stage}
+                          </span>
+                          <span className="text-slate-400">·</span>
+                          <span className="font-mono text-slate-600 font-bold">USD {linkedLead.estimatedMonthlyBudgetUsd}/mes</span>
                         </div>
                         <button
                           type="button"
                           onClick={() => {
-                            setActiveCompanyForEmployee(contact);
-                            setNewEmpName('');
-                            setNewEmpRole('');
-                            setNewEmpEmail('');
-                            setNewEmpPhone('');
-                            setNewEmpWhatsapp('');
+                            setSelectedLead(linkedLead);
+                            setActiveTab('pipeline');
                           }}
-                          className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-lg flex items-center gap-1.5 shadow-2xs self-start sm:self-auto cursor-pointer"
+                          className="text-[#0078D4] hover:underline font-bold text-[11px] flex items-center gap-1"
                         >
-                          <Plus className="w-3.5 h-3.5" />
-                          <span>+ Agregar Colaborador a {contact.companyName}</span>
+                          <span>Ver en Pipeline Kanban</span>
+                          <ArrowRight className="w-3 h-3" />
                         </button>
                       </div>
+                    )}
 
-                      {/* Employee List Grid */}
-                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                        {employees.map((emp) => {
-                          const deptCfg = DEPARTMENT_CONFIG[emp.department] || DEPARTMENT_CONFIG.otro;
+                    {/* EMPRESA EXPANDED: DEPARTMENTS & EMPLOYEES ROSTER */}
+                    {isCompany && isExpanded && (
+                      <div className="border-t border-slate-100 bg-slate-50/70 p-5 space-y-4 animate-in fade-in">
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                          <div>
+                            <h4 className="text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
+                              <Layers className="w-3.5 h-3.5 text-indigo-600" />
+                              <span>Estructura de la Empresa & Áreas de Atención</span>
+                            </h4>
+                            <p className="text-[11px] text-slate-500">
+                              Colaboradores en Administración, Finanzas, Logística, Envíos, Pagos y Gerencia
+                            </p>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setActiveCompanyForEmployee(contact);
+                              setNewEmpName('');
+                              setNewEmpRole('');
+                              setNewEmpEmail('');
+                              setNewEmpPhone('');
+                              setNewEmpWhatsapp('');
+                            }}
+                            className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-lg flex items-center gap-1.5 shadow-2xs self-start sm:self-auto cursor-pointer"
+                          >
+                            <Plus className="w-3.5 h-3.5" />
+                            <span>+ Agregar Colaborador a {contact.companyName}</span>
+                          </button>
+                        </div>
 
-                          return (
-                            <div
-                              key={emp.id}
-                              className="bg-white border border-slate-200 rounded-lg p-3.5 shadow-2xs hover:border-indigo-300 transition-all flex flex-col justify-between"
-                            >
-                              <div>
-                                <div className="flex items-start justify-between gap-2 mb-1.5">
-                                  <span className={`px-2 py-0.5 rounded text-[10px] font-bold border ${deptCfg.color}`}>
-                                    {deptCfg.short}
-                                  </span>
-                                  {emp.isPrimaryContact && (
-                                    <span className="flex items-center gap-1 text-[10px] text-amber-700 font-bold bg-amber-50 border border-amber-200 px-1.5 py-0.2 rounded">
-                                      <Star className="w-2.5 h-2.5 fill-amber-500 text-amber-500" />
-                                      <span>Decisor</span>
+                        {/* Employee List Grid */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                          {employees.map((emp) => {
+                            const deptCfg = DEPARTMENT_CONFIG[emp.department] || DEPARTMENT_CONFIG.otro;
+
+                            return (
+                              <div
+                                key={emp.id}
+                                className="bg-white border border-slate-200 rounded-lg p-3.5 shadow-2xs hover:border-indigo-300 transition-all flex flex-col justify-between"
+                              >
+                                <div>
+                                  <div className="flex items-start justify-between gap-2 mb-1.5">
+                                    <span className={`px-2 py-0.5 rounded text-[10px] font-bold border ${deptCfg.color}`}>
+                                      {deptCfg.short}
                                     </span>
+                                    {emp.isPrimaryContact && (
+                                      <span className="flex items-center gap-1 text-[10px] text-amber-700 font-bold bg-amber-50 border border-amber-200 px-1.5 py-0.2 rounded">
+                                        <Star className="w-2.5 h-2.5 fill-amber-500 text-amber-500" />
+                                        <span>Decisor</span>
+                                      </span>
+                                    )}
+                                  </div>
+
+                                  <h5 className="text-xs font-bold text-slate-900 leading-tight">
+                                    {emp.name}
+                                  </h5>
+                                  <span className="text-[11px] text-slate-500 block mb-2">
+                                    {emp.roleTitle}
+                                  </span>
+
+                                  <div className="space-y-1 text-[11px] text-slate-600 border-t border-slate-100 pt-2 mb-2">
+                                    <div className="flex items-center justify-between">
+                                      <span className="text-slate-400">Email:</span>
+                                      <span className="font-mono text-slate-800 truncate max-w-[150px]">{emp.email}</span>
+                                    </div>
+                                    <div className="flex items-center justify-between">
+                                      <span className="text-slate-400">Tel / WA:</span>
+                                      <span className="font-mono text-slate-800">{emp.phone}</span>
+                                    </div>
+                                  </div>
+
+                                  {emp.notes && (
+                                    <p className="text-[10px] text-slate-500 italic bg-slate-50 p-1.5 rounded mb-2">
+                                      "{emp.notes}"
+                                    </p>
                                   )}
                                 </div>
 
-                                <h5 className="text-xs font-bold text-slate-900 leading-tight">
-                                  {emp.name}
-                                </h5>
-                                <span className="text-[11px] text-slate-500 block mb-2">
-                                  {emp.roleTitle}
-                                </span>
-
-                                <div className="space-y-1 text-[11px] text-slate-600 border-t border-slate-100 pt-2 mb-2">
-                                  <div className="flex items-center justify-between">
-                                    <span className="text-slate-400">Email:</span>
-                                    <span className="font-mono text-slate-800 truncate max-w-[150px]">{emp.email}</span>
+                                {/* Actions */}
+                                <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-[10px]">
+                                  <div className="flex items-center gap-1">
+                                    <button
+                                      type="button"
+                                      title="WhatsApp"
+                                      onClick={() => handleSendWhatsApp(contact, emp, 'general')}
+                                      className="p-1 text-emerald-600 hover:bg-emerald-50 rounded"
+                                    >
+                                      <MessageSquare className="w-3.5 h-3.5" />
+                                    </button>
+                                    <button
+                                      type="button"
+                                      title="Email"
+                                      onClick={() => handleOpenEmailComposer(contact, emp)}
+                                      className="p-1 text-[#0078D4] hover:bg-blue-50 rounded"
+                                    >
+                                      <Mail className="w-3.5 h-3.5" />
+                                    </button>
+                                    <button
+                                      type="button"
+                                      title="Reunión"
+                                      onClick={() => handleOpenMeetingScheduler(contact, emp)}
+                                      className="p-1 text-indigo-600 hover:bg-indigo-50 rounded"
+                                    >
+                                      <Video className="w-3.5 h-3.5" />
+                                    </button>
+                                    <button
+                                      type="button"
+                                      title="Crear Oportunidad con este Colaborador"
+                                      onClick={() => handleOpenCreateLeadModal(contact, emp)}
+                                      className="p-1 text-amber-700 hover:bg-amber-50 rounded"
+                                    >
+                                      <TrendingUp className="w-3.5 h-3.5" />
+                                    </button>
                                   </div>
-                                  <div className="flex items-center justify-between">
-                                    <span className="text-slate-400">Tel / WA:</span>
-                                    <span className="font-mono text-slate-800">{emp.phone}</span>
-                                  </div>
-                                </div>
 
-                                {emp.notes && (
-                                  <p className="text-[10px] text-slate-500 italic bg-slate-50 p-1.5 rounded mb-2">
-                                    "{emp.notes}"
-                                  </p>
-                                )}
-                              </div>
-
-                              {/* Bottom Action buttons for this specific employee */}
-                              <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-[10px]">
-                                <div className="flex items-center gap-1">
                                   <button
                                     type="button"
-                                    title="WhatsApp directo a este colaborador"
-                                    onClick={() => handleSendWhatsApp(contact, emp, 'general')}
-                                    className="p-1 text-emerald-600 hover:bg-emerald-50 rounded"
+                                    title="Eliminar colaborador"
+                                    onClick={() => handleRemoveEmployee(contact.id, emp.id)}
+                                    className="text-slate-400 hover:text-rose-600 p-1"
                                   >
-                                    <MessageSquare className="w-3.5 h-3.5" />
-                                  </button>
-                                  <button
-                                    type="button"
-                                    title="Enviar correo a este colaborador"
-                                    onClick={() => handleOpenEmailComposer(contact, emp)}
-                                    className="p-1 text-[#0078D4] hover:bg-blue-50 rounded"
-                                  >
-                                    <Mail className="w-3.5 h-3.5" />
-                                  </button>
-                                  <button
-                                    type="button"
-                                    title="Agendar reunión con este colaborador"
-                                    onClick={() => handleOpenMeetingScheduler(contact, emp)}
-                                    className="p-1 text-indigo-600 hover:bg-indigo-50 rounded"
-                                  >
-                                    <Video className="w-3.5 h-3.5" />
-                                  </button>
-                                  <button
-                                    type="button"
-                                    title="Crear oportunidad asociada a este colaborador"
-                                    onClick={() => handleOpenCreateLeadModal(contact, emp)}
-                                    className="p-1 text-amber-700 hover:bg-amber-50 rounded"
-                                  >
-                                    <TrendingUp className="w-3.5 h-3.5" />
+                                    <Trash2 className="w-3 h-3" />
                                   </button>
                                 </div>
-
-                                <button
-                                  type="button"
-                                  title="Eliminar colaborador"
-                                  onClick={() => handleRemoveEmployee(contact.id, emp.id)}
-                                  className="text-slate-400 hover:text-rose-600 p-1"
-                                >
-                                  <Trash2 className="w-3 h-3" />
-                                </button>
                               </div>
+                            );
+                          })}
+
+                          {employees.length === 0 && (
+                            <div className="col-span-full py-6 text-center bg-white border border-dashed border-slate-300 rounded-lg text-xs text-slate-500">
+                              No hay colaboradores registrados en la estructura todavía.
                             </div>
-                          );
-                        })}
-
-                        {employees.length === 0 && (
-                          <div className="col-span-full py-6 text-center bg-white border border-dashed border-slate-300 rounded-lg text-xs text-slate-500">
-                            No hay colaboradores registrados en la estructura todavía.
-                          </div>
-                        )}
+                          )}
+                        </div>
                       </div>
-                    </div>
-                  )}
-                </div>
-              );
-            })}
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            /* HIGH-DENSITY LIST / TABLE VIEW FOR CONTACTS */
+            <div className="bg-white border border-slate-200 rounded-xl shadow-xs overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-xs">
+                  <thead className="bg-slate-50 border-b border-slate-200 text-slate-500 uppercase text-[10px] font-bold">
+                    <tr>
+                      <th className="py-3 px-4">Tipo</th>
+                      <th className="py-3 px-4">Empresa / Nombre</th>
+                      <th className="py-3 px-4">Decisor / Titular</th>
+                      <th className="py-3 px-4">Áreas / Colaboradores</th>
+                      <th className="py-3 px-4">Contacto Directo</th>
+                      <th className="py-3 px-4">Vertical</th>
+                      <th className="py-3 px-4">Vínculo</th>
+                      <th className="py-3 px-4 text-right">Acciones</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100">
+                    {filteredContacts.map((contact) => {
+                      const vert = BUSINESS_VERTICALS[contact.vertical];
+                      const isCompany = contact.type === 'empresa';
+                      const employees = contact.employees || [];
 
-            {filteredContacts.length === 0 && (
-              <div className="py-16 text-center bg-white border border-dashed border-slate-200 rounded-xl">
-                <Building2 className="w-10 h-10 text-slate-300 mx-auto mb-2" />
-                <h4 className="text-sm font-bold text-slate-700">No se encontraron contactos o empresas</h4>
-                <p className="text-xs text-slate-500 mt-1 max-w-sm mx-auto">
-                  Ajuste los filtros de búsqueda o registre una nueva empresa o contacto individual.
-                </p>
-                <button
-                  type="button"
-                  onClick={() => setShowContactModal(true)}
-                  className="mt-4 px-4 py-2 bg-[#0078D4] text-white text-xs font-bold rounded-lg shadow-xs hover:bg-[#106EBE]"
-                >
-                  + Registrar Empresa / Contacto
-                </button>
+                      return (
+                        <tr key={contact.id} className="hover:bg-slate-50/80 transition-colors">
+                          <td className="py-3 px-4">
+                            <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${
+                              isCompany ? 'bg-indigo-50 text-indigo-700' : 'bg-slate-100 text-slate-700'
+                            }`}>
+                              {isCompany ? 'Empresa' : 'Individual'}
+                            </span>
+                          </td>
+                          <td className="py-3 px-4 font-bold text-slate-900">
+                            {contact.companyName}
+                            {contact.cuit && (
+                              <span className="text-[10px] text-slate-400 font-mono block font-normal">
+                                CUIT: {contact.cuit}
+                              </span>
+                            )}
+                          </td>
+                          <td className="py-3 px-4 font-medium text-slate-800">
+                            {contact.name}
+                            <span className="text-[10px] text-slate-500 block">{contact.roleTitle}</span>
+                          </td>
+                          <td className="py-3 px-4">
+                            {isCompany ? (
+                              <div className="flex flex-wrap gap-1 max-w-[200px]">
+                                {employees.map((emp) => (
+                                  <span
+                                    key={emp.id}
+                                    title={`${emp.name} (${emp.roleTitle})`}
+                                    className="px-1.5 py-0.5 rounded text-[9px] font-semibold bg-slate-100 text-slate-700 border border-slate-200"
+                                  >
+                                    {DEPARTMENT_CONFIG[emp.department]?.short}
+                                  </span>
+                                ))}
+                                {employees.length === 0 && <span className="text-slate-400 italic text-[11px]">-</span>}
+                              </div>
+                            ) : (
+                              <span className="text-slate-600 text-[11px]">Profesional Directo</span>
+                            )}
+                          </td>
+                          <td className="py-3 px-4 font-mono text-[11px] text-slate-700">
+                            <div className="truncate max-w-[150px]">{contact.email}</div>
+                            <div className="text-slate-500 text-[10px]">{contact.phone}</div>
+                          </td>
+                          <td className="py-3 px-4 font-semibold text-[#0078D4]">
+                            {vert?.shortTitle || contact.vertical}
+                          </td>
+                          <td className="py-3 px-4">
+                            <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-blue-50 text-[#0078D4]">
+                              {contact.status}
+                            </span>
+                          </td>
+                          <td className="py-3 px-4 text-right">
+                            <div className="flex items-center justify-end gap-1.5">
+                              <button
+                                type="button"
+                                title="+ Crear Oportunidad"
+                                onClick={() => handleOpenCreateLeadModal(contact)}
+                                className="p-1.5 text-blue-700 hover:bg-blue-50 rounded"
+                              >
+                                <TrendingUp className="w-3.5 h-3.5" />
+                              </button>
+                              <button
+                                type="button"
+                                title="WhatsApp"
+                                onClick={() => handleSendWhatsApp(contact, undefined, 'general')}
+                                className="p-1.5 text-emerald-600 hover:bg-emerald-50 rounded"
+                              >
+                                <MessageSquare className="w-3.5 h-3.5" />
+                              </button>
+                              <button
+                                type="button"
+                                title="Email"
+                                onClick={() => handleOpenEmailComposer(contact)}
+                                className="p-1.5 text-slate-600 hover:bg-slate-100 rounded"
+                              >
+                                <Mail className="w-3.5 h-3.5" />
+                              </button>
+                              <button
+                                type="button"
+                                title="Reunión"
+                                onClick={() => handleOpenMeetingScheduler(contact)}
+                                className="p-1.5 text-indigo-600 hover:bg-indigo-50 rounded"
+                              >
+                                <Video className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
               </div>
-            )}
-          </div>
+            </div>
+          )}
         </div>
       )}
 
@@ -1527,7 +1886,7 @@ export const InternalCRM: React.FC<InternalCRMProps> = ({ currentRole, initialSu
         <div className="space-y-6">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             
-            {/* LEFT 2 COLS: Interactive Calendar View */}
+            {/* Interactive Calendar View */}
             <div className="lg:col-span-2 bg-white border border-slate-200 rounded-xl p-5 shadow-xs space-y-4">
               <div className="flex items-center justify-between pb-3 border-b border-slate-100">
                 <div className="flex items-center gap-2">
@@ -1628,7 +1987,6 @@ export const InternalCRM: React.FC<InternalCRMProps> = ({ currentRole, initialSu
                 })}
               </div>
 
-              {/* Calendar Footer Info */}
               <div className="flex flex-wrap items-center justify-between gap-2 pt-3 border-t border-slate-100 text-xs text-slate-500">
                 <div className="flex items-center gap-3">
                   <div className="flex items-center gap-1.5">
@@ -1651,13 +2009,13 @@ export const InternalCRM: React.FC<InternalCRMProps> = ({ currentRole, initialSu
               </div>
             </div>
 
-            {/* RIGHT COL: Upcoming Meetings List & Action Center */}
+            {/* Upcoming Meetings List */}
             <div className="space-y-4">
               <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-xs">
                 <div className="flex items-center justify-between pb-3 border-b border-slate-100 mb-3">
                   <div>
                     <h4 className="text-sm font-bold text-slate-900">Agenda Próxima</h4>
-                    <span className="text-[11px] text-slate-500">Reuniones y comités registrados</span>
+                    <span className="text-[11px] text-slate-500">Reuniones registradas</span>
                   </div>
                   <button
                     type="button"
@@ -1683,7 +2041,6 @@ export const InternalCRM: React.FC<InternalCRMProps> = ({ currentRole, initialSu
                             : 'border-slate-200 bg-white hover:border-slate-300'
                         }`}
                       >
-                        {/* Header */}
                         <div className="flex items-start justify-between gap-2 mb-1.5">
                           <div>
                             <span className="text-[10px] uppercase font-bold text-[#0078D4] block">
@@ -1700,7 +2057,6 @@ export const InternalCRM: React.FC<InternalCRMProps> = ({ currentRole, initialSu
                           </span>
                         </div>
 
-                        {/* Company & Attendee */}
                         <div className="text-[11px] text-slate-600 space-y-0.5 mb-2">
                           <p className="font-semibold text-slate-800">{m.companyName}</p>
                           <p className="text-slate-500">
@@ -1710,7 +2066,6 @@ export const InternalCRM: React.FC<InternalCRMProps> = ({ currentRole, initialSu
                           <p className="text-[10px] text-slate-400 font-mono">Fecha: {m.date} ({m.startTime} - {m.endTime} hs)</p>
                         </div>
 
-                        {/* Meeting URL */}
                         {m.meetingUrl && (
                           <div className="bg-slate-50 border border-slate-200 rounded p-1.5 mb-2.5 flex items-center justify-between text-[11px]">
                             <span className="truncate max-w-[190px] font-mono text-[#0078D4]">
@@ -1727,7 +2082,6 @@ export const InternalCRM: React.FC<InternalCRMProps> = ({ currentRole, initialSu
                           </div>
                         )}
 
-                        {/* Minutes note indicator */}
                         {m.notesMinutes ? (
                           <div className="bg-emerald-50 border border-emerald-200 rounded p-2 text-[11px] text-emerald-900 mb-2.5">
                             <span className="font-bold block text-[10px] uppercase text-emerald-800">Minuta guardada:</span>
@@ -1735,7 +2089,6 @@ export const InternalCRM: React.FC<InternalCRMProps> = ({ currentRole, initialSu
                           </div>
                         ) : null}
 
-                        {/* ACTION BUTTONS FOR EACH MEETING */}
                         <div className="pt-2 border-t border-slate-100 flex flex-wrap items-center gap-1 text-[10px]">
                           {m.meetingUrl && (
                             <a
@@ -1773,7 +2126,7 @@ export const InternalCRM: React.FC<InternalCRMProps> = ({ currentRole, initialSu
                             target="_blank"
                             rel="noopener noreferrer"
                             className="px-2 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded flex items-center gap-1"
-                            title="Agregar a Google Calendar"
+                            title="Google Calendar"
                           >
                             <CalendarIcon className="w-3 h-3" />
                             <span>GCal</span>
@@ -1783,7 +2136,7 @@ export const InternalCRM: React.FC<InternalCRMProps> = ({ currentRole, initialSu
                             type="button"
                             onClick={() => handleDownloadIcs(m)}
                             className="px-2 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded flex items-center gap-1"
-                            title="Descargar archivo .ICS para Outlook / Apple Calendar"
+                            title="Descargar .ICS"
                           >
                             <Download className="w-3 h-3" />
                             <span>.ICS</span>
@@ -1796,7 +2149,7 @@ export const InternalCRM: React.FC<InternalCRMProps> = ({ currentRole, initialSu
                               setMeetingMinutesText(m.notesMinutes || '');
                             }}
                             className="px-2 py-1 bg-amber-50 hover:bg-amber-100 text-amber-800 font-semibold rounded border border-amber-200 flex items-center gap-1"
-                            title="Redactar o editar minuta de acuerdos"
+                            title="Minuta de acuerdos"
                           >
                             <FileText className="w-3 h-3" />
                             <span>Minuta</span>
@@ -1853,7 +2206,7 @@ export const InternalCRM: React.FC<InternalCRMProps> = ({ currentRole, initialSu
                   <input
                     type="checkbox"
                     checked={task.completed}
-                    onChange={() => {}} // handled by parent onClick
+                    onChange={() => {}}
                     className="mt-0.5 rounded text-[#0078D4] focus:ring-[#0078D4]"
                   />
                   <div>
@@ -1886,6 +2239,111 @@ export const InternalCRM: React.FC<InternalCRMProps> = ({ currentRole, initialSu
       )}
 
       {/* ========================================================================= */}
+      {/* MODAL: PERSONALIZAR Y ACHICAR COLUMNAS DEL PIPELINE */}
+      {/* ========================================================================= */}
+      {showStageSettingsModal && (
+        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-200 space-y-4 animate-in fade-in zoom-in-95">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-lg bg-blue-50 text-[#0078D4] flex items-center justify-center">
+                  <SlidersHorizontal className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-slate-900">Personalizar Columnas del Pipeline</h3>
+                  <p className="text-[11px] text-slate-500">Edite los nombres o desactive etapas para achicar el embudo</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowStageSettingsModal(false)}
+                className="text-slate-400 hover:text-slate-600"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="space-y-3 text-xs">
+              <p className="text-slate-600 text-xs">
+                Active o desactive las columnas que desee ver en el tablero Kanban. También puede renombrarlas según la terminología de su estudio:
+              </p>
+
+              <div className="space-y-2.5 max-h-[300px] overflow-y-auto pr-1">
+                {tempStages.map((stage, idx) => (
+                  <div key={stage.id} className="p-3 bg-slate-50 rounded-lg border border-slate-200 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <label className="flex items-center gap-2 font-bold text-slate-800 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={stage.enabled}
+                          onChange={(e) => {
+                            const updated = tempStages.map((s, i) =>
+                              i === idx ? { ...s, enabled: e.target.checked } : s
+                            );
+                            setTempStages(updated);
+                          }}
+                          className="rounded text-[#0078D4] focus:ring-[#0078D4]"
+                        />
+                        <span className="text-xs">Columna #{idx + 1} ({stage.id})</span>
+                      </label>
+                      <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                        stage.enabled ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-200 text-slate-500'
+                      }`}>
+                        {stage.enabled ? 'Visible' : 'Oculta'}
+                      </span>
+                    </div>
+
+                    <div>
+                      <input
+                        type="text"
+                        value={stage.label}
+                        onChange={(e) => {
+                          const updated = tempStages.map((s, i) =>
+                            i === idx ? { ...s, label: e.target.value } : s
+                          );
+                          setTempStages(updated);
+                        }}
+                        placeholder="Nombre de la etapa..."
+                        className="w-full bg-white border border-slate-300 rounded px-2.5 py-1.5 text-xs text-slate-900 focus:border-[#0078D4] focus:outline-none"
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="flex items-center justify-between pt-3 border-t border-slate-100">
+                <button
+                  type="button"
+                  onClick={handleResetStageSettings}
+                  className="px-2.5 py-1.5 text-xs text-slate-600 hover:text-slate-900 flex items-center gap-1 font-medium"
+                >
+                  <RotateCcw className="w-3.5 h-3.5" />
+                  <span>Restablecer</span>
+                </button>
+
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setShowStageSettingsModal(false)}
+                    className="px-3 py-1.5 text-xs text-slate-600 hover:text-slate-900"
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleSaveStageSettings}
+                    className="px-4 py-2 bg-[#0078D4] hover:bg-[#106EBE] text-white font-bold text-xs rounded-lg shadow-sm"
+                  >
+                    Guardar Columnas
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================================= */}
       {/* MODAL: CREAR OPORTUNIDAD / LEAD (CON SELECCIÓN DE CONTACTO DE AGENDA) */}
       {/* ========================================================================= */}
       {showLeadModal && (
@@ -1910,7 +2368,6 @@ export const InternalCRM: React.FC<InternalCRMProps> = ({ currentRole, initialSu
               </button>
             </div>
 
-            {/* Segmented Origin Toggle */}
             <div className="grid grid-cols-2 gap-2 bg-slate-100 p-1 rounded-lg text-xs font-semibold">
               <button
                 type="button"
@@ -1937,7 +2394,6 @@ export const InternalCRM: React.FC<InternalCRMProps> = ({ currentRole, initialSu
             </div>
 
             <form onSubmit={handleCreateLead} className="space-y-3.5 text-xs">
-              {/* If selecting from existing contacts */}
               {leadSourceMode === 'from_contact' ? (
                 <div className="space-y-3 bg-blue-50/40 p-3 rounded-lg border border-blue-100">
                   <div>
@@ -1958,7 +2414,6 @@ export const InternalCRM: React.FC<InternalCRMProps> = ({ currentRole, initialSu
                     </select>
                   </div>
 
-                  {/* If the chosen contact has employees, allow selecting which employee/area is leading the deal */}
                   {(() => {
                     const chosen = contacts.find((c) => c.id === selectedContactForLead);
                     if (chosen && chosen.employees && chosen.employees.length > 0) {
@@ -1987,7 +2442,6 @@ export const InternalCRM: React.FC<InternalCRMProps> = ({ currentRole, initialSu
                 </div>
               ) : null}
 
-              {/* Company & Contact Names */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 <div>
                   <label className="block font-semibold text-slate-700 uppercase text-[10px] mb-1">
@@ -2017,7 +2471,6 @@ export const InternalCRM: React.FC<InternalCRMProps> = ({ currentRole, initialSu
                 </div>
               </div>
 
-              {/* Email & Phone */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 <div>
                   <label className="block font-semibold text-slate-700 uppercase text-[10px] mb-1">
@@ -2045,7 +2498,6 @@ export const InternalCRM: React.FC<InternalCRMProps> = ({ currentRole, initialSu
                 </div>
               </div>
 
-              {/* Vertical & Budget */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 <div>
                   <label className="block font-semibold text-slate-700 uppercase text-[10px] mb-1">
@@ -2077,7 +2529,6 @@ export const InternalCRM: React.FC<InternalCRMProps> = ({ currentRole, initialSu
                 </div>
               </div>
 
-              {/* Notes */}
               <div>
                 <label className="block font-semibold text-slate-700 uppercase text-[10px] mb-1">
                   Notas de la Oportunidad / Requerimiento
@@ -2139,7 +2590,6 @@ export const InternalCRM: React.FC<InternalCRMProps> = ({ currentRole, initialSu
               </button>
             </div>
 
-            {/* Step 1: Type Selection Tabs */}
             <div className="grid grid-cols-2 gap-2 bg-slate-100 p-1 rounded-lg text-xs font-semibold">
               <button
                 type="button"
@@ -2168,7 +2618,6 @@ export const InternalCRM: React.FC<InternalCRMProps> = ({ currentRole, initialSu
             </div>
 
             <form onSubmit={handleCreateContact} className="space-y-3.5 text-xs">
-              {/* Type specific notice */}
               <div className={`p-2.5 rounded-lg border text-xs leading-relaxed ${
                 contactType === 'empresa'
                   ? 'bg-indigo-50/50 border-indigo-200 text-indigo-950'
@@ -2185,7 +2634,6 @@ export const InternalCRM: React.FC<InternalCRMProps> = ({ currentRole, initialSu
                 )}
               </div>
 
-              {/* Company vs Personal Name */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 <div>
                   <label className="block font-semibold text-slate-700 uppercase text-[10px] mb-1">
@@ -2215,7 +2663,6 @@ export const InternalCRM: React.FC<InternalCRMProps> = ({ currentRole, initialSu
                 </div>
               </div>
 
-              {/* CUIT & Cargo */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 <div>
                   <label className="block font-semibold text-slate-700 uppercase text-[10px] mb-1">
@@ -2243,7 +2690,6 @@ export const InternalCRM: React.FC<InternalCRMProps> = ({ currentRole, initialSu
                 </div>
               </div>
 
-              {/* Department (if individual) */}
               {contactType === 'individual' && (
                 <div>
                   <label className="block font-semibold text-slate-700 uppercase text-[10px] mb-1">
@@ -2263,7 +2709,6 @@ export const InternalCRM: React.FC<InternalCRMProps> = ({ currentRole, initialSu
                 </div>
               )}
 
-              {/* Email & WhatsApp */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 <div>
                   <label className="block font-semibold text-slate-700 uppercase text-[10px] mb-1">
@@ -2291,7 +2736,6 @@ export const InternalCRM: React.FC<InternalCRMProps> = ({ currentRole, initialSu
                 </div>
               </div>
 
-              {/* Location & Vertical */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 <div>
                   <label className="block font-semibold text-slate-700 uppercase text-[10px] mb-1">
@@ -2323,7 +2767,6 @@ export const InternalCRM: React.FC<InternalCRMProps> = ({ currentRole, initialSu
                 </div>
               </div>
 
-              {/* Relationship Status */}
               <div>
                 <label className="block font-semibold text-slate-700 uppercase text-[10px] mb-1">
                   Vínculo Comercial
@@ -2341,7 +2784,6 @@ export const InternalCRM: React.FC<InternalCRMProps> = ({ currentRole, initialSu
                 </select>
               </div>
 
-              {/* Notes */}
               <div>
                 <label className="block font-semibold text-slate-700 uppercase text-[10px] mb-1">
                   Notas / Resumen
@@ -2580,7 +3022,6 @@ export const InternalCRM: React.FC<InternalCRMProps> = ({ currentRole, initialSu
                 </select>
               </div>
 
-              {/* If company has employees, allow selecting which employee to meet with */}
               {(() => {
                 const c = contacts.find((contact) => contact.id === meetingContactId);
                 if (c && c.employees && c.employees.length > 0) {
@@ -2708,7 +3149,6 @@ export const InternalCRM: React.FC<InternalCRMProps> = ({ currentRole, initialSu
                 />
               </div>
 
-              {/* Notification Toggles */}
               <div className="bg-slate-50 border border-slate-200 rounded-lg p-3 space-y-2">
                 <span className="text-[10px] font-bold uppercase text-slate-500 block">Notificaciones Automáticas:</span>
                 <label className="flex items-center gap-2 cursor-pointer text-xs text-slate-700">
@@ -3025,7 +3465,7 @@ export const InternalCRM: React.FC<InternalCRMProps> = ({ currentRole, initialSu
             <div>
               <span className="text-slate-700 text-xs font-bold block mb-1.5">Cambiar Etapa de Negociación:</span>
               <div className="grid grid-cols-5 gap-1.5">
-                {STAGES.map((s) => (
+                {pipelineStages.map((s) => (
                   <button
                     key={s.id}
                     type="button"

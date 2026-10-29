@@ -90,6 +90,15 @@ export interface VerticalMetadata {
 
 export type LeadStage = 'nuevo' | 'diagnostico' | 'propuesta' | 'negociacion' | 'activo';
 
+export interface PipelineStageConfig {
+  id: LeadStage;
+  label: string;
+  countColor: string;
+  bgBadge: string;
+  enabled: boolean;
+  order: number;
+}
+
 export interface Lead {
   id: string;
   contactId?: string; // Linked CRM contact
