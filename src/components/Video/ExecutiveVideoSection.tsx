@@ -92,7 +92,7 @@ export const ExecutiveVideoSection: React.FC = () => {
         {/* Video Embed Player Frame */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-center">
           <div className="lg:col-span-8 w-full">
-            <div className="relative aspect-video w-full rounded-2xl overflow-hidden border border-slate-200 bg-white shadow-lg">
+            <div className="relative aspect-video w-full rounded-xl overflow-hidden border border-slate-200/90 bg-white shadow-md">
               {!isPlaying ? (
                 <div className="relative w-full h-full group cursor-pointer" onClick={() => setIsPlaying(true)}>
                   <img

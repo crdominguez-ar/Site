@@ -39,24 +39,24 @@ export const WhatsAppButton: React.FC<WhatsAppButtonProps> = ({
   };
 
   return (
-    <div className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-40 select-none flex flex-col items-end max-w-full">
-      {/* Interactive Flyout Bubble - Responsive on all screen sizes */}
+    <div className="fixed bottom-4 right-4 sm:bottom-5 sm:right-5 z-40 select-none flex flex-col items-end max-w-full">
+      {/* Interactive Flyout Bubble - Refined and Integrated */}
       {isOpen && (
-        <div className="mb-3 w-[calc(100vw-2rem)] sm:w-96 max-w-sm bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-200 text-slate-800">
+        <div className="mb-2.5 w-[calc(100vw-2rem)] sm:w-88 max-w-sm bg-white rounded-xl shadow-xl border border-slate-200 overflow-hidden animate-in fade-in slide-in-from-bottom-2 duration-150 text-slate-800">
           {/* Header WhatsApp Corporate */}
-          <div className="bg-gradient-to-r from-[#128C7E] to-[#25D366] text-white p-4">
+          <div className="bg-gradient-to-r from-[#128C7E] to-[#25D366] text-white p-3.5">
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2.5">
                 <div className="relative">
-                  <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center font-black text-sm text-white">
+                  <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center font-black text-xs text-white">
                     CD
                   </div>
-                  <span className="absolute bottom-0 right-0 w-3 h-3 bg-emerald-300 border-2 border-[#128C7E] rounded-full" />
+                  <span className="absolute bottom-0 right-0 w-2 h-2 bg-emerald-300 border border-[#128C7E] rounded-full" />
                 </div>
                 <div>
-                  <h4 className="text-sm font-bold tracking-tight">{content.profile.founderName}</h4>
-                  <p className="text-[11px] text-emerald-100 flex items-center gap-1">
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-300 animate-pulse" />
+                  <h4 className="text-xs font-bold tracking-tight">{content.profile.founderName}</h4>
+                  <p className="text-[10px] text-emerald-100 flex items-center gap-1">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-300" />
                     Disponible · Atención Ejecutiva
                   </p>
                 </div>
@@ -64,92 +64,89 @@ export const WhatsAppButton: React.FC<WhatsAppButtonProps> = ({
               <button
                 type="button"
                 onClick={() => setIsOpen(false)}
-                className="p-1 rounded-full hover:bg-black/10 text-white/80 hover:text-white transition-colors cursor-pointer"
+                className="p-1 rounded-md hover:bg-black/10 text-white/80 hover:text-white transition-colors cursor-pointer"
                 aria-label="Cerrar ventana"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
-            <p className="text-xs text-white/95 mt-2.5 leading-relaxed bg-black/10 px-3 py-2 rounded-lg">
+            <p className="text-[11px] text-white/95 mt-2 leading-relaxed bg-black/10 px-2.5 py-1.5 rounded-md">
               ¿Tenés dudas financieras, tributarias o sobre franquicias? Escribime directamente para coordinar una reunión ejecutiva.
             </p>
           </div>
 
           {/* Quick Option Topics */}
-          <div className="p-3 sm:p-4 bg-slate-50 border-b border-slate-200 space-y-2">
-            <span className="text-[10px] sm:text-[11px] font-mono font-bold uppercase tracking-wider text-slate-500 block mb-1">
-              Seleccionar tema de consulta rápida:
+          <div className="p-3 bg-slate-50 border-b border-slate-200 space-y-1.5">
+            <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-slate-500 block">
+              Consulta rápida:
             </span>
-            <div className="grid grid-cols-1 gap-1.5">
+            <div className="grid grid-cols-1 gap-1">
               {quickTopics.map((topic, i) => (
                 <button
                   key={i}
                   type="button"
                   onClick={() => handleSend(topic.text)}
-                  className="text-left text-xs bg-white hover:bg-emerald-50 hover:text-[#128C7E] hover:border-emerald-300 px-3 py-2 rounded-lg border border-slate-200 text-slate-700 transition-all font-medium flex items-center justify-between group cursor-pointer"
+                  className="text-left text-[11px] bg-white hover:bg-emerald-50 hover:text-[#128C7E] hover:border-emerald-300 px-2.5 py-1.5 rounded-md border border-slate-200 text-slate-700 transition-all font-medium flex items-center justify-between group cursor-pointer"
                 >
                   <span className="truncate pr-2">{topic.label}</span>
-                  <Send className="w-3.5 h-3.5 text-slate-400 group-hover:text-[#128C7E] group-hover:translate-x-0.5 transition-all shrink-0" />
+                  <Send className="w-3 h-3 text-slate-400 group-hover:text-[#128C7E] transition-all shrink-0" />
                 </button>
               ))}
             </div>
           </div>
 
           {/* Custom Message Field */}
-          <div className="p-3 bg-white flex items-center gap-2">
+          <div className="p-2.5 bg-white flex items-center gap-1.5">
             <input
               type="text"
               value={customMsg}
               onChange={(e) => setCustomMsg(e.target.value)}
-              placeholder="Escribe tu mensaje aquí..."
+              placeholder="Escribe tu mensaje..."
               onKeyDown={(e) => {
                 if (e.key === 'Enter') {
                   e.preventDefault();
                   handleSend();
                 }
               }}
-              className="flex-1 text-xs px-3 py-2 bg-slate-100 rounded-lg border border-slate-200 focus:outline-none focus:border-[#25D366] focus:bg-white text-slate-800"
+              className="flex-1 text-xs px-2.5 py-1.5 bg-slate-100 rounded-md border border-slate-200 focus:outline-none focus:border-[#25D366] focus:bg-white text-slate-800"
             />
             <button
               type="button"
               onClick={() => handleSend()}
-              className="p-2 bg-[#25D366] hover:bg-[#20ba59] active:bg-[#128C7E] text-white rounded-lg transition-colors shadow-sm shrink-0 flex items-center justify-center cursor-pointer min-h-[36px] min-w-[36px]"
+              className="p-1.5 bg-[#25D366] hover:bg-[#20ba59] active:bg-[#128C7E] text-white rounded-md transition-colors shadow-xs shrink-0 flex items-center justify-center cursor-pointer min-h-[30px] min-w-[30px]"
               title="Enviar por WhatsApp"
             >
-              <Send className="w-4 h-4" />
+              <Send className="w-3.5 h-3.5" />
             </button>
           </div>
         </div>
       )}
 
-      {/* Floating Action Button */}
+      {/* Floating Action Button - Compact, Sleek and Executive */}
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="group relative flex items-center gap-2.5 sm:gap-3 px-3.5 sm:px-4 py-2.5 sm:py-3 bg-[#25D366] hover:bg-[#20ba59] active:scale-95 text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer min-h-[44px]"
+        className="group relative flex items-center gap-2 px-3 py-2 bg-[#25D366] hover:bg-[#20ba59] active:scale-95 text-white rounded-full shadow-md hover:shadow-lg transition-all duration-200 cursor-pointer min-h-[38px]"
         aria-label="Abrir chat de WhatsApp"
       >
-        {/* Pulsing beacon behind icon */}
-        <span className="absolute -inset-1 bg-[#25D366] rounded-full opacity-40 animate-ping pointer-events-none group-hover:opacity-60" />
-
         {/* WhatsApp Official SVG Icon */}
-        <div className="relative w-5 h-5 sm:w-6 sm:h-6 shrink-0 flex items-center justify-center">
+        <div className="relative w-4 h-4 shrink-0 flex items-center justify-center">
           <svg
             viewBox="0 0 24 24"
             fill="currentColor"
-            className="w-5 h-5 sm:w-6 sm:h-6 text-white"
+            className="w-4 h-4 text-white"
           >
             <path d="M12.031 2C6.516 2 2.023 6.492 2.023 12.008c0 1.945.556 3.766 1.523 5.309L2 22l4.82-1.508c1.488.883 3.23 1.391 5.094 1.391 5.516 0 10.008-4.492 10.008-10.008C22.039 6.492 17.547 2 12.031 2zm5.797 14.18c-.242.684-1.211 1.258-1.992 1.422-.531.109-1.219.195-3.539-.773-2.969-1.242-4.883-4.273-5.031-4.477-.148-.203-1.203-1.602-1.203-3.055 0-1.453.766-2.172 1.039-2.461.273-.289.602-.363.805-.363.203 0 .406.004.586.012.195.008.453-.074.707.539.266.637.906 2.219.984 2.383.078.164.133.359.023.578-.109.219-.164.359-.328.555-.164.195-.344.438-.492.586-.164.164-.336.344-.148.664.188.32.836 1.375 1.797 2.23 1.238 1.102 2.281 1.445 2.602 1.609.32.164.508.137.695-.082.188-.219.805-.938 1.02-1.258.219-.32.438-.266.734-.164.297.102 1.883.887 2.203 1.047.32.164.531.246.609.379.078.133.078.777-.164 1.461z" />
           </svg>
         </div>
 
         {/* Text Pill */}
-        <span className="font-bold text-xs tracking-wide pr-1 hidden sm:inline-block">
-          WhatsApp Directo
+        <span className="font-bold text-xs tracking-tight hidden sm:inline-block">
+          WhatsApp
         </span>
 
-        {/* Online Indicator Dot */}
-        <span className="w-2.5 h-2.5 rounded-full bg-emerald-200 border-2 border-[#25D366]" />
+        {/* Status indicator dot */}
+        <span className="w-1.5 h-1.5 rounded-full bg-emerald-200" />
       </button>
     </div>
   );

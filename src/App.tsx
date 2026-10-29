@@ -138,8 +138,10 @@ export default function App() {
       {/* Footer */}
       <Footer onNavigate={handleTabChange} />
 
-      {/* Floating WhatsApp Direct Connect Button */}
-      <WhatsAppButton />
+      {/* Floating WhatsApp Direct Connect Button - Only displayed on public frontend sections, not in backend */}
+      {['landing', 'solutions', 'simulators', 'diagnostic', 'blog'].includes(currentTab) && (
+        <WhatsAppButton />
+      )}
     </div>
   );
 }

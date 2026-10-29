@@ -67,7 +67,7 @@ export const SEOControlPanel: React.FC = () => {
   return (
     <div className="space-y-8">
       {/* Header */}
-      <div className="bg-white border border-slate-200 rounded-2xl p-6 sm:p-8 shadow-sm">
+      <div className="bg-white border border-slate-200 rounded-xl p-6 sm:p-8 shadow-sm">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="space-y-2 max-w-2xl">
             <div className="flex items-center gap-2 text-xs font-mono font-semibold uppercase tracking-wider text-[#0078D4]">
@@ -144,7 +144,7 @@ export const SEOControlPanel: React.FC = () => {
       {/* Editor & Preview Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         {/* Left Column: Form Fields */}
-        <div className="lg:col-span-6 bg-white border border-slate-200 rounded-2xl p-6 space-y-5 shadow-sm">
+        <div className="lg:col-span-6 bg-white border border-slate-200 rounded-xl p-6 space-y-5 shadow-sm">
           <div className="flex items-center justify-between pb-3 border-b border-slate-200">
             <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider">
               Parámetros de Metadatos
@@ -233,7 +233,7 @@ export const SEOControlPanel: React.FC = () => {
         {/* Right Column: Interactive Live Previews */}
         <div className="lg:col-span-6 space-y-6">
           {activePreview === 'google' && (
-            <div className="bg-white border border-slate-200 rounded-2xl p-6 space-y-4 shadow-sm">
+            <div className="bg-white border border-slate-200 rounded-xl p-6 space-y-4 shadow-sm">
               <div className="flex items-center justify-between pb-3 border-b border-slate-200">
                 <span className="text-xs font-bold text-slate-900 uppercase tracking-wider flex items-center gap-2">
                   <Search className="w-4 h-4 text-[#0078D4]" />
@@ -276,7 +276,7 @@ export const SEOControlPanel: React.FC = () => {
           )}
 
           {activePreview === 'social' && (
-            <div className="bg-white border border-slate-200 rounded-2xl p-6 space-y-4 shadow-sm">
+            <div className="bg-white border border-slate-200 rounded-xl p-6 space-y-4 shadow-sm">
               <div className="flex items-center justify-between pb-3 border-b border-slate-200">
                 <span className="text-xs font-bold text-slate-900 uppercase tracking-wider flex items-center gap-2">
                   <Share2 className="w-4 h-4 text-[#0078D4]" />
@@ -315,7 +315,7 @@ export const SEOControlPanel: React.FC = () => {
           )}
 
           {activePreview === 'schema' && (
-            <div className="bg-white border border-slate-200 rounded-2xl p-6 space-y-4 shadow-sm">
+            <div className="bg-white border border-slate-200 rounded-xl p-6 space-y-4 shadow-sm">
               <div className="flex items-center justify-between pb-3 border-b border-slate-200">
                 <span className="text-xs font-bold text-slate-900 uppercase tracking-wider flex items-center gap-2">
                   <Code2 className="w-4 h-4 text-[#107C41]" />
@@ -356,7 +356,7 @@ export const SEOControlPanel: React.FC = () => {
           )}
 
           {/* HTML Export Box */}
-          <div className="bg-white border border-slate-200 rounded-2xl p-5 flex items-center justify-between gap-4 shadow-sm">
+          <div className="bg-white border border-slate-200 rounded-xl p-5 flex items-center justify-between gap-4 shadow-sm">
             <div>
               <span className="text-xs font-bold text-slate-900 block">
                 Copiar Metatags Generados

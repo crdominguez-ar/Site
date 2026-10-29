@@ -229,9 +229,9 @@ export const BlogView: React.FC = () => {
   };
 
   return (
-    <div className="space-y-10">
+    <div className="space-y-8">
       {/* Blog Hero & Header */}
-      <div className="bg-white border border-slate-200 rounded-2xl p-6 sm:p-10 shadow-sm">
+      <div className="bg-white border border-slate-200/90 rounded-xl p-6 sm:p-8 shadow-xs">
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
           <div className="max-w-2xl space-y-2">
             <div className="flex items-center gap-2 text-xs font-mono font-semibold uppercase tracking-wider text-[#0078D4]">
@@ -395,7 +395,7 @@ export const BlogView: React.FC = () => {
       {/* Article Reader Modal */}
       {activePost && (
         <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4 backdrop-blur-sm overflow-y-auto">
-          <div className="bg-white border border-slate-200 rounded-2xl max-w-3xl w-full p-6 sm:p-8 space-y-6 max-h-[90vh] overflow-y-auto relative my-8 shadow-2xl">
+          <div className="bg-white border border-slate-200/90 rounded-xl max-w-3xl w-full p-6 sm:p-8 space-y-6 max-h-[90vh] overflow-y-auto relative my-8 shadow-xl">
             <button
               type="button"
               onClick={() => setActivePost(null)}
@@ -484,7 +484,7 @@ export const BlogView: React.FC = () => {
       {/* WordPress Connect Modal */}
       {showWpModal && (
         <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4 backdrop-blur-sm">
-          <form onSubmit={handleTestWordPress} className="bg-white border border-slate-200 rounded-2xl max-w-lg w-full p-6 space-y-4 relative shadow-2xl">
+          <form onSubmit={handleTestWordPress} className="bg-white border border-slate-200/90 rounded-xl max-w-lg w-full p-6 space-y-4 relative shadow-xl">
             <button
               type="button"
               onClick={() => setShowWpModal(false)}

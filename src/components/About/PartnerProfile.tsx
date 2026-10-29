@@ -18,7 +18,7 @@ export const PartnerProfile: React.FC = () => {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
         {/* Left: Portrait */}
         <div className="lg:col-span-4 flex flex-col items-center lg:items-start text-center lg:text-left">
-          <div className="relative w-56 h-56 sm:w-64 sm:h-64 lg:w-72 lg:h-72 rounded-2xl overflow-hidden border border-slate-200 shadow-md mb-4 group bg-white">
+          <div className="relative w-56 h-56 sm:w-64 sm:h-64 lg:w-72 lg:h-72 rounded-xl overflow-hidden border border-slate-200/90 shadow-sm mb-4 group bg-white">
             <img
               src={carlosPortrait}
               alt={profile.founderName}
@@ -53,7 +53,7 @@ export const PartnerProfile: React.FC = () => {
           </p>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 pt-2">
-            <div className="p-4 sm:p-5 bg-white border border-slate-200 rounded-xl shadow-xs">
+            <div className="p-4 sm:p-5 bg-slate-50/70 border border-slate-200/90 rounded-lg shadow-2xs">
               <span className="text-xs font-bold text-slate-900 block mb-1">
                 Rigor Normativo & Jurídico
               </span>
@@ -62,7 +62,7 @@ export const PartnerProfile: React.FC = () => {
               </p>
             </div>
 
-            <div className="p-4 sm:p-5 bg-white border border-slate-200 rounded-xl shadow-xs">
+            <div className="p-4 sm:p-5 bg-blue-50/40 border border-blue-200/80 rounded-lg shadow-2xs">
               <span className="text-xs font-bold text-slate-900 block mb-1">
                 CFO & Modelado Financiero
               </span>

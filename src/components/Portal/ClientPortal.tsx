@@ -52,7 +52,7 @@ export const ClientPortal: React.FC = () => {
   return (
     <div className="space-y-8">
       {/* Top Banner with Client Account Info */}
-      <div className="bg-white border border-slate-200 rounded-2xl p-6 md:p-8 shadow-sm">
+      <div className="bg-white border border-slate-200/90 rounded-xl p-6 md:p-8 shadow-xs">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-200">
           <div>
             <div className="flex items-center gap-2 text-xs text-slate-500 font-medium mb-1">
@@ -318,7 +318,7 @@ export const ClientPortal: React.FC = () => {
       {/* Modal / Drawer for detailed report examination */}
       {selectedReport && (
         <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4 backdrop-blur-sm">
-          <div className="bg-white border border-slate-200 rounded-2xl max-w-xl w-full p-6 space-y-5 shadow-2xl">
+          <div className="bg-white border border-slate-200/90 rounded-xl max-w-xl w-full p-6 space-y-5 shadow-xl">
             <div className="flex items-start justify-between">
               <div>
                 <span className="text-xs uppercase tracking-wider text-[#0078D4] font-mono font-semibold">

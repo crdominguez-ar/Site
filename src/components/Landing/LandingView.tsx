@@ -69,26 +69,68 @@ export const LandingView: React.FC<LandingViewProps> = ({ onSelectTab, onOpenCon
             </button>
           </div>
 
-          {/* Grid with Crisp Light Cards - Fully responsive across mobile, tablet and desktop */}
+          {/* Grid with Representative Color Backgrounds - Modern, Integrated, Clean rounded-lg */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6">
             {content.axes.map((axis, idx) => {
               const Icon = getAxisIcon(idx);
+              const axisThemes = [
+                {
+                  bg: 'bg-blue-50/60 hover:bg-blue-50/90',
+                  border: 'border-blue-200/90 hover:border-[#0078D4]',
+                  badgeBg: 'bg-blue-100 text-blue-900 border-blue-200',
+                  iconBg: 'bg-[#0078D4] text-white',
+                  accent: '#0078D4',
+                  topBar: 'bg-[#0078D4]',
+                },
+                {
+                  bg: 'bg-emerald-50/60 hover:bg-emerald-50/90',
+                  border: 'border-emerald-200/90 hover:border-[#107C41]',
+                  badgeBg: 'bg-emerald-100 text-emerald-900 border-emerald-200',
+                  iconBg: 'bg-[#107C41] text-white',
+                  accent: '#107C41',
+                  topBar: 'bg-[#107C41]',
+                },
+                {
+                  bg: 'bg-amber-50/60 hover:bg-amber-50/90',
+                  border: 'border-amber-200/90 hover:border-amber-600',
+                  badgeBg: 'bg-amber-100 text-amber-950 border-amber-200',
+                  iconBg: 'bg-amber-600 text-white',
+                  accent: '#D97706',
+                  topBar: 'bg-amber-600',
+                },
+                {
+                  bg: 'bg-indigo-50/60 hover:bg-indigo-50/90',
+                  border: 'border-indigo-200/90 hover:border-indigo-600',
+                  badgeBg: 'bg-indigo-100 text-indigo-950 border-indigo-200',
+                  iconBg: 'bg-indigo-600 text-white',
+                  accent: '#4F46E5',
+                  topBar: 'bg-indigo-600',
+                },
+                {
+                  bg: 'bg-purple-50/60 hover:bg-purple-50/90',
+                  border: 'border-purple-200/90 hover:border-purple-600',
+                  badgeBg: 'bg-purple-100 text-purple-950 border-purple-200',
+                  iconBg: 'bg-purple-600 text-white',
+                  accent: '#7C3AED',
+                  topBar: 'bg-purple-600',
+                },
+              ];
+              const theme = axisThemes[idx % axisThemes.length];
+
               return (
                 <div 
                   key={axis.id}
-                  className="bg-white border border-slate-200/90 rounded-xl p-5 sm:p-6 flex flex-col justify-between hover:border-[#0078D4] transition-all shadow-sm hover:shadow-md"
+                  className={`${theme.bg} border ${theme.border} rounded-lg p-5 sm:p-6 flex flex-col justify-between transition-all shadow-xs hover:shadow-sm relative overflow-hidden`}
                 >
+                  {/* Subtle top indicator bar */}
+                  <div className={`absolute top-0 left-0 right-0 h-1 ${theme.topBar}`} />
+
                   <div>
-                    <div className="flex items-center justify-between text-xs text-slate-500 font-mono mb-4">
-                      <span>{axis.number}. {axis.category}</span>
-                      <div 
-                        className="p-2 rounded border"
-                        style={{ 
-                          backgroundColor: `${axis.accentColor}10`,
-                          borderColor: `${axis.accentColor}30`,
-                          color: axis.accentColor
-                        }}
-                      >
+                    <div className="flex items-center justify-between text-xs text-slate-600 font-mono mb-4 pt-1">
+                      <span className={`px-2 py-0.5 rounded text-[11px] font-bold border ${theme.badgeBg}`}>
+                        {axis.number} · {axis.category}
+                      </span>
+                      <div className={`p-1.5 rounded-md ${theme.iconBg} shadow-2xs`}>
                         <Icon className="w-4 h-4" />
                       </div>
                     </div>
@@ -96,29 +138,30 @@ export const LandingView: React.FC<LandingViewProps> = ({ onSelectTab, onOpenCon
                     <h3 className="text-base sm:text-lg font-bold text-slate-900 mb-2">
                       {axis.title}
                     </h3>
-                    <p className="text-xs text-slate-600 leading-relaxed mb-4">
+                    <p className="text-xs text-slate-700 leading-relaxed mb-4">
                       {axis.description}
                     </p>
 
                     <ul className="text-xs text-slate-700 space-y-2 mb-6">
                       {axis.keyAspects.slice(0, 3).map((item, i) => (
                         <li key={i} className="flex items-start gap-2">
-                          <span style={{ color: axis.accentColor }} className="font-bold">·</span>
-                          <span>{item}</span>
+                          <span style={{ color: theme.accent }} className="font-black text-sm leading-none mt-0.5">▪</span>
+                          <span className="font-medium">{item}</span>
                         </li>
                       ))}
                     </ul>
                   </div>
 
-                  <div className="pt-4 border-t border-slate-100 flex items-center justify-between text-xs">
+                  <div className="pt-3.5 border-t border-slate-200/80 flex items-center justify-between text-xs">
                     <span className="text-[11px] text-slate-500 font-mono">Acceso Directo</span>
                     <button
                       type="button"
                       onClick={() => onSelectTab(axis.ctaTab)}
-                      className="hover:underline font-bold cursor-pointer"
-                      style={{ color: axis.accentColor }}
+                      className="hover:underline font-bold cursor-pointer flex items-center gap-1"
+                      style={{ color: theme.accent }}
                     >
-                      {axis.ctaLabel} →
+                      <span>{axis.ctaLabel}</span>
+                      <ArrowRight className="w-3.5 h-3.5" />
                     </button>
                   </div>
                 </div>
@@ -144,7 +187,7 @@ export const LandingView: React.FC<LandingViewProps> = ({ onSelectTab, onOpenCon
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-5 sm:gap-6">
-            <div className="p-5 sm:p-6 bg-white border border-slate-200 rounded-xl space-y-3 shadow-sm">
+            <div className="p-5 sm:p-6 bg-blue-50/40 border border-blue-200/80 rounded-lg space-y-3 shadow-xs">
               <span className="text-xs font-mono font-bold text-[#0078D4]">Cooperativa Industrial · Trelew</span>
               <h4 className="text-sm font-bold text-slate-900">
                 Determinación de Costos Ocultos y Punto de Equilibrio
@@ -152,12 +195,12 @@ export const LandingView: React.FC<LandingViewProps> = ({ onSelectTab, onOpenCon
               <p className="text-xs text-slate-600 leading-relaxed">
                 Se estructuró una matriz de costeo marginal que reclasificó gastos fijos, incrementando el margen de contribución un 18.4% en 6 meses.
               </p>
-              <div className="pt-3 border-t border-slate-100 text-xs font-mono text-[#107C41] font-bold">
+              <div className="pt-3 border-t border-slate-200/70 text-xs font-mono text-[#107C41] font-bold">
                 +18.4% Margen Operativo Neto
               </div>
             </div>
 
-            <div className="p-5 sm:p-6 bg-white border border-slate-200 rounded-xl space-y-3 shadow-sm">
+            <div className="p-5 sm:p-6 bg-emerald-50/40 border border-emerald-200/80 rounded-lg space-y-3 shadow-xs">
               <span className="text-xs font-mono font-bold text-[#107C41]">SaaS B2B Tech · Puerto Madryn</span>
               <h4 className="text-sm font-bold text-slate-900">
                 Liquidación de Factura E & Registro Economía del Conocimiento
@@ -165,20 +208,20 @@ export const LandingView: React.FC<LandingViewProps> = ({ onSelectTab, onOpenCon
               <p className="text-xs text-slate-600 leading-relaxed">
                 Encuadre fiscal con cupo legal en dólares, bono de crédito fiscal para cargas sociales y deducción de retenciones internacionales.
               </p>
-              <div className="pt-3 border-t border-slate-100 text-xs font-mono text-[#107C41] font-bold">
+              <div className="pt-3 border-t border-slate-200/70 text-xs font-mono text-[#107C41] font-bold">
                 USD 48,000 / año Ahorro Impositivo
               </div>
             </div>
 
-            <div className="p-5 sm:p-6 bg-white border border-slate-200 rounded-xl space-y-3 shadow-sm">
-              <span className="text-xs font-mono font-bold text-[#0078D4]">Red Comercial · Valle de Chubut</span>
+            <div className="p-5 sm:p-6 bg-amber-50/40 border border-amber-200/80 rounded-lg space-y-3 shadow-xs">
+              <span className="text-xs font-mono font-bold text-[#D97706]">Red Comercial · Valle de Chubut</span>
               <h4 className="text-sm font-bold text-slate-900">
                 Auditoría Precontractual de Franquicia (CCyC 1512-1524)
               </h4>
               <p className="text-xs text-slate-600 leading-relaxed">
                 Identificación de cláusulas abusivas de exclusividad y recálculo del Payback real de 12 a 19 meses, renegociando el canon inicial un 25%.
               </p>
-              <div className="pt-3 border-t border-slate-100 text-xs font-mono text-[#0078D4] font-bold">
+              <div className="pt-3 border-t border-slate-200/70 text-xs font-mono text-[#D97706] font-bold">
                 25% Reducción en Canon Inicial
               </div>
             </div>

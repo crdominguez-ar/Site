@@ -62,7 +62,7 @@ export const ConsultationModal: React.FC<ConsultationModalProps> = ({ isOpen, on
 
   return (
     <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4 backdrop-blur-sm">
-      <div className="bg-white border border-slate-200 rounded-2xl max-w-lg w-full p-6 sm:p-8 space-y-5 relative shadow-2xl">
+      <div className="bg-white border border-slate-200/90 rounded-xl max-w-lg w-full p-6 sm:p-8 space-y-5 relative shadow-xl">
         <button
           type="button"
           onClick={handleClose}
