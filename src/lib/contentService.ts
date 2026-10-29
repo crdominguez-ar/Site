@@ -27,6 +27,43 @@ export interface KPIItem {
   highlightColor?: string;
 }
 
+export interface SiteThemeConfig {
+  fontFamily: 'sans' | 'serif' | 'mono' | 'geometric';
+  borderRadius: 'none' | 'sm' | 'md' | 'lg' | 'xl';
+  palettePreset: 'patagonia_deep' | 'obsidian_contrast' | 'azure_executive' | 'custom';
+  primaryColor: string;
+  axesBackground: string;
+}
+
+export interface HomeBlockConfig {
+  id: 'hero' | 'video' | 'axes' | 'case_studies' | 'profile' | 'diagnostic';
+  label: string;
+  enabled: boolean;
+  order: number;
+}
+
+export interface CaseStudyItem {
+  id: string;
+  tag: string;
+  title: string;
+  description: string;
+  metric: string;
+  metricLabel: string;
+  bgColor: string;
+  borderColor: string;
+  tagColor: string;
+  metricColor: string;
+}
+
+export interface HomeSectionHeaders {
+  axesBadge: string;
+  axesTitle: string;
+  axesSubtitle: string;
+  caseStudiesBadge: string;
+  caseStudiesTitle: string;
+  caseStudiesSubtitle: string;
+}
+
 export interface StrategicAxisContent {
   id: string;
   number: string;
@@ -37,9 +74,17 @@ export interface StrategicAxisContent {
   ctaLabel: string;
   ctaTab: 'simulators' | 'solutions' | 'diagnostic';
   accentColor: string;
+  bgColor?: string;
+  borderColor?: string;
+  tagColor?: string;
+  tagBg?: string;
+  btnColor?: string;
 }
 
 export interface SiteContent {
+  theme: SiteThemeConfig;
+  homeBlocks: HomeBlockConfig[];
+  homeSectionHeaders: HomeSectionHeaders;
   heroSlides: SlideContent[];
   kpis: KPIItem[];
   videoSection: {
@@ -52,6 +97,7 @@ export interface SiteContent {
     presenterBio: string;
   };
   axes: StrategicAxisContent[];
+  caseStudies: CaseStudyItem[];
   profile: {
     badge: string;
     title: string;
@@ -74,6 +120,29 @@ export interface SiteContent {
 }
 
 export const DEFAULT_SITE_CONTENT: SiteContent = {
+  theme: {
+    fontFamily: 'sans',
+    borderRadius: 'lg',
+    palettePreset: 'patagonia_deep',
+    primaryColor: '#0078D4',
+    axesBackground: '#080E18',
+  },
+  homeBlocks: [
+    { id: 'hero', label: 'Carrusel Hero Principal', enabled: true, order: 1 },
+    { id: 'video', label: 'Exposición en Video / Conferencia', enabled: true, order: 2 },
+    { id: 'axes', label: 'Cinco Ejes Estratégicos (Bento Blocks)', enabled: true, order: 3 },
+    { id: 'case_studies', label: 'Casos de Estudio & Métricas Cuantitativas', enabled: true, order: 4 },
+    { id: 'profile', label: 'Perfil de Socio Fundador & Estudio', enabled: true, order: 5 },
+    { id: 'diagnostic', label: 'Diagnóstico Empresarial Automatizado', enabled: true, order: 6 },
+  ],
+  homeSectionHeaders: {
+    axesBadge: 'Cinco Divisiones Especializadas',
+    axesTitle: 'Arquitectura de Soluciones Estratégicas',
+    axesSubtitle: 'Diseño en bloques modulares con metodologías financieras, tributarias y normativas ejecutadas con máxima precisión analítica.',
+    caseStudiesBadge: 'Resultados Comprobados & Auditorías Reales',
+    caseStudiesTitle: 'Impacto Cuantitativo en Empresas Patagónicas',
+    caseStudiesSubtitle: 'Métricas auditadas con respaldo normativo, reestructuración financiera y optimización fiscal demostrable.',
+  },
   heroSlides: [
     {
       id: 'slide-cfo',
@@ -190,6 +259,11 @@ export const DEFAULT_SITE_CONTENT: SiteContent = {
       ctaLabel: 'Abrir Simulador de Equilibrio',
       ctaTab: 'simulators',
       accentColor: '#0078D4',
+      bgColor: '#0D223F',
+      borderColor: '#1E3A8A',
+      tagColor: '#38BDF8',
+      tagBg: 'bg-blue-950/80 border-blue-800',
+      btnColor: 'bg-[#0078D4] hover:bg-[#106EBE] text-white',
     },
     {
       id: 'axis-2',
@@ -205,6 +279,11 @@ export const DEFAULT_SITE_CONTENT: SiteContent = {
       ctaLabel: 'Ver Soluciones Digitales',
       ctaTab: 'solutions',
       accentColor: '#107C41',
+      bgColor: '#0A3324',
+      borderColor: '#065F46',
+      tagColor: '#4ADE80',
+      tagBg: 'bg-emerald-950/80 border-emerald-800',
+      btnColor: 'bg-[#107C41] hover:bg-[#0E6A37] text-white',
     },
     {
       id: 'axis-3',
@@ -220,6 +299,11 @@ export const DEFAULT_SITE_CONTENT: SiteContent = {
       ctaLabel: 'Simular VAN / TIR Franquicias',
       ctaTab: 'simulators',
       accentColor: '#8E562E',
+      bgColor: '#3D1E0C',
+      borderColor: '#92400E',
+      tagColor: '#FBBF24',
+      tagBg: 'bg-amber-950/80 border-amber-800',
+      btnColor: 'bg-[#D97706] hover:bg-[#B45309] text-white',
     },
     {
       id: 'axis-4',
@@ -235,6 +319,11 @@ export const DEFAULT_SITE_CONTENT: SiteContent = {
       ctaLabel: 'Solicitar Diagnóstico',
       ctaTab: 'diagnostic',
       accentColor: '#0078D4',
+      bgColor: '#191D45',
+      borderColor: '#3730A3',
+      tagColor: '#818CF8',
+      tagBg: 'bg-indigo-950/80 border-indigo-800',
+      btnColor: 'bg-[#4F46E5] hover:bg-[#4338CA] text-white',
     },
     {
       id: 'axis-5',
@@ -250,6 +339,49 @@ export const DEFAULT_SITE_CONTENT: SiteContent = {
       ctaLabel: 'Explorar Arquitectura IA',
       ctaTab: 'solutions',
       accentColor: '#004B50',
+      bgColor: '#291048',
+      borderColor: '#6B21A8',
+      tagColor: '#C084FC',
+      tagBg: 'bg-purple-950/80 border-purple-800',
+      btnColor: 'bg-[#7C3AED] hover:bg-[#6D28D9] text-white',
+    },
+  ],
+  caseStudies: [
+    {
+      id: 'case-1',
+      tag: 'Industrial · Trelew',
+      title: 'Costos Ocultos y Punto de Equilibrio Marginal',
+      description: 'Reclasificación analítica de costos fijos y absorción industrial que incrementó el margen de contribución en 6 meses de intervención.',
+      metric: '+18.4%',
+      metricLabel: 'Margen Operativo Neto Certificado',
+      bgColor: '#0D223F',
+      borderColor: '#1E3A8A',
+      tagColor: '#38BDF8',
+      metricColor: '#38BDF8',
+    },
+    {
+      id: 'case-2',
+      tag: 'SaaS Tech · Puerto Madryn',
+      title: 'Factura E & Economía del Conocimiento',
+      description: 'Encuadre fiscal integral con cupo legal de divisas, bono fiscal para contribuciones patronales y deducción de retenciones transfronterizas.',
+      metric: 'USD 48,000 / año',
+      metricLabel: 'Optimización Fiscal y Cambiaria',
+      bgColor: '#0A3324',
+      borderColor: '#065F46',
+      tagColor: '#4ADE80',
+      metricColor: '#4ADE80',
+    },
+    {
+      id: 'case-3',
+      tag: 'Red Comercial · Valle Chubut',
+      title: 'Auditoría Precontractual de Franquicia (CCyC)',
+      description: 'Identificación de cláusulas abusivas de exclusividad, recálculo de Payback real y renegociando el canon inicial un 25%.',
+      metric: '-25% Reducción',
+      metricLabel: 'Canon Inicial Directo Ahorrado',
+      bgColor: '#3D1E0C',
+      borderColor: '#92400E',
+      tagColor: '#FBBF24',
+      metricColor: '#FBBF24',
     },
   ],
   profile: {
@@ -285,7 +417,18 @@ class ContentService {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(DEFAULT_SITE_CONTENT));
         return DEFAULT_SITE_CONTENT;
       }
-      return JSON.parse(stored);
+      const parsed = JSON.parse(stored);
+      return {
+        ...DEFAULT_SITE_CONTENT,
+        ...parsed,
+        theme: { ...DEFAULT_SITE_CONTENT.theme, ...(parsed.theme || {}) },
+        homeBlocks: parsed.homeBlocks && parsed.homeBlocks.length ? parsed.homeBlocks : DEFAULT_SITE_CONTENT.homeBlocks,
+        homeSectionHeaders: { ...DEFAULT_SITE_CONTENT.homeSectionHeaders, ...(parsed.homeSectionHeaders || {}) },
+        caseStudies: parsed.caseStudies && parsed.caseStudies.length ? parsed.caseStudies : DEFAULT_SITE_CONTENT.caseStudies,
+        axes: parsed.axes && parsed.axes.length 
+          ? parsed.axes.map((a: any, idx: number) => ({ ...DEFAULT_SITE_CONTENT.axes[idx], ...a }))
+          : DEFAULT_SITE_CONTENT.axes,
+      };
     } catch {
       return DEFAULT_SITE_CONTENT;
     }
