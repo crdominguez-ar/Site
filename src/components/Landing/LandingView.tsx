@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ArrowRight, ChevronRight, Building2, Globe, Scale, LineChart, Cpu } from 'lucide-react';
+import { ArrowRight, ChevronRight, Building2, Globe, Scale, LineChart, Cpu, Play } from 'lucide-react';
 import { PartnerProfile } from '../About/PartnerProfile';
 import { InteractiveDiagnostic } from '../Diagnostic/InteractiveDiagnostic';
 import { ExecutiveVideoSection } from '../Video/ExecutiveVideoSection';
@@ -18,6 +18,21 @@ export const LandingView: React.FC<LandingViewProps> = ({ onSelectTab, onOpenCon
     const unsub = contentService.subscribe((updated) => setContent(updated));
     return () => unsub();
   }, []);
+
+  const extractYouTubeId = (urlOrId?: string): string => {
+    if (!urlOrId) return '';
+    const val = urlOrId.trim();
+    if (val.includes('youtube.com/watch?v=')) {
+      return val.split('v=')[1]?.split('&')[0] || val;
+    }
+    if (val.includes('youtu.be/')) {
+      return val.split('youtu.be/')[1]?.split('?')[0] || val;
+    }
+    if (val.includes('youtube.com/embed/')) {
+      return val.split('embed/')[1]?.split('?')[0] || val;
+    }
+    return val;
+  };
 
   const getAxisIcon = (index: number) => {
     switch (index) {
@@ -161,8 +176,37 @@ export const LandingView: React.FC<LandingViewProps> = ({ onSelectTab, onOpenCon
                           {axis.title}
                         </h3>
 
+                        {/* Media Support: Image / Photo or YouTube Video */}
+                        {axis.mediaType === 'image' && axis.mediaUrl && (
+                          <div className={`relative overflow-hidden ${radiusClass} my-3.5 border border-white/10 group-hover:border-white/20 transition-all ${isLead ? 'h-48 sm:h-56' : 'h-36 sm:h-40'}`}>
+                            <img 
+                              src={axis.mediaUrl} 
+                              alt={axis.title} 
+                              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" 
+                            />
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent pointer-events-none" />
+                            {axis.mediaTitle && (
+                              <span className="absolute bottom-2 left-2.5 text-[10px] font-mono text-white/90 bg-black/70 px-2 py-0.5 rounded backdrop-blur-xs">
+                                {axis.mediaTitle}
+                              </span>
+                            )}
+                          </div>
+                        )}
+
+                        {axis.mediaType === 'video' && axis.mediaUrl && (
+                          <div className={`relative overflow-hidden ${radiusClass} my-3.5 border border-white/10 bg-black aspect-video w-full shadow-inner`}>
+                            <iframe
+                              src={`https://www.youtube-nocookie.com/embed/${extractYouTubeId(axis.mediaUrl)}`}
+                              title={axis.title}
+                              className="w-full h-full border-0"
+                              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                              allowFullScreen
+                            />
+                          </div>
+                        )}
+
                         {/* High-Contrast Body Text */}
-                        <p className={`text-slate-300 leading-relaxed mb-5 ${isLead ? 'text-xs sm:text-sm max-w-2xl' : 'text-xs'}`}>
+                        <p className={`text-slate-300 leading-relaxed mb-4 ${isLead ? 'text-xs sm:text-sm max-w-2xl' : 'text-xs'}`}>
                           {axis.description}
                         </p>
 
@@ -255,6 +299,31 @@ export const LandingView: React.FC<LandingViewProps> = ({ onSelectTab, onOpenCon
                         <h4 className="text-base font-bold text-white tracking-tight leading-snug">
                           {study.title}
                         </h4>
+
+                        {/* Media Support in Case Study */}
+                        {study.mediaType === 'image' && study.mediaUrl && (
+                          <div className={`relative overflow-hidden ${radiusClass} h-36 w-full border border-white/10`}>
+                            <img 
+                              src={study.mediaUrl} 
+                              alt={study.title} 
+                              className="w-full h-full object-cover" 
+                            />
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent pointer-events-none" />
+                          </div>
+                        )}
+
+                        {study.mediaType === 'video' && study.mediaUrl && (
+                          <div className={`relative overflow-hidden ${radiusClass} aspect-video w-full border border-white/10 bg-black`}>
+                            <iframe
+                              src={`https://www.youtube-nocookie.com/embed/${extractYouTubeId(study.mediaUrl)}`}
+                              title={study.title}
+                              className="w-full h-full border-0"
+                              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                              allowFullScreen
+                            />
+                          </div>
+                        )}
+
                         <p className="text-xs text-slate-300 leading-relaxed">
                           {study.description}
                         </p>

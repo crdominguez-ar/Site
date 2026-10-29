@@ -1051,6 +1051,140 @@ export const WebCMSEditor: React.FC<WebCMSEditorProps> = ({ onPreviewSite }) => 
                     </select>
                   </div>
                 </div>
+
+                {/* Multimedia: Imagen / Foto / Video YouTube */}
+                <div className="pt-3 border-t border-slate-200 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <label className="block text-xs font-bold text-slate-900">
+                      Multimedia del Bloque (Imagen / Foto / Video YouTube)
+                    </label>
+                    <span className="text-[10px] font-mono uppercase text-slate-500">Soporte Completo</span>
+                  </div>
+
+                  <div className="grid grid-cols-3 gap-2">
+                    {[
+                      { id: 'none', label: 'Sin Media' },
+                      { id: 'image', label: 'Foto / Imagen' },
+                      { id: 'video', label: 'Video YouTube' },
+                    ].map((m) => (
+                      <button
+                        key={m.id}
+                        type="button"
+                        onClick={() => {
+                          const updated = [...content.axes];
+                          updated[activeAxisIndex].mediaType = m.id as any;
+                          setContent({ ...content, axes: updated });
+                        }}
+                        className={`px-3 py-1.5 text-xs font-semibold rounded-lg border transition-all cursor-pointer ${
+                          (content.axes[activeAxisIndex].mediaType || 'none') === m.id
+                            ? 'bg-blue-50 text-[#0078D4] border-blue-300 font-bold shadow-2xs'
+                            : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
+                        }`}
+                      >
+                        {m.label}
+                      </button>
+                    ))}
+                  </div>
+
+                  {content.axes[activeAxisIndex].mediaType === 'image' && (
+                    <div className="space-y-2 pt-1">
+                      <div>
+                        <label className="block text-[11px] font-semibold text-slate-700 mb-1">
+                          URL de la Imagen o Foto
+                        </label>
+                        <input
+                          type="text"
+                          value={content.axes[activeAxisIndex].mediaUrl || ''}
+                          onChange={(e) => {
+                            const updated = [...content.axes];
+                            updated[activeAxisIndex].mediaUrl = e.target.value;
+                            setContent({ ...content, axes: updated });
+                          }}
+                          placeholder="https://... o ruta local"
+                          className="w-full text-xs font-mono px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-slate-900"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-[11px] font-semibold text-slate-700 mb-1">
+                          Pie de Foto / Título
+                        </label>
+                        <input
+                          type="text"
+                          value={content.axes[activeAxisIndex].mediaTitle || ''}
+                          onChange={(e) => {
+                            const updated = [...content.axes];
+                            updated[activeAxisIndex].mediaTitle = e.target.value;
+                            setContent({ ...content, axes: updated });
+                          }}
+                          placeholder="Ej: Sala de Directorio & Planificación"
+                          className="w-full text-xs px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-900"
+                        />
+                      </div>
+
+                      <div>
+                        <span className="text-[11px] font-semibold text-slate-500 block mb-1">Presets de Galería:</span>
+                        <div className="flex flex-wrap gap-1.5">
+                          {imagePresets.slice(0, 4).map((preset, pIdx) => (
+                            <button
+                              key={pIdx}
+                              type="button"
+                              onClick={() => {
+                                const updated = [...content.axes];
+                                updated[activeAxisIndex].mediaUrl = preset.url;
+                                updated[activeAxisIndex].mediaTitle = preset.label;
+                                setContent({ ...content, axes: updated });
+                              }}
+                              className="px-2 py-1 bg-slate-100 hover:bg-slate-200 rounded text-[10px] text-slate-700 font-medium cursor-pointer"
+                            >
+                              {preset.label.split('(')[0]}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {content.axes[activeAxisIndex].mediaType === 'video' && (
+                    <div className="space-y-2 pt-1">
+                      <div>
+                        <label className="block text-[11px] font-semibold text-slate-700 mb-1">
+                          ID o Enlace de YouTube
+                        </label>
+                        <input
+                          type="text"
+                          value={content.axes[activeAxisIndex].mediaUrl || ''}
+                          onChange={(e) => {
+                            let val = e.target.value.trim();
+                            if (val.includes('youtube.com/watch?v=')) val = val.split('v=')[1]?.split('&')[0] || val;
+                            if (val.includes('youtu.be/')) val = val.split('youtu.be/')[1]?.split('?')[0] || val;
+                            const updated = [...content.axes];
+                            updated[activeAxisIndex].mediaUrl = val;
+                            setContent({ ...content, axes: updated });
+                          }}
+                          placeholder="dQw4w9WgXcQ o https://youtube.com/..."
+                          className="w-full text-xs font-mono px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-slate-900"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[11px] font-semibold text-slate-700 mb-1">
+                          Título del Video
+                        </label>
+                        <input
+                          type="text"
+                          value={content.axes[activeAxisIndex].mediaTitle || ''}
+                          onChange={(e) => {
+                            const updated = [...content.axes];
+                            updated[activeAxisIndex].mediaTitle = e.target.value;
+                            setContent({ ...content, axes: updated });
+                          }}
+                          placeholder="Ej: Conferencia Magistral de Finanzas"
+                          className="w-full text-xs px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-900"
+                        />
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
 
               {/* Color Customizer on right */}
@@ -1187,6 +1321,19 @@ export const WebCMSEditor: React.FC<WebCMSEditorProps> = ({ onPreviewSite }) => 
                     <h5 className="text-sm font-bold leading-tight">
                       {content.axes[activeAxisIndex].title}
                     </h5>
+
+                    {/* Media preview in card */}
+                    {content.axes[activeAxisIndex].mediaType === 'image' && content.axes[activeAxisIndex].mediaUrl && (
+                      <div className="h-24 w-full rounded-lg overflow-hidden border border-white/10 my-2">
+                        <img src={content.axes[activeAxisIndex].mediaUrl} alt="" className="w-full h-full object-cover" />
+                      </div>
+                    )}
+                    {content.axes[activeAxisIndex].mediaType === 'video' && content.axes[activeAxisIndex].mediaUrl && (
+                      <div className="p-2 bg-black/60 rounded-lg border border-white/10 text-center my-2 text-[10px] font-mono text-slate-300">
+                        ▶ Video YouTube: {content.axes[activeAxisIndex].mediaUrl}
+                      </div>
+                    )}
+
                     <p className="text-[11px] text-slate-300 line-clamp-2">
                       {content.axes[activeAxisIndex].description}
                     </p>

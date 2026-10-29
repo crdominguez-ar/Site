@@ -53,6 +53,8 @@ export interface CaseStudyItem {
   borderColor: string;
   tagColor: string;
   metricColor: string;
+  mediaType?: 'none' | 'image' | 'video';
+  mediaUrl?: string;
 }
 
 export interface HomeSectionHeaders {
@@ -79,6 +81,9 @@ export interface StrategicAxisContent {
   tagColor?: string;
   tagBg?: string;
   btnColor?: string;
+  mediaType?: 'none' | 'image' | 'video';
+  mediaUrl?: string;
+  mediaTitle?: string;
 }
 
 export interface SiteContent {
@@ -264,6 +269,9 @@ export const DEFAULT_SITE_CONTENT: SiteContent = {
       tagColor: '#38BDF8',
       tagBg: 'bg-blue-950/80 border-blue-800',
       btnColor: 'bg-[#0078D4] hover:bg-[#106EBE] text-white',
+      mediaType: 'image',
+      mediaUrl: industryImg,
+      mediaTitle: 'Auditoría Industrial & Costos',
     },
     {
       id: 'axis-2',
@@ -284,6 +292,9 @@ export const DEFAULT_SITE_CONTENT: SiteContent = {
       tagColor: '#4ADE80',
       tagBg: 'bg-emerald-950/80 border-emerald-800',
       btnColor: 'bg-[#107C41] hover:bg-[#0E6A37] text-white',
+      mediaType: 'image',
+      mediaUrl: digitalFintechImg,
+      mediaTitle: 'Economía del Conocimiento & Fintech',
     },
     {
       id: 'axis-3',
@@ -304,6 +315,9 @@ export const DEFAULT_SITE_CONTENT: SiteContent = {
       tagColor: '#FBBF24',
       tagBg: 'bg-amber-950/80 border-amber-800',
       btnColor: 'bg-[#D97706] hover:bg-[#B45309] text-white',
+      mediaType: 'video',
+      mediaUrl: 'dQw4w9WgXcQ',
+      mediaTitle: 'Exposición Técnica: Ley CCyC 1512',
     },
     {
       id: 'axis-4',
@@ -324,6 +338,9 @@ export const DEFAULT_SITE_CONTENT: SiteContent = {
       tagColor: '#818CF8',
       tagBg: 'bg-indigo-950/80 border-indigo-800',
       btnColor: 'bg-[#4F46E5] hover:bg-[#4338CA] text-white',
+      mediaType: 'image',
+      mediaUrl: boardroomImg,
+      mediaTitle: 'Directorio Ejecutivo & CFO',
     },
     {
       id: 'axis-5',
@@ -344,6 +361,9 @@ export const DEFAULT_SITE_CONTENT: SiteContent = {
       tagColor: '#C084FC',
       tagBg: 'bg-purple-950/80 border-purple-800',
       btnColor: 'bg-[#7C3AED] hover:bg-[#6D28D9] text-white',
+      mediaType: 'image',
+      mediaUrl: heroPatagoniaImg,
+      mediaTitle: 'Modelos Digitales Avanzados',
     },
   ],
   caseStudies: [
@@ -358,6 +378,8 @@ export const DEFAULT_SITE_CONTENT: SiteContent = {
       borderColor: '#1E3A8A',
       tagColor: '#38BDF8',
       metricColor: '#38BDF8',
+      mediaType: 'image',
+      mediaUrl: industryImg,
     },
     {
       id: 'case-2',
@@ -370,6 +392,8 @@ export const DEFAULT_SITE_CONTENT: SiteContent = {
       borderColor: '#065F46',
       tagColor: '#4ADE80',
       metricColor: '#4ADE80',
+      mediaType: 'image',
+      mediaUrl: digitalFintechImg,
     },
     {
       id: 'case-3',
@@ -382,6 +406,8 @@ export const DEFAULT_SITE_CONTENT: SiteContent = {
       borderColor: '#92400E',
       tagColor: '#FBBF24',
       metricColor: '#FBBF24',
+      mediaType: 'image',
+      mediaUrl: boardroomImg,
     },
   ],
   profile: {
@@ -424,7 +450,9 @@ class ContentService {
         theme: { ...DEFAULT_SITE_CONTENT.theme, ...(parsed.theme || {}) },
         homeBlocks: parsed.homeBlocks && parsed.homeBlocks.length ? parsed.homeBlocks : DEFAULT_SITE_CONTENT.homeBlocks,
         homeSectionHeaders: { ...DEFAULT_SITE_CONTENT.homeSectionHeaders, ...(parsed.homeSectionHeaders || {}) },
-        caseStudies: parsed.caseStudies && parsed.caseStudies.length ? parsed.caseStudies : DEFAULT_SITE_CONTENT.caseStudies,
+        caseStudies: parsed.caseStudies && parsed.caseStudies.length 
+          ? parsed.caseStudies.map((c: any, idx: number) => ({ ...DEFAULT_SITE_CONTENT.caseStudies[idx], ...c }))
+          : DEFAULT_SITE_CONTENT.caseStudies,
         axes: parsed.axes && parsed.axes.length 
           ? parsed.axes.map((a: any, idx: number) => ({ ...DEFAULT_SITE_CONTENT.axes[idx], ...a }))
           : DEFAULT_SITE_CONTENT.axes,

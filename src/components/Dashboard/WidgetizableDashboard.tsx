@@ -48,9 +48,10 @@ import {
 } from '../../types';
 import { InternalCRM } from '../CRM/InternalCRM';
 import { WebCMSEditor } from './WebCMSEditor';
+import { SEOControlPanel } from '../SEO/SEOControlPanel';
 
 interface WidgetizableDashboardProps {
-  initialView?: 'widgets' | 'crm' | 'cms';
+  initialView?: 'widgets' | 'crm' | 'cms' | 'seo';
   onNavigateTab: (tab: 'landing' | 'solutions' | 'simulators' | 'diagnostic' | 'blog' | 'portal' | 'crm' | 'seo') => void;
   onOpenConsultationModal: () => void;
 }
@@ -71,7 +72,7 @@ export const WidgetizableDashboard: React.FC<WidgetizableDashboardProps> = ({
   onNavigateTab, 
   onOpenConsultationModal 
 }) => {
-  const [dashboardView, setDashboardView] = useState<'widgets' | 'crm' | 'cms'>(initialView);
+  const [dashboardView, setDashboardView] = useState<'widgets' | 'crm' | 'cms' | 'seo'>(initialView);
   const [crmSubTab, setCrmSubTab] = useState<'pipeline' | 'contacts' | 'calendar' | 'tasks'>('pipeline');
 
   useEffect(() => {
@@ -388,6 +389,18 @@ export const WidgetizableDashboard: React.FC<WidgetizableDashboardProps> = ({
                 <Sliders className="w-3.5 h-3.5 text-[#0078D4]" />
                 <span>Editor Web (CMS)</span>
               </button>
+              <button
+                type="button"
+                onClick={() => setDashboardView('seo')}
+                className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
+                  dashboardView === 'seo'
+                    ? 'bg-white text-[#0078D4] shadow-xs'
+                    : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                <Search className="w-3.5 h-3.5 text-[#0078D4]" />
+                <span>Auditoría SEO</span>
+              </button>
             </div>
 
             {dashboardView === 'widgets' && (
@@ -534,6 +547,27 @@ export const WidgetizableDashboard: React.FC<WidgetizableDashboardProps> = ({
           </div>
 
           <InternalCRM currentRole={currentUser.role} initialSubTab={crmSubTab} />
+        </div>
+      ) : dashboardView === 'seo' ? (
+        <div className="w-full px-4 sm:px-8 lg:px-16 xl:px-20 space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white border border-slate-200 rounded-xl px-4 sm:px-5 py-3 shadow-xs">
+            <div className="flex items-center gap-2 text-xs font-semibold text-slate-700">
+              <Search className="w-4 h-4 text-[#0078D4]" />
+              <span>Auditoría SEO & Posicionamiento en Buscadores</span>
+              <span className="hidden sm:inline text-slate-400">·</span>
+              <span className="hidden sm:inline text-slate-500 font-normal">Panel de Control de Metadatos, OpenGraph y Snippets de Google</span>
+            </div>
+            <button
+              type="button"
+              onClick={() => setDashboardView('widgets')}
+              className="text-xs font-bold text-[#0078D4] hover:underline flex items-center gap-1.5 cursor-pointer self-start sm:self-auto"
+            >
+              <LayoutDashboard className="w-3.5 h-3.5" />
+              <span>Volver a Vista Widgets</span>
+            </button>
+          </div>
+
+          <SEOControlPanel />
         </div>
       ) : (
         <div className="w-full px-4 sm:px-8 lg:px-16 xl:px-20 space-y-6">

@@ -120,8 +120,12 @@ export default function App() {
         )}
 
         {currentTab === 'seo' && (
-          <div className="w-full px-4 sm:px-8 lg:px-16 xl:px-20 py-8 sm:py-12">
-            <SEOControlPanel />
+          <div className="w-full">
+            <WidgetizableDashboard
+              initialView="seo"
+              onNavigateTab={handleTabChange}
+              onOpenConsultationModal={() => setIsConsultationModalOpen(true)}
+            />
           </div>
         )}
       </main>
