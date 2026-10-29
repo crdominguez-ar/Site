@@ -265,3 +265,33 @@ export interface CRMMeeting {
   reminderSent: boolean;
   createdAt: string;
 }
+
+export type BlogCategory = 
+  | 'Tributario' 
+  | 'Finanzas & CFO' 
+  | 'Franquicias' 
+  | 'Economía del Conocimiento' 
+  | 'Empresas 100% IA';
+
+export interface BlogPost {
+  id: string;
+  title: string;
+  slug: string;
+  excerpt: string;
+  content: string;
+  category: BlogCategory;
+  author: string;
+  date: string;
+  readTime: string;
+  featuredImage: string;
+  youtubeVideoId?: string;
+  videoUrl?: string;
+  spotifyEmbedUrl?: string;
+  tags: string[];
+  seoTitle?: string;
+  seoDescription?: string;
+  seoKeywords?: string[];
+  createdAt?: string;
+  updatedAt?: string;
+  isPublished?: boolean;
+}

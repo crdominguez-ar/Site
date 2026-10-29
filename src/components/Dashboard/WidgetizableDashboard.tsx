@@ -34,6 +34,8 @@ import {
 import { dbRepository } from '../../lib/supabaseClient';
 import { userService } from '../../lib/userService';
 import { resendService } from '../../lib/resendService';
+import { blogService } from '../../lib/blogService';
+import { BlogEditorModal } from '../Blog/BlogEditorModal';
 import { 
   Lead, 
   CRMTask, 
@@ -120,6 +122,7 @@ export const WidgetizableDashboard: React.FC<WidgetizableDashboardProps> = ({
   const [notifySubscribers, setNotifySubscribers] = useState(true);
   const [isPublishingPost, setIsPublishingPost] = useState(false);
   const [postPublishedSuccess, setPostPublishedSuccess] = useState<string | null>(null);
+  const [showDashboardBlogEditor, setShowDashboardBlogEditor] = useState(false);
 
   // New User Modal State
   const [showNewUserModal, setShowNewUserModal] = useState(false);
@@ -236,19 +239,20 @@ export const WidgetizableDashboard: React.FC<WidgetizableDashboardProps> = ({
     setPostPublishedSuccess(null);
 
     try {
-      let emailNotice = '';
-      if (notifySubscribers) {
-        const res = await resendService.sendBlogNewsletter({
-          title: quickPostTitle,
-          excerpt: quickPostExcerpt,
-          category: quickPostCategory,
-          author: currentUser.name,
-          slug: quickPostTitle.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
-        });
-        emailNotice = ` y notificado a ${res.count} clientes vía Resend.com Free`;
-      }
+      const { emailResult } = await blogService.savePost({
+        title: quickPostTitle,
+        excerpt: quickPostExcerpt,
+        content: quickPostExcerpt,
+        category: quickPostCategory as any,
+        author: currentUser.name,
+        notifySubscribers,
+      });
 
-      setPostPublishedSuccess(`Artículo publicado con éxito${emailNotice}.`);
+      const emailNotice = emailResult?.count 
+        ? ` y notificado a ${emailResult.count} clientes vía Resend.com Free` 
+        : '';
+
+      setPostPublishedSuccess(`Artículo publicado en el Blog con éxito${emailNotice}.`);
       setQuickPostTitle('');
       setQuickPostExcerpt('');
       setResendConfig(resendService.getConfig());
@@ -1071,14 +1075,25 @@ export const WidgetizableDashboard: React.FC<WidgetizableDashboardProps> = ({
                 </div>
               </div>
 
-              <button
-                type="button"
-                onClick={() => onNavigateTab('blog')}
-                className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-semibold rounded-md flex items-center gap-1.5 transition-colors self-start sm:self-auto"
-              >
-                <span>Ver Blog Público</span>
-                <ArrowUpRight className="w-3.5 h-3.5" />
-              </button>
+              <div className="flex flex-wrap items-center gap-2 self-start sm:self-auto">
+                <button
+                  type="button"
+                  onClick={() => setShowDashboardBlogEditor(true)}
+                  className="px-3.5 py-1.5 bg-[#0078D4] hover:bg-[#106EBE] text-white text-xs font-bold rounded-lg flex items-center gap-1.5 transition-colors cursor-pointer shadow-xs"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>Redactar Artículo (Video, Foto & SEO)</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => onNavigateTab('blog')}
+                  className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-semibold rounded-lg flex items-center gap-1.5 transition-colors cursor-pointer"
+                >
+                  <span>Ver Blog</span>
+                  <ArrowUpRight className="w-3.5 h-3.5" />
+                </button>
+              </div>
             </div>
 
             {/* Quick Publish Form */}
@@ -1446,6 +1461,16 @@ export const WidgetizableDashboard: React.FC<WidgetizableDashboardProps> = ({
           </div>
         </div>
       )}
+
+      {/* Blog Editor Modal */}
+      <BlogEditorModal
+        isOpen={showDashboardBlogEditor}
+        onClose={() => setShowDashboardBlogEditor(false)}
+        onSaved={() => {
+          setShowDashboardBlogEditor(false);
+          onNavigateTab('blog');
+        }}
+      />
     </div>
   );
 };

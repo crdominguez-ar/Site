@@ -1,133 +1,39 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   BookOpen, Video, Headphones, 
   Search, ExternalLink, 
   ArrowRight, Globe, X, CheckCircle2, AlertCircle,
-  Mail, Plus, Send, Sparkles
+  Mail, Plus, Send, Sparkles, Edit3, Trash2, Tag, PenTool
 } from 'lucide-react';
-import { resendService } from '../../lib/resendService';
-
-
-export interface BlogPost {
-  id: string;
-  title: string;
-  slug: string;
-  excerpt: string;
-  content: string;
-  category: 'Tributario' | 'Finanzas & CFO' | 'Franquicias' | 'Economía del Conocimiento' | 'Empresas 100% IA';
-  author: string;
-  date: string;
-  readTime: string;
-  featuredImage: string;
-  youtubeVideoId?: string;
-  spotifyEmbedUrl?: string;
-  tags: string[];
-}
-
-const INITIAL_POSTS: BlogPost[] = [
-  {
-    id: 'post-1',
-    title: 'Franquicias bajo la lupa del CCyC: Los 6 riesgos de la Circular de Oferta (COF)',
-    slug: 'franquicias-ley-ccyc-circular-oferta',
-    excerpt: 'Análisis minucioso de los Artículos 1512 a 1524 del Código Civil y Comercial. Cómo auditar los balances de los 2 años previos y blindar el plazo mínimo legal de 4 años para inversores en Patagonia.',
-    content: `El contrato de franquicia en Argentina dejó de ser un contrato atípico con la sanción del Código Civil y Comercial de la Nación (Ley 26.994). A partir del Artículo 1512, el legislador estableció salvaguardas claras para nivelar la asimetría informativa entre el franquiciante y el franquiciado.
-
-En nuestra práctica profesional en Chubut, detectamos con frecuencia tres vicios recurrentes:
-1. Omisión de la entrega de la Circular de Oferta de Franquicia (COF) con los 30 días de antelación legalmente exigidos.
-2. Estados contables incompletos de los 2 años anteriores de unidades similares de la red.
-3. Cláusulas abusivas de no competencia que exceden el año posterior a la rescisión o que imponen exclusividades territoriales ambiguas.
-
-Antes de desembolsar el canon de ingreso, es indispensable una auditoría contable y legal para determinar el verdadero plazo de recupero (Payback).`,
-    category: 'Franquicias',
-    author: 'Cr. Carlos Rodrigo Domínguez',
-    date: '24 Oct 2026',
-    readTime: '6 min de lectura',
-    featuredImage: '/src/assets/images/strategic_financial_boardroom_1793059909387.jpg',
-    youtubeVideoId: 'dQw4w9WgXcQ',
-    spotifyEmbedUrl: 'https://open.spotify.com/embed/episode/7makk4oTQel546v09Zl9pX?utm_source=generator',
-    tags: ['Franquicias', 'Ley CCyC 1514', 'Due Diligence', 'Payback'],
-  },
-  {
-    id: 'post-2',
-    title: 'Factura E y Liquidación de Divisas en Banco del Chubut: Guía para Software y Consultores',
-    slug: 'factura-e-liquidacion-divisas-banco-chubut',
-    excerpt: 'Paso a paso para exportadores de servicios basados en conocimiento. Cómo aprovechar el cupo legal de libre disponibilidad en dólares y computar el bono de crédito fiscal de la Ley 27.506.',
-    content: `Exportar software, diseño o servicios de ingeniería desde la Patagonia ofrece un marco tributario privilegiado si se ejecuta dentro de los plazos normativos del Banco Central de la República Argentina (BCRA).
-
-Puntos críticos que dictaminamos para nuestros clientes:
-- Plazo perentorio de 5 días hábiles bancarios desde la acreditación en la cuenta del exterior.
-- Emisión formal de Factura Electrónica clase 'E' vinculada a la orden de pago internacional.
-- Utilización del régimen de exención simplificada de liquidación forzosa en pesos para personas humanas y pequeñas estructuras societarias.
-- Inscripción en el Registro Nacional de Beneficiarios del Régimen de Promoción de la Economía del Conocimiento para acceder al 70% de reducción en contribuciones patronales.`,
-    category: 'Economía del Conocimiento',
-    author: 'Cr. Carlos Rodrigo Domínguez',
-    date: '18 Oct 2026',
-    readTime: '5 min de lectura',
-    featuredImage: '/src/assets/images/strategic_financial_boardroom_1793059909387.jpg',
-    tags: ['Factura E', 'BCRA', 'MULC', 'Economía del Conocimiento'],
-  },
-  {
-    id: 'post-3',
-    title: 'Zero-Human Companies (ZHC): El marco tributario para organizaciones operadas por IA',
-    slug: 'zero-human-companies-ia-marco-tributario',
-    excerpt: '¿Cómo tributa una entidad corporativa cuyos procesos de ventas, facturación y soporte están 100% orquestados por bucles multi-agente? Deducibilidad de inferencia y gobernanza.',
-    content: `El advenimiento de empresas donde el 100% de la ejecución operativa está a cargo de agentes autónomos plantea interrogantes contables inéditos en la doctrina argentina.
-
-Aspectos normativos claves:
-1. Deducibilidad en el Impuesto a las Ganancias del costo de tokens de LLMs e infraestructura serverless en la nube extranjera.
-2. Tratamiento tributario de las reservas de tesorería descentralizada (tokens y stablecoins) conforme a la RG AFIP 4614.
-3. Responsabilidad legal de los administradores societarios frente a decisiones contractuales cerradas de forma autónoma por algoritmos.
-
-Desde Trelew, estructuramos el primer marco de gobernanza contable para startups IA que combinan personería SAS con orquestación autónoma.`,
-    category: 'Empresas 100% IA',
-    author: 'Cr. Carlos Rodrigo Domínguez',
-    date: '10 Oct 2026',
-    readTime: '8 min de lectura',
-    featuredImage: '/src/assets/images/strategic_financial_boardroom_1793059909387.jpg',
-    youtubeVideoId: 'dQw4w9WgXcQ',
-    tags: ['ZHC', 'Multi-Agente', 'IA Fiscal', 'Cripto AFIP'],
-  },
-  {
-    id: 'post-4',
-    title: 'CFO Fraccional para PyMEs Familiares: Control del Ciclo de Caja y Presupuestos a 12 Meses',
-    slug: 'cfo-fraccional-pymes-familiares-patagonia',
-    excerpt: 'Por qué una PyME consolidada en Trelew no necesita un director financiero a tiempo completo de USD 6.000/mes, sino una metodología fraccional de alto impacto con modelos VAN y TIR.',
-    content: `Las empresas familiares que crecieron al calor del esfuerzo productivo suelen toparse con un techo: la falta de visibilidad en el ciclo de conversión de efectivo.
-
-El modelo de CFO Fraccional implementado por nuestro estudio brinda:
-- Un tablero mensual de Cash Flow Runway con proyecciones a 12 meses ajustadas por índices de precios reales.
-- Evaluación cuantitativa de proyectos de capital (VAN y TIR) para evitar inversiones que descalcen la tesorería.
-- Acompañamiento en reuniones de socios para despersonalizar las decisiones y basarlas en márgenes de contribución marginal.`,
-    category: 'Finanzas & CFO',
-    author: 'Cr. Carlos Rodrigo Domínguez',
-    date: '02 Oct 2026',
-    readTime: '7 min de lectura',
-    featuredImage: '/src/assets/images/strategic_financial_boardroom_1793059909387.jpg',
-    tags: ['CFO', 'Cash Flow', 'VAN/TIR', 'Empresas Familiares'],
-  },
-];
+import { BlogPost, BlogCategory } from '../../types';
+import { blogService } from '../../lib/blogService';
+import { BlogEditorModal } from './BlogEditorModal';
 
 export const BlogView: React.FC = () => {
-  const [posts, setPosts] = useState<BlogPost[]>(INITIAL_POSTS);
+  const [posts, setPosts] = useState<BlogPost[]>(() => blogService.getPosts());
   const [selectedCategory, setSelectedCategory] = useState<string>('Todas');
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [activePost, setActivePost] = useState<BlogPost | null>(null);
+
+  // Editor Modal State
+  const [showEditorModal, setShowEditorModal] = useState<boolean>(false);
+  const [postToEdit, setPostToEdit] = useState<BlogPost | null>(null);
 
   // WordPress Connect Modal
   const [showWpModal, setShowWpModal] = useState<boolean>(false);
   const [wpEndpoint, setWpEndpoint] = useState<string>('https://tu-sitio-wordpress.com/wp-json/wp/v2/posts');
   const [wpStatus, setWpStatus] = useState<'idle' | 'testing' | 'connected' | 'error'>('idle');
 
-  // New Post Modal & Resend.com dispatch state
-  const [showNewPostModal, setShowNewPostModal] = useState<boolean>(false);
-  const [newTitle, setNewTitle] = useState<string>('');
-  const [newCategory, setNewCategory] = useState<BlogPost['category']>('Tributario');
-  const [newExcerpt, setNewExcerpt] = useState<string>('');
-  const [newContent, setNewContent] = useState<string>('');
-  const [newTags, setNewTags] = useState<string>('Patagonia, AFIP, Estrategia');
-  const [notifyResend, setNotifyResend] = useState<boolean>(true);
-  const [isPublishing, setIsPublishing] = useState<boolean>(false);
-  const [publishFeedback, setPublishFeedback] = useState<string | null>(null);
+  // Listen to updates from blogService
+  useEffect(() => {
+    const handleBlogUpdated = () => {
+      setPosts(blogService.getPosts());
+    };
+    window.addEventListener('cr_blog_updated', handleBlogUpdated);
+    return () => {
+      window.removeEventListener('cr_blog_updated', handleBlogUpdated);
+    };
+  }, []);
 
   const categories = ['Todas', 'Tributario', 'Finanzas & CFO', 'Franquicias', 'Economía del Conocimiento', 'Empresas 100% IA'];
 
@@ -136,62 +42,32 @@ export const BlogView: React.FC = () => {
     const matchesSearch = 
       p.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       p.excerpt.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (p.seoTitle && p.seoTitle.toLowerCase().includes(searchQuery.toLowerCase())) ||
       p.tags.some((t) => t.toLowerCase().includes(searchQuery.toLowerCase()));
     return matchesCat && matchesSearch;
   });
 
-  const handlePublishPost = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newTitle || !newContent) return;
-
-    setIsPublishing(true);
-    setPublishFeedback(null);
-
-    const newPost: BlogPost = {
-      id: `post-${Date.now()}`,
-      title: newTitle,
-      slug: newTitle.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
-      excerpt: newExcerpt || newContent.slice(0, 160) + '...',
-      content: newContent,
-      category: newCategory,
-      author: 'Cr. Carlos Rodrigo Domínguez',
-      date: new Date().toLocaleDateString('es-AR', { day: '2-digit', month: 'short', year: 'numeric' }),
-      readTime: `${Math.max(3, Math.ceil(newContent.split(' ').length / 180))} min lectura`,
-      featuredImage: '/src/assets/images/strategic_financial_boardroom_1793059909387.jpg',
-      tags: newTags.split(',').map((t) => t.trim()).filter(Boolean),
-    };
-
-    setPosts([newPost, ...posts]);
-
-    let resendNotice = '';
-    if (notifyResend) {
-      try {
-        const res = await resendService.sendBlogNewsletter({
-          title: newPost.title,
-          excerpt: newPost.excerpt,
-          category: newPost.category,
-          author: newPost.author,
-          slug: newPost.slug,
-        });
-        resendNotice = ` · Notificado por Resend.com Free a ${res.count} clientes suscritos`;
-      } catch (err: any) {
-        console.warn('Resend notification notice', err);
-      }
-    }
-
-    setPublishFeedback(`Artículo publicado con éxito${resendNotice}.`);
-    setIsPublishing(false);
-    
-    // Reset form after 2 seconds
-    setTimeout(() => {
-      setShowNewPostModal(false);
-      setNewTitle('');
-      setNewExcerpt('');
-      setNewContent('');
-      setPublishFeedback(null);
-    }, 1800);
+  const handleOpenCreateModal = () => {
+    setPostToEdit(null);
+    setShowEditorModal(true);
   };
 
+  const handleOpenEditModal = (e: React.MouseEvent, post: BlogPost) => {
+    e.stopPropagation();
+    setPostToEdit(post);
+    setShowEditorModal(true);
+  };
+
+  const handleDeletePost = (e: React.MouseEvent, postId: string) => {
+    e.stopPropagation();
+    if (window.confirm('¿Confirmas que deseas eliminar este artículo del blog?')) {
+      blogService.deletePost(postId);
+      setPosts(blogService.getPosts());
+      if (activePost?.id === postId) {
+        setActivePost(null);
+      }
+    }
+  };
 
   const handleTestWordPress = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -202,7 +78,6 @@ export const BlogView: React.FC = () => {
       if (res.ok) {
         const data = await res.json();
         if (Array.isArray(data) && data.length > 0) {
-          // Format wp posts
           const formatted: BlogPost[] = data.slice(0, 5).map((wpItem: any) => ({
             id: `wp-${wpItem.id}`,
             title: wpItem.title?.rendered || 'Artículo importado de WordPress',
@@ -223,15 +98,14 @@ export const BlogView: React.FC = () => {
       }
       setWpStatus('connected'); // Mock success if CORS
     } catch {
-      // Graceful fallback for CORS in preview
       setWpStatus('connected');
     }
   };
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       {/* Blog Hero & Header */}
-      <div className="bg-white border border-slate-200/90 rounded-xl p-6 sm:p-8 shadow-xs">
+      <div className="bg-white border border-slate-200/90 rounded-2xl p-6 sm:p-8 shadow-xs">
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
           <div className="max-w-2xl space-y-2">
             <div className="flex items-center gap-2 text-xs font-mono font-semibold uppercase tracking-wider text-[#0078D4]">
@@ -246,36 +120,60 @@ export const BlogView: React.FC = () => {
             </p>
           </div>
 
-          <div className="flex flex-wrap items-center gap-3">
+          <div className="flex flex-wrap items-center gap-2.5">
+            {/* Primary Action Button: Redactar Artículo */}
             <button
               type="button"
-              onClick={() => setShowNewPostModal(true)}
-              className="px-4 py-2 bg-[#0078D4] hover:bg-[#106EBE] text-white text-xs font-bold rounded-md transition-colors flex items-center gap-2 shadow-xs cursor-pointer"
+              onClick={handleOpenCreateModal}
+              className="px-4 py-2.5 bg-[#0078D4] hover:bg-[#106EBE] text-white text-xs font-bold rounded-lg transition-all flex items-center gap-2 shadow-sm hover:shadow-md cursor-pointer"
             >
-              <Plus className="w-3.5 h-3.5" />
-              <span>Redactar Artículo (+ Resend Free)</span>
+              <Plus className="w-4 h-4" />
+              <span>Redactar Artículo (Video, Foto, SEO)</span>
             </button>
 
             <button
               type="button"
               onClick={() => setShowWpModal(true)}
-              className="px-4 py-2 bg-slate-50 border border-slate-300 hover:border-[#0078D4] text-slate-800 text-xs font-semibold rounded-md transition-colors flex items-center gap-2 shadow-2xs"
+              className="px-3.5 py-2.5 bg-slate-50 border border-slate-300 hover:border-[#0078D4] text-slate-800 text-xs font-semibold rounded-lg transition-colors flex items-center gap-2 shadow-2xs cursor-pointer"
             >
               <Globe className="w-3.5 h-3.5 text-[#0078D4]" />
-              <span>Conectar WordPress Externo (API)</span>
+              <span>Conectar WordPress (API)</span>
             </button>
           </div>
         </div>
 
+        {/* Editorial Notice Banner */}
+        <div className="mt-6 pt-5 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-3 bg-gradient-to-r from-blue-50/70 via-slate-50 to-indigo-50/50 p-3.5 rounded-xl border border-blue-100">
+          <div className="flex items-center gap-2.5">
+            <div className="p-1.5 bg-[#0078D4] text-white rounded-md shrink-0">
+              <PenTool className="w-3.5 h-3.5" />
+            </div>
+            <div className="text-xs">
+              <span className="font-bold text-slate-900">Panel Editorial & CMS de Artículos:</span>{' '}
+              <span className="text-slate-600">
+                Puedes redactar dictámenes, vincular videos de YouTube, asignar foto de portada y configurar etiquetas SEO para Google.
+              </span>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={handleOpenCreateModal}
+            className="text-xs font-bold text-[#0078D4] hover:underline flex items-center gap-1 shrink-0 cursor-pointer"
+          >
+            <span>+ Redactar ahora</span>
+            <ArrowRight className="w-3 h-3" />
+          </button>
+        </div>
+
         {/* Filter and Search Bar */}
-        <div className="flex flex-col md:flex-row items-center justify-between gap-4 pt-8 mt-6 border-t border-slate-200">
+        <div className="flex flex-col md:flex-row items-center justify-between gap-4 pt-6 mt-4 border-t border-slate-100">
           <div className="flex flex-wrap items-center gap-1.5 w-full md:w-auto">
             {categories.map((cat) => (
               <button
                 key={cat}
                 type="button"
                 onClick={() => setSelectedCategory(cat)}
-                className={`px-3 py-1.5 text-xs rounded-md font-semibold transition-colors ${
+                className={`px-3 py-1.5 text-xs rounded-md font-semibold transition-colors cursor-pointer ${
                   selectedCategory === cat
                     ? 'bg-[#0078D4] text-white font-bold shadow-sm'
                     : 'bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-200'
@@ -335,7 +233,7 @@ export const BlogView: React.FC = () => {
           <article
             key={post.id}
             onClick={() => setActivePost(post)}
-            className="bg-white border border-slate-200 rounded-xl overflow-hidden hover:border-[#0078D4] hover:shadow-md transition-all cursor-pointer flex flex-col justify-between group shadow-sm"
+            className="bg-white border border-slate-200 rounded-xl overflow-hidden hover:border-[#0078D4] hover:shadow-md transition-all cursor-pointer flex flex-col justify-between group shadow-sm relative"
           >
             <div>
               {/* Media Thumbnail */}
@@ -348,20 +246,41 @@ export const BlogView: React.FC = () => {
                 <div className="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-transparent to-transparent" />
                 
                 {/* Media Type Badges */}
-                <div className="absolute top-3 left-3 flex items-center gap-2">
+                <div className="absolute top-3 left-3 flex flex-wrap items-center gap-1.5">
                   <span className="px-2 py-0.5 bg-white/95 text-[#0078D4] text-[10px] font-mono font-bold rounded border border-slate-200 shadow-2xs">
                     {post.category}
                   </span>
-                  {post.youtubeVideoId && (
-                    <span className="p-1 bg-red-600 text-white rounded text-[10px] flex items-center gap-1 font-bold shadow-2xs">
+                  {(post.youtubeVideoId || post.videoUrl) && (
+                    <span className="p-1 bg-red-600 text-white rounded text-[10px] flex items-center gap-1 font-bold shadow-2xs" title="Video de YouTube vinculado">
                       <Video className="w-3 h-3" />
+                      <span className="text-[9px]">Video</span>
                     </span>
                   )}
                   {post.spotifyEmbedUrl && (
-                    <span className="p-1 bg-[#1DB954] text-black rounded text-[10px] flex items-center gap-1 font-bold shadow-2xs">
+                    <span className="p-1 bg-[#1DB954] text-black rounded text-[10px] flex items-center gap-1 font-bold shadow-2xs" title="Audio Spotify vinculado">
                       <Headphones className="w-3 h-3" />
                     </span>
                   )}
+                </div>
+
+                {/* Edit & Delete Quick Buttons */}
+                <div className="absolute top-3 right-3 flex items-center gap-1 opacity-90 group-hover:opacity-100 transition-opacity">
+                  <button
+                    type="button"
+                    title="Editar artículo, multimedia o SEO"
+                    onClick={(e) => handleOpenEditModal(e, post)}
+                    className="p-1.5 bg-white/90 hover:bg-white text-slate-700 hover:text-[#0078D4] rounded-md shadow-sm transition-colors"
+                  >
+                    <Edit3 className="w-3.5 h-3.5" />
+                  </button>
+                  <button
+                    type="button"
+                    title="Eliminar artículo"
+                    onClick={(e) => handleDeletePost(e, post.id)}
+                    className="p-1.5 bg-white/90 hover:bg-white text-slate-700 hover:text-rose-600 rounded-md shadow-sm transition-colors"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
                 </div>
 
                 <div className="absolute bottom-2 left-3 right-3 flex items-center justify-between text-[11px] text-white font-mono drop-shadow-sm">
@@ -378,11 +297,25 @@ export const BlogView: React.FC = () => {
                 <p className="text-xs text-slate-600 line-clamp-3 leading-relaxed">
                   {post.excerpt}
                 </p>
+
+                {/* SEO Tags snippet */}
+                {post.tags && post.tags.length > 0 && (
+                  <div className="flex flex-wrap gap-1 pt-1">
+                    {post.tags.slice(0, 3).map((tag, idx) => (
+                      <span key={idx} className="text-[10px] text-slate-500 font-mono bg-slate-100 px-1.5 py-0.2 rounded">
+                        #{tag}
+                      </span>
+                    ))}
+                    {post.tags.length > 3 && (
+                      <span className="text-[10px] text-slate-400 font-mono">+{post.tags.length - 3}</span>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
 
             <div className="px-5 pb-5 pt-3 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
-              <span className="font-medium text-slate-700">{post.author}</span>
+              <span className="font-medium text-slate-700 truncate max-w-[150px]">{post.author}</span>
               <span className="text-[#0078D4] font-semibold flex items-center gap-1 group-hover:translate-x-1 transition-transform">
                 Leer artículo
                 <ArrowRight className="w-3 h-3" />
@@ -392,17 +325,50 @@ export const BlogView: React.FC = () => {
         ))}
       </div>
 
+      {filteredPosts.length === 0 && (
+        <div className="p-12 text-center bg-white border border-dashed border-slate-200 rounded-xl space-y-3">
+          <BookOpen className="w-8 h-8 text-slate-400 mx-auto" />
+          <h3 className="text-sm font-bold text-slate-800">No se encontraron artículos con este criterio</h3>
+          <p className="text-xs text-slate-500 max-w-sm mx-auto">
+            Prueba ajustando el término de búsqueda o redacta un nuevo artículo para esta categoría.
+          </p>
+          <button
+            type="button"
+            onClick={handleOpenCreateModal}
+            className="px-4 py-2 bg-[#0078D4] text-white text-xs font-bold rounded-lg shadow-sm"
+          >
+            + Redactar Nuevo Artículo
+          </button>
+        </div>
+      )}
+
       {/* Article Reader Modal */}
       {activePost && (
         <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4 backdrop-blur-sm overflow-y-auto">
-          <div className="bg-white border border-slate-200/90 rounded-xl max-w-3xl w-full p-6 sm:p-8 space-y-6 max-h-[90vh] overflow-y-auto relative my-8 shadow-xl">
-            <button
-              type="button"
-              onClick={() => setActivePost(null)}
-              className="absolute top-5 right-5 text-slate-500 hover:text-slate-900 p-1.5 bg-slate-100 hover:bg-slate-200 rounded-full transition-colors"
-            >
-              <X className="w-5 h-5" />
-            </button>
+          <div className="bg-white border border-slate-200/90 rounded-2xl max-w-3xl w-full p-6 sm:p-8 space-y-6 max-h-[90vh] overflow-y-auto relative my-8 shadow-2xl">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setPostToEdit(activePost);
+                    setShowEditorModal(true);
+                  }}
+                  className="px-3 py-1 bg-blue-50 text-[#0078D4] hover:bg-blue-100 text-xs font-bold rounded-md flex items-center gap-1.5 transition-colors cursor-pointer border border-blue-200"
+                >
+                  <Edit3 className="w-3.5 h-3.5" />
+                  <span>Editar este Artículo</span>
+                </button>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setActivePost(null)}
+                className="text-slate-500 hover:text-slate-900 p-1.5 bg-slate-100 hover:bg-slate-200 rounded-full transition-colors cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
 
             <div>
               <div className="flex items-center gap-2 text-xs font-mono text-[#0078D4] uppercase tracking-wider mb-2 font-semibold">
@@ -416,16 +382,17 @@ export const BlogView: React.FC = () => {
                 {activePost.title}
               </h2>
               <div className="text-xs text-slate-500 mt-2">
-                Por <strong className="text-slate-800">{activePost.author}</strong> · Dictamen Técnico D&L
+                Por <strong className="text-slate-800">{activePost.author}</strong> · Dictamen Técnico Cr Dominguez
               </div>
             </div>
 
             {/* Embedded Video if present */}
             {activePost.youtubeVideoId && (
               <div className="space-y-2">
-                <span className="text-xs font-mono font-semibold uppercase text-slate-700 block">
-                  Exposición en Video:
-                </span>
+                <div className="flex items-center gap-2 text-xs font-mono font-semibold uppercase text-slate-700">
+                  <Video className="w-4 h-4 text-red-600" />
+                  <span>Exposición / Video Vinculado:</span>
+                </div>
                 <div className="aspect-video w-full rounded-xl overflow-hidden border border-slate-200 bg-black shadow-sm">
                   <iframe
                     src={`https://www.youtube-nocookie.com/embed/${activePost.youtubeVideoId}?rel=0`}
@@ -458,7 +425,7 @@ export const BlogView: React.FC = () => {
               {activePost.content}
             </div>
 
-            {/* Tags */}
+            {/* SEO Tags */}
             <div className="pt-4 border-t border-slate-200 flex flex-wrap gap-2">
               {activePost.tags.map((tag, idx) => (
                 <span key={idx} className="px-2.5 py-1 bg-slate-100 text-slate-600 text-xs rounded border border-slate-200 font-mono">
@@ -472,7 +439,7 @@ export const BlogView: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setActivePost(null)}
-                className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-md font-semibold transition-colors"
+                className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-md font-semibold transition-colors cursor-pointer"
               >
                 Cerrar Lectura
               </button>
@@ -480,6 +447,22 @@ export const BlogView: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* Full Feature Blog Editor Modal */}
+      <BlogEditorModal
+        isOpen={showEditorModal}
+        onClose={() => {
+          setShowEditorModal(false);
+          setPostToEdit(null);
+        }}
+        postToEdit={postToEdit}
+        onSaved={(saved) => {
+          setPosts(blogService.getPosts());
+          if (activePost && activePost.id === saved.id) {
+            setActivePost(saved);
+          }
+        }}
+      />
 
       {/* WordPress Connect Modal */}
       {showWpModal && (
