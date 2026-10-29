@@ -10,6 +10,9 @@ import {
   CRMContact, 
   CRMMeeting, 
   ContactRelationshipStatus, 
+  ContactType,
+  CompanyDepartment,
+  CompanyEmployee,
   MeetingPlatform, 
   MeetingType 
 } from '../../types';
@@ -19,7 +22,8 @@ import {
   Video, MessageSquare, Mail, Phone, Clock, User, Users, CheckCircle2, 
   ExternalLink, Copy, FileText, ChevronLeft, ChevronRight, Download, 
   Building2, MapPin, Tag, Check, Trash2, Edit3, Shield, ArrowUpRight,
-  Send, Sparkles
+  Send, Sparkles, Briefcase, ChevronDown, ChevronUp, Star, Layers,
+  Globe, AlertCircle, TrendingUp
 } from 'lucide-react';
 
 interface InternalCRMProps {
@@ -35,6 +39,19 @@ const STAGES: { id: LeadStage; label: string; countColor: string; bgBadge: strin
   { id: 'activo', label: 'Cliente Activo', countColor: 'text-[#107C41]', bgBadge: 'bg-emerald-50 border-emerald-200' },
 ];
 
+export const DEPARTMENT_CONFIG: Record<CompanyDepartment, { label: string; color: string; short: string }> = {
+  administracion: { label: 'Administración & Contabilidad', short: 'Administración', color: 'bg-blue-50 text-blue-700 border-blue-200' },
+  finanzas_pagos: { label: 'Finanzas, Tesorería & Pagos', short: 'Finanzas & Pagos', color: 'bg-emerald-50 text-emerald-800 border-emerald-200' },
+  logistica_envios: { label: 'Logística, Envíos & Depósito', short: 'Logística & Envíos', color: 'bg-amber-50 text-amber-800 border-amber-200' },
+  direccion_gerencia: { label: 'Dirección & Gerencia General', short: 'Dirección / CEO', color: 'bg-indigo-50 text-indigo-800 border-indigo-200' },
+  comercial_ventas: { label: 'Comercial, Ventas & Clientes', short: 'Comercial & Ventas', color: 'bg-cyan-50 text-cyan-800 border-cyan-200' },
+  legales_compliance: { label: 'Legales & Compliance', short: 'Legales', color: 'bg-purple-50 text-purple-800 border-purple-200' },
+  operaciones_planta: { label: 'Operaciones & Producción', short: 'Operaciones', color: 'bg-orange-50 text-orange-800 border-orange-200' },
+  recursos_humanos: { label: 'Recursos Humanos', short: 'RRHH', color: 'bg-pink-50 text-pink-800 border-pink-200' },
+  tecnologia_sistemas: { label: 'Tecnología & Sistemas', short: 'Sistemas & TI', color: 'bg-sky-50 text-sky-800 border-sky-200' },
+  otro: { label: 'Otra Área', short: 'Área General', color: 'bg-slate-100 text-slate-700 border-slate-300' },
+};
+
 export const InternalCRM: React.FC<InternalCRMProps> = ({ currentRole, initialSubTab = 'pipeline' }) => {
   const [activeTab, setActiveTab] = useState<'pipeline' | 'contacts' | 'calendar' | 'tasks'>(initialSubTab);
 
@@ -48,21 +65,31 @@ export const InternalCRM: React.FC<InternalCRMProps> = ({ currentRole, initialSu
   // Filters & Search
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedVertical, setSelectedVertical] = useState<BusinessVertical | 'all'>('all');
+  const [contactTypeFilter, setContactTypeFilter] = useState<'all' | 'empresa' | 'individual'>('all');
   const [contactStatusFilter, setContactStatusFilter] = useState<ContactRelationshipStatus | 'all'>('all');
+  const [departmentFilter, setDepartmentFilter] = useState<CompanyDepartment | 'all'>('all');
   const [selectedCalendarDate, setSelectedCalendarDate] = useState<string>(
     new Date().toISOString().split('T')[0]
   );
   const [calendarMonthOffset, setCalendarMonthOffset] = useState<number>(0);
 
+  // Expanded Company Cards
+  const [expandedCompanyIds, setExpandedCompanyIds] = useState<Record<string, boolean>>({});
+
   // Lead Modal & Detail States
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
   const [showLeadModal, setShowLeadModal] = useState(false);
+  const [leadSourceMode, setLeadSourceMode] = useState<'from_contact' | 'new_company'>('from_contact');
+  const [selectedContactForLead, setSelectedContactForLead] = useState<string>('');
+  const [selectedEmployeeForLead, setSelectedEmployeeForLead] = useState<string>('');
   const [newLeadCompany, setNewLeadCompany] = useState('');
   const [newLeadContact, setNewLeadContact] = useState('');
   const [newLeadEmail, setNewLeadEmail] = useState('');
   const [newLeadPhone, setNewLeadPhone] = useState('');
+  const [newLeadLocation, setNewLeadLocation] = useState('Trelew, Chubut');
   const [newLeadVertical, setNewLeadVertical] = useState<BusinessVertical>('cfo_estrategico');
   const [newLeadBudget, setNewLeadBudget] = useState<number>(1800);
+  const [newLeadNotes, setNewLeadNotes] = useState('');
 
   // Task Modal State
   const [showTaskModal, setShowTaskModal] = useState(false);
@@ -71,22 +98,41 @@ export const InternalCRM: React.FC<InternalCRMProps> = ({ currentRole, initialSu
 
   // Contact Modal State
   const [showContactModal, setShowContactModal] = useState(false);
+  const [contactType, setContactType] = useState<ContactType>('empresa');
   const [contactName, setContactName] = useState('');
   const [contactCompany, setContactCompany] = useState('');
+  const [contactCuit, setContactCuit] = useState('');
   const [contactRole, setContactRole] = useState('');
+  const [contactDepartment, setContactDepartment] = useState<CompanyDepartment>('direccion_gerencia');
   const [contactEmail, setContactEmail] = useState('');
   const [contactPhone, setContactPhone] = useState('');
   const [contactWhatsapp, setContactWhatsapp] = useState('');
   const [contactLocation, setContactLocation] = useState('Trelew, Chubut');
+  const [contactWebsite, setContactWebsite] = useState('');
   const [contactVertical, setContactVertical] = useState<BusinessVertical>('cfo_estrategico');
   const [contactStatus, setContactStatus] = useState<ContactRelationshipStatus>('lead');
   const [contactNotes, setContactNotes] = useState('');
-  const [contactTags, setContactTags] = useState('Patagonia, CFO');
+  const [contactTags, setContactTags] = useState('');
+
+  // Add Employee to Company Modal
+  const [activeCompanyForEmployee, setActiveCompanyForEmployee] = useState<CRMContact | null>(null);
+  const [newEmpName, setNewEmpName] = useState('');
+  const [newEmpDept, setNewEmpDept] = useState<CompanyDepartment>('administracion');
+  const [newEmpRole, setNewEmpRole] = useState('');
+  const [newEmpEmail, setNewEmpEmail] = useState('');
+  const [newEmpPhone, setNewEmpPhone] = useState('');
+  const [newEmpWhatsapp, setNewEmpWhatsapp] = useState('');
+  const [newEmpIsPrimary, setNewEmpIsPrimary] = useState(false);
+  const [newEmpNotes, setNewEmpNotes] = useState('');
+
+  // Contact Detail Drawer State
+  const [viewingContact, setViewingContact] = useState<CRMContact | null>(null);
 
   // Meeting Scheduler Modal State
   const [showMeetingModal, setShowMeetingModal] = useState(false);
   const [meetingTitle, setMeetingTitle] = useState('');
   const [meetingContactId, setMeetingContactId] = useState('');
+  const [meetingEmployeeId, setMeetingEmployeeId] = useState('');
   const [meetingDate, setMeetingDate] = useState(new Date().toISOString().split('T')[0]);
   const [meetingStartTime, setMeetingStartTime] = useState('11:00');
   const [meetingEndTime, setMeetingEndTime] = useState('12:00');
@@ -125,6 +171,15 @@ export const InternalCRM: React.FC<InternalCRMProps> = ({ currentRole, initialSu
       setTasks(t);
       setContacts(c);
       setMeetings(m);
+
+      // Pre-expand companies with employees by default for great overview
+      const defaultExpanded: Record<string, boolean> = {};
+      c.forEach((contact) => {
+        if (contact.type === 'empresa' && contact.employees && contact.employees.length > 0) {
+          defaultExpanded[contact.id] = true;
+        }
+      });
+      setExpandedCompanyIds((prev) => ({ ...defaultExpanded, ...prev }));
     } finally {
       setLoading(false);
     }
@@ -134,17 +189,22 @@ export const InternalCRM: React.FC<InternalCRMProps> = ({ currentRole, initialSu
     loadData();
   }, []);
 
-  // Copy to clipboard helper
   const handleCopy = (text: string, label: string) => {
     navigator.clipboard.writeText(text);
     setCopyFeedback(`¡${label} copiado al portapapeles!`);
     setTimeout(() => setCopyFeedback(null), 3000);
   };
 
+  const toggleCompanyExpand = (contactId: string) => {
+    setExpandedCompanyIds((prev) => ({
+      ...prev,
+      [contactId]: !prev[contactId],
+    }));
+  };
+
   // Stage change handler
   const handleStageChange = async (leadId: string, nextStage: LeadStage) => {
     await dbRepository.updateLeadStage(leadId, nextStage);
-    // Also sync stage in linked contact if present
     const linkedContact = contacts.find((c) => c.leadId === leadId);
     if (linkedContact) {
       await dbRepository.updateContact(linkedContact.id, {
@@ -183,54 +243,143 @@ export const InternalCRM: React.FC<InternalCRMProps> = ({ currentRole, initialSu
     await loadData();
   };
 
-  // Create Lead
+  // Handle open Create Lead Modal (optionally prefilled with a contact!)
+  const handleOpenCreateLeadModal = (prefilledContact?: CRMContact, prefilledEmployee?: CompanyEmployee) => {
+    if (prefilledContact) {
+      setLeadSourceMode('from_contact');
+      setSelectedContactForLead(prefilledContact.id);
+      setSelectedEmployeeForLead(prefilledEmployee ? prefilledEmployee.id : '');
+      setNewLeadCompany(prefilledContact.companyName);
+      setNewLeadContact(prefilledEmployee ? prefilledEmployee.name : prefilledContact.name);
+      setNewLeadEmail(prefilledEmployee ? prefilledEmployee.email : prefilledContact.email);
+      setNewLeadPhone(prefilledEmployee ? prefilledEmployee.phone : prefilledContact.phone);
+      setNewLeadLocation(prefilledContact.location || 'Trelew, Chubut');
+      setNewLeadVertical(prefilledContact.vertical || 'cfo_estrategico');
+      setNewLeadBudget(1800);
+      setNewLeadNotes(
+        prefilledEmployee
+          ? `Oportunidad originada a través de ${prefilledEmployee.name} (${DEPARTMENT_CONFIG[prefilledEmployee.department]?.short || 'Área'}).`
+          : `Oportunidad comercial generada desde la ficha de ${prefilledContact.companyName}.`
+      );
+    } else {
+      setLeadSourceMode('from_contact');
+      if (contacts.length > 0) {
+        const first = contacts[0];
+        setSelectedContactForLead(first.id);
+        setSelectedEmployeeForLead('');
+        setNewLeadCompany(first.companyName);
+        setNewLeadContact(first.name);
+        setNewLeadEmail(first.email);
+        setNewLeadPhone(first.phone);
+        setNewLeadLocation(first.location || 'Trelew, Chubut');
+        setNewLeadVertical(first.vertical || 'cfo_estrategico');
+      } else {
+        setLeadSourceMode('new_company');
+        setNewLeadCompany('');
+        setNewLeadContact('');
+        setNewLeadEmail('');
+        setNewLeadPhone('');
+      }
+      setNewLeadBudget(1800);
+      setNewLeadNotes('');
+    }
+    setShowLeadModal(true);
+  };
+
+  // React to contact selection change inside Lead Modal
+  const handleContactSelectForLead = (contactId: string) => {
+    setSelectedContactForLead(contactId);
+    setSelectedEmployeeForLead('');
+    const c = contacts.find((contact) => contact.id === contactId);
+    if (c) {
+      setNewLeadCompany(c.companyName);
+      setNewLeadContact(c.name);
+      setNewLeadEmail(c.email);
+      setNewLeadPhone(c.phone);
+      setNewLeadLocation(c.location);
+      setNewLeadVertical(c.vertical);
+    }
+  };
+
+  // React to employee selection inside Lead Modal
+  const handleEmployeeSelectForLead = (empId: string) => {
+    setSelectedEmployeeForLead(empId);
+    const c = contacts.find((contact) => contact.id === selectedContactForLead);
+    if (c && c.employees) {
+      const emp = c.employees.find((e) => e.id === empId);
+      if (emp) {
+        setNewLeadContact(emp.name);
+        setNewLeadEmail(emp.email || c.email);
+        setNewLeadPhone(emp.phone || c.phone);
+      } else {
+        setNewLeadContact(c.name);
+        setNewLeadEmail(c.email);
+        setNewLeadPhone(c.phone);
+      }
+    }
+  };
+
+  // Create Lead (from existing contact or brand new)
   const handleCreateLead = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newLeadCompany || !newLeadContact) return;
 
+    let finalContactId = selectedContactForLead;
+
+    // If source mode was brand new, register contact first
+    if (leadSourceMode === 'new_company') {
+      const cleanPhone = (newLeadPhone || '').replace(/[^0-9]/g, '');
+      const cleanWhatsapp = cleanPhone.startsWith('54') ? cleanPhone : cleanPhone.length > 6 ? `549${cleanPhone}` : '';
+      const createdContact = await dbRepository.createContact({
+        type: 'empresa',
+        name: newLeadContact,
+        companyName: newLeadCompany,
+        roleTitle: 'Titular / Decisor',
+        email: newLeadEmail || 'contacto@empresa.com',
+        phone: newLeadPhone || '+54 280 400-0000',
+        whatsappNumber: cleanWhatsapp || '5492804000000',
+        location: newLeadLocation || 'Trelew, Chubut',
+        vertical: newLeadVertical,
+        status: 'lead',
+        tags: [BUSINESS_VERTICALS[newLeadVertical].shortTitle, 'Lead Calificado'],
+        notes: newLeadNotes || 'Creado desde nueva oportunidad.',
+      });
+      finalContactId = createdContact.id;
+    }
+
     const createdLead = await dbRepository.createLead({
+      contactId: finalContactId,
+      employeeId: selectedEmployeeForLead || undefined,
       companyName: newLeadCompany,
       contactName: newLeadContact,
       email: newLeadEmail || 'contacto@empresa.com',
       phone: newLeadPhone || '+54 280 400-0000',
-      location: 'Trelew, Chubut',
+      location: newLeadLocation || 'Trelew, Chubut',
       vertical: newLeadVertical,
       stage: 'nuevo',
       priority: 'alta',
       score: 85,
       estimatedMonthlyBudgetUsd: newLeadBudget,
-      notes: `Alta directa desde el CRM por dirección ejecutiva (${BUSINESS_VERTICALS[newLeadVertical].shortTitle}).`,
+      notes: newLeadNotes || `Alta directa desde el CRM por dirección ejecutiva (${BUSINESS_VERTICALS[newLeadVertical].shortTitle}).`,
     });
 
-    // Automatically create a linked contact in the agenda!
-    const cleanPhone = (newLeadPhone || '').replace(/[^0-9]/g, '');
-    const cleanWhatsapp = cleanPhone.startsWith('54') ? cleanPhone : cleanPhone.length > 6 ? `549${cleanPhone}` : '';
+    // Update the contact with this lead
+    if (finalContactId) {
+      await dbRepository.updateContact(finalContactId, {
+        leadId: createdLead.id,
+        stage: 'nuevo',
+        status: 'lead',
+      });
+    }
 
-    await dbRepository.createContact({
-      name: newLeadContact,
-      companyName: newLeadCompany,
-      roleTitle: 'Titular / Responsable',
-      email: newLeadEmail || 'contacto@empresa.com',
-      phone: newLeadPhone || '+54 280 400-0000',
-      whatsappNumber: cleanWhatsapp || '5492804000000',
-      location: 'Trelew, Chubut',
-      vertical: newLeadVertical,
-      status: 'lead',
-      leadId: createdLead.id,
-      stage: 'nuevo',
-      tags: [BUSINESS_VERTICALS[newLeadVertical].shortTitle, 'Lead Calificado'],
-      notes: `Creado desde nuevo lead en pipeline.`,
-    });
-
-    setNewLeadCompany('');
-    setNewLeadContact('');
-    setNewLeadEmail('');
-    setNewLeadPhone('');
     setShowLeadModal(false);
+    setCopyFeedback('¡Oportunidad creada y vinculada con éxito al contacto!');
+    setTimeout(() => setCopyFeedback(null), 3000);
     await loadData();
+    setActiveTab('pipeline');
   };
 
-  // Create Contact
+  // Create Contact (Empresa vs Individual)
   const handleCreateContact = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!contactName || !contactCompany) return;
@@ -248,39 +397,117 @@ export const InternalCRM: React.FC<InternalCRMProps> = ({ currentRole, initialSu
       }
     }
 
-    await dbRepository.createContact({
+    const newContactData: Omit<CRMContact, 'id' | 'lastContactDate' | 'interactionCount'> = {
+      type: contactType,
       name: contactName,
       companyName: contactCompany,
-      roleTitle: contactRole || 'Directivo',
+      cuit: contactCuit || undefined,
+      roleTitle: contactRole || (contactType === 'empresa' ? 'Dirección General' : 'Profesional Independiente'),
+      department: contactType === 'individual' ? contactDepartment : 'direccion_gerencia',
       email: contactEmail || 'contacto@empresa.com',
       phone: contactPhone || '+54 280 400-0000',
       whatsappNumber: cleanWa || '5492804000000',
       location: contactLocation,
+      website: contactWebsite || undefined,
       vertical: contactVertical,
       status: contactStatus,
-      tags: tagsArray.length > 0 ? tagsArray : ['Contacto Patagónico'],
+      tags: tagsArray.length > 0 ? tagsArray : [contactType === 'empresa' ? 'Empresa' : 'Individual', BUSINESS_VERTICALS[contactVertical].shortTitle],
       notes: contactNotes || 'Contacto registrado en agenda de Cr Dominguez.',
-    });
+      employees: contactType === 'empresa' ? [
+        {
+          id: `emp-${Date.now().toString().slice(-4)}-1`,
+          name: contactName,
+          department: 'direccion_gerencia',
+          roleTitle: contactRole || 'Dirección General / Titular',
+          email: contactEmail || 'contacto@empresa.com',
+          phone: contactPhone || '+54 280 400-0000',
+          whatsappNumber: cleanWa || '5492804000000',
+          isPrimaryContact: true,
+          notes: 'Contacto principal registrado en el alta de la empresa.'
+        }
+      ] : undefined,
+    };
+
+    await dbRepository.createContact(newContactData);
 
     setContactName('');
     setContactCompany('');
+    setContactCuit('');
     setContactRole('');
     setContactEmail('');
     setContactPhone('');
     setContactWhatsapp('');
+    setContactWebsite('');
     setContactNotes('');
+    setContactTags('');
     setShowContactModal(false);
+    setCopyFeedback(`¡${contactType === 'empresa' ? 'Empresa' : 'Contacto Individual'} guardado con éxito!`);
+    setTimeout(() => setCopyFeedback(null), 3000);
+    await loadData();
+  };
+
+  // Add Employee to Existing Company
+  const handleAddEmployee = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!activeCompanyForEmployee || !newEmpName) return;
+
+    let cleanWa = newEmpWhatsapp.replace(/[^0-9]/g, '');
+    if (!cleanWa && newEmpPhone) {
+      cleanWa = newEmpPhone.replace(/[^0-9]/g, '');
+      if (!cleanWa.startsWith('54') && cleanWa.length >= 8) {
+        cleanWa = `549${cleanWa}`;
+      }
+    }
+
+    const updated = await dbRepository.addEmployeeToContact(activeCompanyForEmployee.id, {
+      name: newEmpName,
+      department: newEmpDept,
+      roleTitle: newEmpRole || DEPARTMENT_CONFIG[newEmpDept].short,
+      email: newEmpEmail || activeCompanyForEmployee.email,
+      phone: newEmpPhone || activeCompanyForEmployee.phone,
+      whatsappNumber: cleanWa || activeCompanyForEmployee.whatsappNumber,
+      isPrimaryContact: newEmpIsPrimary,
+      notes: newEmpNotes,
+    });
+
+    if (viewingContact && viewingContact.id === activeCompanyForEmployee.id) {
+      setViewingContact(updated);
+    }
+
+    setNewEmpName('');
+    setNewEmpRole('');
+    setNewEmpEmail('');
+    setNewEmpPhone('');
+    setNewEmpWhatsapp('');
+    setNewEmpNotes('');
+    setNewEmpIsPrimary(false);
+    setActiveCompanyForEmployee(null);
+    setCopyFeedback('¡Colaborador agregado al área de la empresa con éxito!');
+    setTimeout(() => setCopyFeedback(null), 3000);
+    await loadData();
+  };
+
+  // Remove employee
+  const handleRemoveEmployee = async (contactId: string, employeeId: string) => {
+    const updated = await dbRepository.removeEmployeeFromContact(contactId, employeeId);
+    if (viewingContact && viewingContact.id === contactId) {
+      setViewingContact(updated);
+    }
     await loadData();
   };
 
   // Open Meeting Scheduler with Pre-selection
-  const handleOpenMeetingScheduler = (contact?: CRMContact) => {
+  const handleOpenMeetingScheduler = (contact?: CRMContact, employee?: CompanyEmployee) => {
     if (contact) {
       setMeetingContactId(contact.id);
-      setMeetingTitle(`Reunión Estratégica: ${contact.companyName}`);
-      setMeetingDescription(`Sesión de trabajo con ${contact.name} (${contact.roleTitle}) para avanzar en plan de acción y asesoramiento.`);
+      setMeetingEmployeeId(employee ? employee.id : '');
+      const targetName = employee ? employee.name : contact.name;
+      const deptLabel = employee ? ` (${DEPARTMENT_CONFIG[employee.department]?.short || 'Área'})` : '';
+      setMeetingTitle(`Reunión Estratégica: ${contact.companyName}${deptLabel}`);
+      setMeetingDescription(`Sesión de trabajo con ${targetName} para avanzar en plan de acción y asesoramiento de ${contact.companyName}.`);
     } else {
       setMeetingContactId('');
+      setMeetingEmployeeId('');
       setMeetingTitle('Reunión de Asesoramiento Cr Dominguez');
       setMeetingDescription('');
     }
@@ -313,14 +540,21 @@ export const InternalCRM: React.FC<InternalCRMProps> = ({ currentRole, initialSu
     if (!meetingTitle) return;
 
     const contact = contacts.find((c) => c.id === meetingContactId);
+    const employee = contact?.employees?.find((emp) => emp.id === meetingEmployeeId);
     const finalMeetingUrl = meetingCustomUrl || generateMeetingUrl(meetingPlatform, meetingTitle);
+
+    const targetName = employee ? employee.name : contact?.name || 'Cliente Corporativo';
+    const targetEmail = employee ? employee.email : contact?.email || 'carlos@crdominguez.ar';
+    const targetPhone = employee ? employee.phone : contact?.phone || '+54 280 442-0000';
 
     const newMeeting = await dbRepository.createMeeting({
       title: meetingTitle,
       contactId: contact?.id,
-      contactName: contact?.name || 'Cliente Corporativo',
-      contactEmail: contact?.email || 'carlos@crdominguez.ar',
-      contactPhone: contact?.phone || '+54 280 442-0000',
+      employeeId: employee?.id,
+      employeeName: employee?.name,
+      contactName: targetName,
+      contactEmail: targetEmail,
+      contactPhone: targetPhone,
       companyName: contact?.companyName || 'Empresa Patagónica',
       date: meetingDate,
       startTime: meetingStartTime,
@@ -336,8 +570,7 @@ export const InternalCRM: React.FC<InternalCRMProps> = ({ currentRole, initialSu
       reminderSent: false,
     });
 
-    // Optional dispatch: Resend email invitation
-    if (meetingSendEmailInvite && contact?.email) {
+    if (meetingSendEmailInvite && targetEmail) {
       try {
         await resendService.sendMeetingInvite(newMeeting);
         await dbRepository.updateMeeting(newMeeting.id, { reminderSent: true });
@@ -346,19 +579,22 @@ export const InternalCRM: React.FC<InternalCRMProps> = ({ currentRole, initialSu
       }
     }
 
-    // Optional dispatch: WhatsApp invitation link
-    if (meetingSendWhatsapp && contact?.whatsappNumber) {
-      const waText = encodeURIComponent(
-        `Hola ${contact.name}, te confirmo nuestra reunión de trabajo con el Cr. Carlos Rodrigo Domínguez:\n\n` +
-        `📅 Fecha: ${meetingDate}\n⏰ Horario: ${meetingStartTime} - ${meetingEndTime} hs\n` +
-        `💻 Enlace de acceso: ${finalMeetingUrl}\n\n` +
-        `¡Nos encontramos en ese horario!`
-      );
-      window.open(`https://wa.me/${contact.whatsappNumber}?text=${waText}`, '_blank');
+    if (meetingSendWhatsapp) {
+      const waNumber = employee?.whatsappNumber || contact?.whatsappNumber;
+      if (waNumber) {
+        const waText = encodeURIComponent(
+          `Hola ${targetName}, te confirmo nuestra reunión de trabajo con el Cr. Carlos Rodrigo Domínguez:\n\n` +
+          `📅 Fecha: ${meetingDate}\n⏰ Horario: ${meetingStartTime} - ${meetingEndTime} hs\n` +
+          `💻 Enlace de acceso: ${finalMeetingUrl}\n\n` +
+          `¡Nos encontramos en ese horario!`
+        );
+        window.open(`https://wa.me/${waNumber}?text=${waText}`, '_blank');
+      }
     }
 
     setShowMeetingModal(false);
     await loadData();
+    setActiveTab('calendar');
   };
 
   // Google Calendar URL Generator
@@ -367,7 +603,7 @@ export const InternalCRM: React.FC<InternalCRMProps> = ({ currentRole, initialSu
     const endClean = `${m.date.replace(/-/g, '')}T${m.endTime.replace(/:/g, '')}00`;
     const titleEnc = encodeURIComponent(`${m.title} · Cr Dominguez`);
     const detailsEnc = encodeURIComponent(
-      `${m.description}\n\nEnlace de acceso: ${m.meetingUrl}\nContacto: ${m.contactName} (${m.companyName})\nAsesor: ${m.assignedTo}`
+      `${m.description}\n\nEnlace de acceso: ${m.meetingUrl}\nParticipante: ${m.contactName} (${m.companyName})\nAsesor: ${m.assignedTo}`
     );
     const locationEnc = encodeURIComponent(m.meetingUrl || 'Trelew, Chubut');
     return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${titleEnc}&dates=${startClean}/${endClean}&details=${detailsEnc}&location=${locationEnc}`;
@@ -409,28 +645,33 @@ export const InternalCRM: React.FC<InternalCRMProps> = ({ currentRole, initialSu
   };
 
   // WhatsApp Instant Message
-  const handleSendWhatsApp = (contact: CRMContact, messageTemplate: 'general' | 'reunion' | 'propuesta') => {
+  const handleSendWhatsApp = (contact: CRMContact, employee?: CompanyEmployee, messageTemplate: 'general' | 'reunion' | 'propuesta' = 'general') => {
+    const targetName = employee ? employee.name : contact.name;
+    const waNumber = employee?.whatsappNumber || contact.whatsappNumber;
+
     let text = '';
     if (messageTemplate === 'general') {
-      text = `Estimado/a ${contact.name}, le saluda el equipo del Cr. Carlos Rodrigo Domínguez (Consultoría Estratégica & Dirección Financiera). ¿Cómo está? Queríamos coordinar los avances para ${contact.companyName}.`;
+      text = `Estimado/a ${targetName}, le saluda el equipo del Cr. Carlos Rodrigo Domínguez (Consultoría Estratégica & Dirección Financiera). ¿Cómo está? Queríamos coordinar los avances para ${contact.companyName}.`;
     } else if (messageTemplate === 'reunion') {
-      text = `Hola ${contact.name}, coordinamos la próxima sesión de trabajo de ${contact.companyName} con el Cr. Carlos Rodrigo Domínguez. ¿Qué día y horario le resulta más conveniente para una videollamada?`;
+      text = `Hola ${targetName}, coordinamos la próxima sesión de trabajo de ${contact.companyName} con el Cr. Carlos Rodrigo Domínguez. ¿Qué día y horario le resulta más conveniente para una videollamada?`;
     } else {
-      text = `Estimado/a ${contact.name}, nos comunicamos para darle seguimiento al diagnóstico y propuesta integral de ${contact.companyName}. Quedamos a total disposición para repasar los números.`;
+      text = `Estimado/a ${targetName}, nos comunicamos para darle seguimiento al diagnóstico y propuesta de honorarios de ${contact.companyName}. Quedamos a total disposición para repasar los números.`;
     }
 
     dbRepository.recordContactInteraction(contact.id);
     const encoded = encodeURIComponent(text);
-    const targetUrl = `https://wa.me/${contact.whatsappNumber || '5492804000000'}?text=${encoded}`;
+    const targetUrl = `https://wa.me/${waNumber || '5492804000000'}?text=${encoded}`;
     window.open(targetUrl, '_blank');
   };
 
   // Open Direct Email Composer
-  const handleOpenEmailComposer = (contact: CRMContact) => {
-    setEmailRecipient(contact.email);
+  const handleOpenEmailComposer = (contact: CRMContact, employee?: CompanyEmployee) => {
+    const targetName = employee ? employee.name : contact.name;
+    const targetEmail = employee ? employee.email : contact.email;
+    setEmailRecipient(targetEmail);
     setEmailSubject(`Asesoramiento Estratégico & Finanzas · ${contact.companyName}`);
     setEmailBody(
-      `Estimado/a ${contact.name},\n\nLe escribimos en relación a los servicios de consultoría estratégica y dirección financiera para ${contact.companyName}.\n\nQuedamos a su disposición para coordinar una reunión de trabajo o remitirle cualquier documentación complementaria.\n\nAtentamente,\nCr. Carlos Rodrigo Domínguez\nConsultoría Estratégica & CFO\ncarlos@crdominguez.ar`
+      `Estimado/a ${targetName},\n\nLe escribimos en relación a los servicios de consultoría estratégica y dirección financiera para ${contact.companyName}.\n\nQuedamos a su disposición para coordinar una reunión de trabajo o remitirle cualquier documentación complementaria.\n\nAtentamente,\nCr. Carlos Rodrigo Domínguez\nConsultoría Estratégica & CFO\ncarlos@crdominguez.ar`
     );
     setEmailStatusMsg(null);
     setShowEmailModal(true);
@@ -467,8 +708,7 @@ export const InternalCRM: React.FC<InternalCRMProps> = ({ currentRole, initialSu
         type: 'lead_notification',
       });
 
-      // Record interaction with contact
-      const linked = contacts.find((c) => c.email === emailRecipient);
+      const linked = contacts.find((c) => c.email === emailRecipient || c.employees?.some((emp) => emp.email === emailRecipient));
       if (linked) {
         await dbRepository.recordContactInteraction(linked.id);
       }
@@ -514,10 +754,23 @@ export const InternalCRM: React.FC<InternalCRMProps> = ({ currentRole, initialSu
       c.companyName.toLowerCase().includes(searchQuery.toLowerCase()) ||
       c.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
       c.phone.includes(searchQuery) ||
-      c.tags.some((t) => t.toLowerCase().includes(searchQuery.toLowerCase()));
+      (c.cuit && c.cuit.includes(searchQuery)) ||
+      c.tags.some((t) => t.toLowerCase().includes(searchQuery.toLowerCase())) ||
+      (c.employees && c.employees.some((emp) => 
+        emp.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        emp.roleTitle.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        emp.email.toLowerCase().includes(searchQuery.toLowerCase())
+      ));
+
     const matchesVertical = selectedVertical === 'all' || c.vertical === selectedVertical;
     const matchesStatus = contactStatusFilter === 'all' || c.status === contactStatusFilter;
-    return matchesSearch && matchesVertical && matchesStatus;
+    const matchesType = contactTypeFilter === 'all' || c.type === contactTypeFilter;
+    const matchesDept = 
+      departmentFilter === 'all' || 
+      c.department === departmentFilter ||
+      (c.employees && c.employees.some((emp) => emp.department === departmentFilter));
+
+    return matchesSearch && matchesVertical && matchesStatus && matchesType && matchesDept;
   });
 
   // Filtered Meetings
@@ -529,9 +782,10 @@ export const InternalCRM: React.FC<InternalCRMProps> = ({ currentRole, initialSu
     return matchesSearch;
   });
 
-  // Pipeline total value calculation
   const totalPipelineBudget = leads.reduce((acc, curr) => acc + (curr.estimatedMonthlyBudgetUsd || 0), 0);
-  const activeClientsCount = contacts.filter((c) => c.status === 'cliente_activo').length;
+  const companyCount = contacts.filter((c) => c.type === 'empresa').length;
+  const individualCount = contacts.filter((c) => c.type === 'individual').length;
+  const totalEmployeesCount = contacts.reduce((acc, c) => acc + (c.employees?.length || 0), 0);
   const upcomingMeetingsCount = meetings.filter((m) => m.status === 'programada').length;
 
   return (
@@ -548,18 +802,18 @@ export const InternalCRM: React.FC<InternalCRMProps> = ({ currentRole, initialSu
       <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-xs">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
           <div>
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-blue-50 text-[#0078D4] border border-blue-200">
                 Cr Dominguez · Suite CRM 360°
               </span>
               <span className="text-xs text-slate-400">|</span>
-              <span className="text-xs text-slate-500 font-medium">WhatsApp · Resend · Calendario & Meet</span>
+              <span className="text-xs text-slate-500 font-medium">Empresas con Departamentos · Contactos · Oportunidades · Meet</span>
             </div>
             <h2 className="text-xl font-bold text-slate-900 mt-1">
-              Gestión Comercial, Contactos & Agenda Ejecutiva
+              Gestión Comercial, Estructura de Empresas & Agenda Ejecutiva
             </h2>
             <p className="text-xs text-slate-600 mt-0.5">
-              Administración de oportunidades de negocio, comunicación multicanal y agendamiento de videollamadas con clientes y empresas.
+              Identificación clara de Empresas y Personas, áreas departamentales (Administración, Finanzas, Logística, Envíos, Pagos), vinculación con el pipeline y agendamiento de videollamadas.
             </p>
           </div>
 
@@ -568,18 +822,22 @@ export const InternalCRM: React.FC<InternalCRMProps> = ({ currentRole, initialSu
             <div className="bg-slate-50 border border-slate-200/80 rounded-lg p-2.5 text-center">
               <span className="text-[10px] uppercase font-bold text-slate-500 block">Oportunidades</span>
               <span className="text-base font-black text-[#0078D4]">{leads.length}</span>
+              <span className="text-[10px] text-slate-400 block font-mono">USD {totalPipelineBudget.toLocaleString()}</span>
             </div>
             <div className="bg-slate-50 border border-slate-200/80 rounded-lg p-2.5 text-center">
-              <span className="text-[10px] uppercase font-bold text-slate-500 block">Pipeline Total</span>
-              <span className="text-base font-black text-slate-900">USD {totalPipelineBudget.toLocaleString()}</span>
+              <span className="text-[10px] uppercase font-bold text-slate-500 block">Empresas</span>
+              <span className="text-base font-black text-indigo-700">{companyCount}</span>
+              <span className="text-[10px] text-slate-400 block">{totalEmployeesCount} colaboradores</span>
             </div>
             <div className="bg-slate-50 border border-slate-200/80 rounded-lg p-2.5 text-center">
-              <span className="text-[10px] uppercase font-bold text-slate-500 block">Contactos</span>
-              <span className="text-base font-black text-indigo-600">{contacts.length}</span>
+              <span className="text-[10px] uppercase font-bold text-slate-500 block">Individuales</span>
+              <span className="text-base font-black text-slate-900">{individualCount}</span>
+              <span className="text-[10px] text-slate-400 block">Profesionales</span>
             </div>
             <div className="bg-slate-50 border border-slate-200/80 rounded-lg p-2.5 text-center">
               <span className="text-[10px] uppercase font-bold text-slate-500 block">Reuniones</span>
               <span className="text-base font-black text-[#107C41]">{upcomingMeetingsCount}</span>
+              <span className="text-[10px] text-slate-400 block">Programadas</span>
             </div>
           </div>
         </div>
@@ -596,7 +854,7 @@ export const InternalCRM: React.FC<InternalCRMProps> = ({ currentRole, initialSu
                   : 'text-slate-600 hover:text-slate-900'
               }`}
             >
-              <Users className="w-3.5 h-3.5" />
+              <TrendingUp className="w-3.5 h-3.5" />
               <span>Pipeline de Oportunidades</span>
               <span className="px-1.5 py-0.2 bg-blue-100 text-[#0078D4] rounded-full text-[10px]">
                 {leads.length}
@@ -612,9 +870,9 @@ export const InternalCRM: React.FC<InternalCRMProps> = ({ currentRole, initialSu
                   : 'text-slate-600 hover:text-slate-900'
               }`}
             >
-              <Phone className="w-3.5 h-3.5 text-emerald-600" />
-              <span>Agenda de Contactos</span>
-              <span className="px-1.5 py-0.2 bg-emerald-100 text-emerald-800 rounded-full text-[10px]">
+              <Building2 className="w-3.5 h-3.5 text-indigo-600" />
+              <span>Agenda: Empresas & Contactos</span>
+              <span className="px-1.5 py-0.2 bg-indigo-100 text-indigo-800 rounded-full text-[10px]">
                 {contacts.length}
               </span>
             </button>
@@ -628,9 +886,9 @@ export const InternalCRM: React.FC<InternalCRMProps> = ({ currentRole, initialSu
                   : 'text-slate-600 hover:text-slate-900'
               }`}
             >
-              <CalendarIcon className="w-3.5 h-3.5 text-indigo-600" />
+              <CalendarIcon className="w-3.5 h-3.5 text-emerald-600" />
               <span>Calendario & Videollamadas</span>
-              <span className="px-1.5 py-0.2 bg-indigo-100 text-indigo-800 rounded-full text-[10px]">
+              <span className="px-1.5 py-0.2 bg-emerald-100 text-emerald-800 rounded-full text-[10px]">
                 {meetings.length}
               </span>
             </button>
@@ -654,55 +912,41 @@ export const InternalCRM: React.FC<InternalCRMProps> = ({ currentRole, initialSu
 
           {/* Quick Action Buttons */}
           <div className="flex items-center gap-2">
-            {activeTab === 'pipeline' && (
-              <button
-                type="button"
-                onClick={() => setShowLeadModal(true)}
-                className="px-3.5 py-1.5 bg-[#0078D4] hover:bg-[#106EBE] text-white text-xs font-bold rounded-lg flex items-center gap-1.5 shadow-xs transition-colors cursor-pointer"
-              >
-                <Plus className="w-3.5 h-3.5" />
-                <span>Nuevo Lead</span>
-              </button>
-            )}
+            <button
+              type="button"
+              onClick={() => handleOpenCreateLeadModal()}
+              className="px-3 py-1.5 bg-blue-50 hover:bg-blue-100 text-[#0078D4] border border-blue-200 text-xs font-bold rounded-lg flex items-center gap-1.5 shadow-2xs transition-colors cursor-pointer"
+            >
+              <TrendingUp className="w-3.5 h-3.5" />
+              <span>+ Nueva Oportunidad</span>
+            </button>
 
-            {activeTab === 'contacts' && (
-              <button
-                type="button"
-                onClick={() => setShowContactModal(true)}
-                className="px-3.5 py-1.5 bg-[#0078D4] hover:bg-[#106EBE] text-white text-xs font-bold rounded-lg flex items-center gap-1.5 shadow-xs transition-colors cursor-pointer"
-              >
-                <Plus className="w-3.5 h-3.5" />
-                <span>Nuevo Contacto</span>
-              </button>
-            )}
+            <button
+              type="button"
+              onClick={() => {
+                setContactType('empresa');
+                setShowContactModal(true);
+              }}
+              className="px-3 py-1.5 bg-[#0078D4] hover:bg-[#106EBE] text-white text-xs font-bold rounded-lg flex items-center gap-1.5 shadow-xs transition-colors cursor-pointer"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              <span>Nuevo Contacto / Empresa</span>
+            </button>
 
-            {activeTab === 'calendar' && (
-              <button
-                type="button"
-                onClick={() => handleOpenMeetingScheduler()}
-                className="px-3.5 py-1.5 bg-[#0078D4] hover:bg-[#106EBE] text-white text-xs font-bold rounded-lg flex items-center gap-1.5 shadow-xs transition-colors cursor-pointer"
-              >
-                <Video className="w-3.5 h-3.5" />
-                <span>Agendar Videollamada</span>
-              </button>
-            )}
-
-            {activeTab === 'tasks' && (
-              <button
-                type="button"
-                onClick={() => setShowTaskModal(true)}
-                className="px-3.5 py-1.5 bg-[#0078D4] hover:bg-[#106EBE] text-white text-xs font-bold rounded-lg flex items-center gap-1.5 shadow-xs transition-colors cursor-pointer"
-              >
-                <Plus className="w-3.5 h-3.5" />
-                <span>Nueva Tarea</span>
-              </button>
-            )}
+            <button
+              type="button"
+              onClick={() => handleOpenMeetingScheduler()}
+              className="px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 text-xs font-bold rounded-lg flex items-center gap-1.5 shadow-2xs transition-colors cursor-pointer"
+            >
+              <Video className="w-3.5 h-3.5 text-emerald-600" />
+              <span>Agendar Reunión</span>
+            </button>
           </div>
         </div>
       </div>
 
-      {/* GLOBAL SEARCH & VERTICAL FILTER BAR */}
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-white p-3.5 rounded-xl border border-slate-200 shadow-xs">
+      {/* GLOBAL SEARCH & FILTER BAR */}
+      <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3 bg-white p-3.5 rounded-xl border border-slate-200 shadow-xs">
         <div className="relative flex-1">
           <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
           <input
@@ -713,7 +957,7 @@ export const InternalCRM: React.FC<InternalCRMProps> = ({ currentRole, initialSu
               activeTab === 'pipeline'
                 ? 'Buscar por empresa, contacto, notas del lead...'
                 : activeTab === 'contacts'
-                ? 'Buscar contacto por nombre, empresa, WhatsApp, email, etiqueta...'
+                ? 'Buscar por empresa, CUIT, persona, área (administración, finanzas, envíos...), WhatsApp...'
                 : activeTab === 'calendar'
                 ? 'Buscar reunión por título, participante o empresa...'
                 : 'Buscar tareas...'
@@ -731,8 +975,74 @@ export const InternalCRM: React.FC<InternalCRMProps> = ({ currentRole, initialSu
           )}
         </div>
 
-        <div className="flex items-center gap-2 overflow-x-auto pb-1 sm:pb-0">
-          <span className="text-[11px] font-semibold text-slate-500 whitespace-nowrap">Vertical:</span>
+        {/* Filters */}
+        <div className="flex flex-wrap items-center gap-2">
+          {activeTab === 'contacts' && (
+            <>
+              {/* Type Filter */}
+              <div className="flex items-center gap-1 bg-slate-100 p-0.5 rounded-lg text-xs font-semibold">
+                <button
+                  type="button"
+                  onClick={() => setContactTypeFilter('all')}
+                  className={`px-2.5 py-1 rounded-md text-[11px] transition-all ${
+                    contactTypeFilter === 'all' ? 'bg-white text-slate-900 shadow-2xs font-bold' : 'text-slate-600'
+                  }`}
+                >
+                  Todos ({contacts.length})
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setContactTypeFilter('empresa')}
+                  className={`px-2.5 py-1 rounded-md text-[11px] flex items-center gap-1 transition-all ${
+                    contactTypeFilter === 'empresa' ? 'bg-white text-indigo-700 shadow-2xs font-bold' : 'text-slate-600'
+                  }`}
+                >
+                  <Building2 className="w-3 h-3" />
+                  <span>Empresas ({companyCount})</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setContactTypeFilter('individual')}
+                  className={`px-2.5 py-1 rounded-md text-[11px] flex items-center gap-1 transition-all ${
+                    contactTypeFilter === 'individual' ? 'bg-white text-slate-900 shadow-2xs font-bold' : 'text-slate-600'
+                  }`}
+                >
+                  <User className="w-3 h-3" />
+                  <span>Individuales ({individualCount})</span>
+                </button>
+              </div>
+
+              {/* Department Filter */}
+              <select
+                value={departmentFilter}
+                onChange={(e) => setDepartmentFilter(e.target.value as any)}
+                className="bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs text-slate-700 font-medium focus:outline-none focus:border-[#0078D4]"
+              >
+                <option value="all">Todas las Áreas</option>
+                {(Object.keys(DEPARTMENT_CONFIG) as CompanyDepartment[]).map((deptKey) => (
+                  <option key={deptKey} value={deptKey}>
+                    {DEPARTMENT_CONFIG[deptKey].short}
+                  </option>
+                ))}
+              </select>
+
+              {/* Relationship Status Filter */}
+              <select
+                value={contactStatusFilter}
+                onChange={(e) => setContactStatusFilter(e.target.value as any)}
+                className="bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs text-slate-700 font-medium focus:outline-none focus:border-[#0078D4]"
+              >
+                <option value="all">Todos los Vínculos</option>
+                <option value="lead">Leads Calificados</option>
+                <option value="cliente_activo">Clientes Activos</option>
+                <option value="partner">Partners Estratégicos</option>
+                <option value="proveedor">Proveedores</option>
+                <option value="ex_cliente">Ex-clientes</option>
+              </select>
+            </>
+          )}
+
+          {/* Vertical Filter */}
           <select
             value={selectedVertical}
             onChange={(e) => setSelectedVertical(e.target.value as any)}
@@ -745,21 +1055,6 @@ export const InternalCRM: React.FC<InternalCRMProps> = ({ currentRole, initialSu
               </option>
             ))}
           </select>
-
-          {activeTab === 'contacts' && (
-            <select
-              value={contactStatusFilter}
-              onChange={(e) => setContactStatusFilter(e.target.value as any)}
-              className="bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs text-slate-700 font-medium focus:outline-none focus:border-[#0078D4]"
-            >
-              <option value="all">Todos los Vínculos</option>
-              <option value="lead">Leads Calificados</option>
-              <option value="cliente_activo">Clientes Activos</option>
-              <option value="partner">Partners Estratégicos</option>
-              <option value="proveedor">Proveedores</option>
-              <option value="ex_cliente">Ex-clientes</option>
-            </select>
-          )}
         </div>
       </div>
 
@@ -774,7 +1069,7 @@ export const InternalCRM: React.FC<InternalCRMProps> = ({ currentRole, initialSu
               const stageBudget = stageLeads.reduce((acc, curr) => acc + (curr.estimatedMonthlyBudgetUsd || 0), 0);
 
               return (
-                <div key={stage.id} className="bg-slate-50/70 border border-slate-200 rounded-xl p-3 flex flex-col min-h-[500px]">
+                <div key={stage.id} className="bg-slate-50/70 border border-slate-200 rounded-xl p-3 flex flex-col min-h-[520px]">
                   {/* Column Header */}
                   <div className="flex items-center justify-between pb-2.5 mb-3 border-b border-slate-200">
                     <div className="flex items-center gap-1.5">
@@ -800,7 +1095,8 @@ export const InternalCRM: React.FC<InternalCRMProps> = ({ currentRole, initialSu
                   <div className="space-y-2.5 flex-1 overflow-y-auto pr-0.5">
                     {stageLeads.map((lead) => {
                       const vert = BUSINESS_VERTICALS[lead.vertical];
-                      const linkedContact = contacts.find((c) => c.leadId === lead.id || c.name === lead.contactName);
+                      const linkedContact = contacts.find((c) => c.id === lead.contactId || c.leadId === lead.id || c.companyName === lead.companyName);
+                      const linkedEmployee = linkedContact?.employees?.find((e) => e.id === lead.employeeId);
 
                       return (
                         <div
@@ -809,7 +1105,7 @@ export const InternalCRM: React.FC<InternalCRMProps> = ({ currentRole, initialSu
                           className="bg-white border border-slate-200 hover:border-[#0078D4] rounded-lg p-3 shadow-2xs hover:shadow-xs transition-all cursor-pointer group"
                         >
                           <div className="flex items-start justify-between gap-1 mb-1.5">
-                            <span className="text-[10px] font-bold uppercase tracking-wider text-[#0078D4] truncate block max-w-[150px]">
+                            <span className="text-[10px] font-bold uppercase tracking-wider text-[#0078D4] truncate block max-w-[140px]">
                               {vert?.shortTitle || lead.vertical}
                             </span>
                             <span className="text-[10px] font-mono font-bold text-slate-700 bg-slate-100 px-1.5 py-0.5 rounded">
@@ -821,9 +1117,14 @@ export const InternalCRM: React.FC<InternalCRMProps> = ({ currentRole, initialSu
                             {lead.companyName}
                           </h5>
 
-                          <div className="flex items-center gap-1 text-[11px] text-slate-600 mb-2">
+                          <div className="flex items-center gap-1.5 text-[11px] text-slate-600 mb-2">
                             <User className="w-3 h-3 text-slate-400 shrink-0" />
-                            <span className="truncate">{lead.contactName}</span>
+                            <span className="truncate font-medium">{lead.contactName}</span>
+                            {linkedEmployee && (
+                              <span className="text-[9px] px-1 py-0.2 rounded bg-blue-50 text-blue-700 border border-blue-200 shrink-0">
+                                {DEPARTMENT_CONFIG[linkedEmployee.department]?.short}
+                              </span>
+                            )}
                           </div>
 
                           <p className="text-[11px] text-slate-500 line-clamp-2 leading-relaxed mb-3">
@@ -832,12 +1133,22 @@ export const InternalCRM: React.FC<InternalCRMProps> = ({ currentRole, initialSu
 
                           {/* Quick Actions in Card */}
                           <div className="flex items-center justify-between pt-2 border-t border-slate-100 text-[10px]" onClick={(e) => e.stopPropagation()}>
-                            <div className="flex items-center gap-1.5">
-                              {linkedContact?.whatsappNumber && (
+                            <div className="flex items-center gap-1">
+                              {linkedContact && (
                                 <button
                                   type="button"
-                                  title="Enviar WhatsApp"
-                                  onClick={() => handleSendWhatsApp(linkedContact, 'propuesta')}
+                                  title="Ver ficha de contacto / empresa"
+                                  onClick={() => setViewingContact(linkedContact)}
+                                  className="p-1 text-slate-500 hover:text-indigo-600 hover:bg-indigo-50 rounded transition-colors"
+                                >
+                                  <Briefcase className="w-3.5 h-3.5" />
+                                </button>
+                              )}
+                              {linkedContact && (
+                                <button
+                                  type="button"
+                                  title="Enviar WhatsApp al contacto"
+                                  onClick={() => handleSendWhatsApp(linkedContact, linkedEmployee, 'propuesta')}
                                   className="p-1 text-emerald-600 hover:bg-emerald-50 rounded transition-colors"
                                 >
                                   <MessageSquare className="w-3.5 h-3.5" />
@@ -846,7 +1157,7 @@ export const InternalCRM: React.FC<InternalCRMProps> = ({ currentRole, initialSu
                               <button
                                 type="button"
                                 title="Agendar Videollamada"
-                                onClick={() => handleOpenMeetingScheduler(linkedContact)}
+                                onClick={() => handleOpenMeetingScheduler(linkedContact, linkedEmployee)}
                                 className="p-1 text-[#0078D4] hover:bg-blue-50 rounded transition-colors"
                               >
                                 <Video className="w-3.5 h-3.5" />
@@ -872,7 +1183,7 @@ export const InternalCRM: React.FC<InternalCRMProps> = ({ currentRole, initialSu
 
                     {stageLeads.length === 0 && (
                       <div className="h-28 border border-dashed border-slate-200 rounded-lg flex items-center justify-center text-[11px] text-slate-400 italic">
-                        Sin leads en esta etapa
+                        Sin oportunidades en esta etapa
                       </div>
                     )}
                   </div>
@@ -884,14 +1195,18 @@ export const InternalCRM: React.FC<InternalCRMProps> = ({ currentRole, initialSu
       )}
 
       {/* ========================================================================= */}
-      {/* VIEW 2: AGENDA DE CONTACTOS INTEGRADA CON WHATSAPP Y EMAIL */}
+      {/* VIEW 2: AGENDA DE CONTACTOS (EMPRESAS CON ÁREAS & CONTACTOS INDIVIDUALES) */}
       {/* ========================================================================= */}
       {activeTab === 'contacts' && (
         <div className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 gap-4">
             {filteredContacts.map((contact) => {
               const vert = BUSINESS_VERTICALS[contact.vertical];
-              const linkedLead = leads.find((l) => l.id === contact.leadId);
+              const linkedLead = leads.find((l) => l.id === contact.leadId || l.contactId === contact.id);
+              const isExpanded = Boolean(expandedCompanyIds[contact.id]);
+              const isCompany = contact.type === 'empresa';
+              const employees = contact.employees || [];
+
               const statusBadges: Record<ContactRelationshipStatus, { label: string; color: string }> = {
                 lead: { label: 'Lead Calificado', color: 'bg-blue-50 text-[#0078D4] border-blue-200' },
                 cliente_activo: { label: 'Cliente Activo', color: 'bg-emerald-50 text-[#107C41] border-emerald-200' },
@@ -904,131 +1219,300 @@ export const InternalCRM: React.FC<InternalCRMProps> = ({ currentRole, initialSu
               return (
                 <div
                   key={contact.id}
-                  className="bg-white border border-slate-200 hover:border-blue-300 rounded-xl p-5 shadow-xs hover:shadow-md transition-all flex flex-col justify-between"
+                  className={`bg-white border rounded-xl shadow-xs transition-all overflow-hidden ${
+                    isCompany ? 'border-slate-200 hover:border-indigo-300' : 'border-slate-200 hover:border-blue-300'
+                  }`}
                 >
-                  <div>
-                    {/* Top Header */}
-                    <div className="flex items-start justify-between gap-2 mb-3">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-slate-100 border border-slate-200 text-[#0078D4] font-black text-sm flex items-center justify-center">
-                          {contact.name.split(' ').map((n) => n[0]).slice(0, 2).join('')}
+                  {/* Top Bar / Card Header */}
+                  <div className="p-5 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+                    <div className="flex items-start gap-3.5">
+                      {/* Avatar / Icon Badge */}
+                      <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 font-black text-sm border shadow-2xs ${
+                        isCompany
+                          ? 'bg-indigo-50 border-indigo-200 text-indigo-700'
+                          : 'bg-blue-50 border-blue-200 text-[#0078D4]'
+                      }`}>
+                        {isCompany ? (
+                          <Building2 className="w-6 h-6 text-indigo-600" />
+                        ) : (
+                          <User className="w-6 h-6 text-[#0078D4]" />
+                        )}
+                      </div>
+
+                      {/* Main Titles */}
+                      <div>
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border ${
+                            isCompany ? 'bg-indigo-50 text-indigo-700 border-indigo-200' : 'bg-slate-100 text-slate-700 border-slate-200'
+                          }`}>
+                            {isCompany ? 'Empresa / Razón Social' : 'Contacto Individual'}
+                          </span>
+                          <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold border ${badge.color}`}>
+                            {badge.label}
+                          </span>
+                          {contact.cuit && (
+                            <span className="text-[10px] text-slate-400 font-mono">
+                              CUIT: {contact.cuit}
+                            </span>
+                          )}
                         </div>
-                        <div>
-                          <h4 className="text-sm font-bold text-slate-900 leading-tight">
-                            {contact.name}
-                          </h4>
-                          <span className="text-xs text-slate-500 font-medium block">
-                            {contact.roleTitle}
+
+                        <h3 className="text-base font-bold text-slate-900 mt-0.5 leading-snug">
+                          {contact.companyName}
+                        </h3>
+
+                        <div className="flex flex-wrap items-center gap-2 mt-1 text-xs text-slate-600">
+                          <span className="font-semibold text-slate-800">
+                            {isCompany ? `Titular: ${contact.name}` : contact.name}
+                          </span>
+                          <span>·</span>
+                          <span className="text-slate-500">{contact.roleTitle}</span>
+                          <span>·</span>
+                          <span className="text-slate-500 flex items-center gap-1">
+                            <MapPin className="w-3 h-3 text-slate-400" />
+                            {contact.location}
+                          </span>
+                          <span>·</span>
+                          <span className="text-[#0078D4] font-medium flex items-center gap-1">
+                            <Shield className="w-3 h-3" />
+                            {vert?.shortTitle || contact.vertical}
                           </span>
                         </div>
                       </div>
-                      <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold border ${badge.color}`}>
-                        {badge.label}
-                      </span>
                     </div>
 
-                    {/* Company & Details */}
-                    <div className="space-y-1.5 py-2.5 my-2 border-y border-slate-100 text-xs">
-                      <div className="flex items-center gap-2 text-slate-700 font-semibold">
-                        <Building2 className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                        <span className="truncate">{contact.companyName}</span>
-                      </div>
-                      <div className="flex items-center gap-2 text-slate-500 text-[11px]">
-                        <MapPin className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                        <span>{contact.location}</span>
-                      </div>
-                      <div className="flex items-center gap-2 text-slate-500 text-[11px]">
-                        <Shield className="w-3.5 h-3.5 text-[#0078D4] shrink-0" />
-                        <span>{vert?.shortTitle || contact.vertical}</span>
-                      </div>
-                    </div>
+                    {/* Quick Contact & Action Buttons */}
+                    <div className="flex flex-wrap items-center gap-2 self-start lg:self-auto">
+                      {/* Create Opportunity button right from the contact! */}
+                      <button
+                        type="button"
+                        onClick={() => handleOpenCreateLeadModal(contact)}
+                        className="px-3 py-1.5 bg-blue-50 hover:bg-blue-100 text-[#0078D4] border border-blue-200 font-bold text-xs rounded-lg flex items-center gap-1.5 transition-colors cursor-pointer"
+                        title="Crear una nueva oportunidad en el pipeline para este contacto"
+                      >
+                        <TrendingUp className="w-3.5 h-3.5" />
+                        <span>+ Crear Oportunidad</span>
+                      </button>
 
-                    {/* Direct Contact info */}
-                    <div className="space-y-1 text-xs text-slate-600 mb-3">
-                      <div className="flex items-center justify-between">
-                        <span className="text-slate-400 text-[11px]">Email:</span>
-                        <span className="font-mono text-slate-800 text-[11px] truncate max-w-[190px]">
-                          {contact.email}
-                        </span>
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <span className="text-slate-400 text-[11px]">Tel / WA:</span>
-                        <span className="font-mono text-slate-800 text-[11px]">
-                          {contact.phone}
-                        </span>
-                      </div>
-                      <div className="flex items-center justify-between text-[10px] text-slate-400 pt-1">
-                        <span>Último contacto:</span>
-                        <span>{new Date(contact.lastContactDate).toLocaleDateString('es-AR')}</span>
-                      </div>
-                    </div>
+                      <button
+                        type="button"
+                        onClick={() => handleSendWhatsApp(contact, undefined, 'general')}
+                        className="px-2.5 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 font-bold text-xs rounded-lg flex items-center gap-1.5 transition-colors cursor-pointer"
+                      >
+                        <MessageSquare className="w-3.5 h-3.5 text-emerald-600" />
+                        <span>WhatsApp</span>
+                      </button>
 
-                    {/* Tags */}
-                    <div className="flex flex-wrap gap-1 mb-4">
-                      {contact.tags.map((tag, i) => (
-                        <span
-                          key={i}
-                          className="px-2 py-0.5 rounded bg-slate-100 text-slate-600 text-[10px] font-medium"
+                      <button
+                        type="button"
+                        onClick={() => handleOpenEmailComposer(contact)}
+                        className="px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-lg flex items-center gap-1.5 transition-colors cursor-pointer"
+                      >
+                        <Mail className="w-3.5 h-3.5 text-slate-600" />
+                        <span>Email</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => handleOpenMeetingScheduler(contact)}
+                        className="px-2.5 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 font-bold text-xs rounded-lg flex items-center gap-1.5 transition-colors cursor-pointer"
+                      >
+                        <Video className="w-3.5 h-3.5 text-indigo-600" />
+                        <span>Reunión</span>
+                      </button>
+
+                      {isCompany && (
+                        <button
+                          type="button"
+                          onClick={() => toggleCompanyExpand(contact.id)}
+                          className="px-2.5 py-1.5 bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-200 font-semibold text-xs rounded-lg flex items-center gap-1 transition-colors cursor-pointer"
                         >
-                          #{tag}
-                        </span>
-                      ))}
+                          <span>{employees.length} Colaboradores</span>
+                          {isExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+                        </button>
+                      )}
                     </div>
-
-                    {/* Notes snippet */}
-                    {contact.notes && (
-                      <p className="text-[11px] text-slate-500 bg-slate-50 p-2 rounded border border-slate-100 leading-relaxed mb-4 italic">
-                        "{contact.notes}"
-                      </p>
-                    )}
                   </div>
 
-                  {/* BOTTOM ACTION BUTTONS: WhatsApp, Email, Video Meet */}
-                  <div className="pt-3 border-t border-slate-100 grid grid-cols-3 gap-2">
-                    <button
-                      type="button"
-                      onClick={() => handleSendWhatsApp(contact, 'general')}
-                      className="px-2 py-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-bold text-xs rounded-lg flex items-center justify-center gap-1.5 transition-colors cursor-pointer border border-emerald-200"
-                    >
-                      <MessageSquare className="w-3.5 h-3.5 text-emerald-600" />
-                      <span>WhatsApp</span>
-                    </button>
+                  {/* Pipeline link banner if associated */}
+                  {linkedLead && (
+                    <div className="px-5 py-2 bg-slate-50 border-t border-slate-100 flex flex-wrap items-center justify-between text-xs gap-2">
+                      <div className="flex items-center gap-2">
+                        <TrendingUp className="w-3.5 h-3.5 text-[#0078D4]" />
+                        <span className="font-semibold text-slate-700">Oportunidad activa en Pipeline:</span>
+                        <span className="font-bold text-[#0078D4] uppercase text-[11px]">
+                          Etapa: {STAGES.find((s) => s.id === linkedLead.stage)?.label || linkedLead.stage}
+                        </span>
+                        <span className="text-slate-400">·</span>
+                        <span className="font-mono text-slate-600 font-bold">USD {linkedLead.estimatedMonthlyBudgetUsd}/mes</span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setSelectedLead(linkedLead);
+                          setActiveTab('pipeline');
+                        }}
+                        className="text-[#0078D4] hover:underline font-bold text-[11px] flex items-center gap-1"
+                      >
+                        <span>Ver en Pipeline Kanban</span>
+                        <ArrowRight className="w-3 h-3" />
+                      </button>
+                    </div>
+                  )}
 
-                    <button
-                      type="button"
-                      onClick={() => handleOpenEmailComposer(contact)}
-                      className="px-2 py-2 bg-blue-50 hover:bg-blue-100 text-[#0078D4] font-bold text-xs rounded-lg flex items-center justify-center gap-1.5 transition-colors cursor-pointer border border-blue-200"
-                    >
-                      <Mail className="w-3.5 h-3.5 text-[#0078D4]" />
-                      <span>Email</span>
-                    </button>
+                  {/* EMPRESA EXPANDED: DEPARTMENTS & EMPLOYEES ROSTER */}
+                  {isCompany && isExpanded && (
+                    <div className="border-t border-slate-100 bg-slate-50/70 p-5 space-y-4 animate-in fade-in">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                        <div>
+                          <h4 className="text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
+                            <Layers className="w-3.5 h-3.5 text-indigo-600" />
+                            <span>Estructura de la Empresa & Áreas de Atención</span>
+                          </h4>
+                          <p className="text-[11px] text-slate-500">
+                            Colaboradores en Administración, Finanzas, Logística, Envíos, Pagos y Gerencia
+                          </p>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setActiveCompanyForEmployee(contact);
+                            setNewEmpName('');
+                            setNewEmpRole('');
+                            setNewEmpEmail('');
+                            setNewEmpPhone('');
+                            setNewEmpWhatsapp('');
+                          }}
+                          className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-lg flex items-center gap-1.5 shadow-2xs self-start sm:self-auto cursor-pointer"
+                        >
+                          <Plus className="w-3.5 h-3.5" />
+                          <span>+ Agregar Colaborador a {contact.companyName}</span>
+                        </button>
+                      </div>
 
-                    <button
-                      type="button"
-                      onClick={() => handleOpenMeetingScheduler(contact)}
-                      className="px-2 py-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold text-xs rounded-lg flex items-center justify-center gap-1.5 transition-colors cursor-pointer border border-indigo-200"
-                    >
-                      <Video className="w-3.5 h-3.5 text-indigo-600" />
-                      <span>Reunión</span>
-                    </button>
-                  </div>
+                      {/* Employee List Grid */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                        {employees.map((emp) => {
+                          const deptCfg = DEPARTMENT_CONFIG[emp.department] || DEPARTMENT_CONFIG.otro;
+
+                          return (
+                            <div
+                              key={emp.id}
+                              className="bg-white border border-slate-200 rounded-lg p-3.5 shadow-2xs hover:border-indigo-300 transition-all flex flex-col justify-between"
+                            >
+                              <div>
+                                <div className="flex items-start justify-between gap-2 mb-1.5">
+                                  <span className={`px-2 py-0.5 rounded text-[10px] font-bold border ${deptCfg.color}`}>
+                                    {deptCfg.short}
+                                  </span>
+                                  {emp.isPrimaryContact && (
+                                    <span className="flex items-center gap-1 text-[10px] text-amber-700 font-bold bg-amber-50 border border-amber-200 px-1.5 py-0.2 rounded">
+                                      <Star className="w-2.5 h-2.5 fill-amber-500 text-amber-500" />
+                                      <span>Decisor</span>
+                                    </span>
+                                  )}
+                                </div>
+
+                                <h5 className="text-xs font-bold text-slate-900 leading-tight">
+                                  {emp.name}
+                                </h5>
+                                <span className="text-[11px] text-slate-500 block mb-2">
+                                  {emp.roleTitle}
+                                </span>
+
+                                <div className="space-y-1 text-[11px] text-slate-600 border-t border-slate-100 pt-2 mb-2">
+                                  <div className="flex items-center justify-between">
+                                    <span className="text-slate-400">Email:</span>
+                                    <span className="font-mono text-slate-800 truncate max-w-[150px]">{emp.email}</span>
+                                  </div>
+                                  <div className="flex items-center justify-between">
+                                    <span className="text-slate-400">Tel / WA:</span>
+                                    <span className="font-mono text-slate-800">{emp.phone}</span>
+                                  </div>
+                                </div>
+
+                                {emp.notes && (
+                                  <p className="text-[10px] text-slate-500 italic bg-slate-50 p-1.5 rounded mb-2">
+                                    "{emp.notes}"
+                                  </p>
+                                )}
+                              </div>
+
+                              {/* Bottom Action buttons for this specific employee */}
+                              <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-[10px]">
+                                <div className="flex items-center gap-1">
+                                  <button
+                                    type="button"
+                                    title="WhatsApp directo a este colaborador"
+                                    onClick={() => handleSendWhatsApp(contact, emp, 'general')}
+                                    className="p-1 text-emerald-600 hover:bg-emerald-50 rounded"
+                                  >
+                                    <MessageSquare className="w-3.5 h-3.5" />
+                                  </button>
+                                  <button
+                                    type="button"
+                                    title="Enviar correo a este colaborador"
+                                    onClick={() => handleOpenEmailComposer(contact, emp)}
+                                    className="p-1 text-[#0078D4] hover:bg-blue-50 rounded"
+                                  >
+                                    <Mail className="w-3.5 h-3.5" />
+                                  </button>
+                                  <button
+                                    type="button"
+                                    title="Agendar reunión con este colaborador"
+                                    onClick={() => handleOpenMeetingScheduler(contact, emp)}
+                                    className="p-1 text-indigo-600 hover:bg-indigo-50 rounded"
+                                  >
+                                    <Video className="w-3.5 h-3.5" />
+                                  </button>
+                                  <button
+                                    type="button"
+                                    title="Crear oportunidad asociada a este colaborador"
+                                    onClick={() => handleOpenCreateLeadModal(contact, emp)}
+                                    className="p-1 text-amber-700 hover:bg-amber-50 rounded"
+                                  >
+                                    <TrendingUp className="w-3.5 h-3.5" />
+                                  </button>
+                                </div>
+
+                                <button
+                                  type="button"
+                                  title="Eliminar colaborador"
+                                  onClick={() => handleRemoveEmployee(contact.id, emp.id)}
+                                  className="text-slate-400 hover:text-rose-600 p-1"
+                                >
+                                  <Trash2 className="w-3 h-3" />
+                                </button>
+                              </div>
+                            </div>
+                          );
+                        })}
+
+                        {employees.length === 0 && (
+                          <div className="col-span-full py-6 text-center bg-white border border-dashed border-slate-300 rounded-lg text-xs text-slate-500">
+                            No hay colaboradores registrados en la estructura todavía.
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
                 </div>
               );
             })}
 
             {filteredContacts.length === 0 && (
-              <div className="col-span-full py-16 text-center bg-white border border-dashed border-slate-200 rounded-xl">
-                <User className="w-10 h-10 text-slate-300 mx-auto mb-2" />
-                <h4 className="text-sm font-bold text-slate-700">No se encontraron contactos</h4>
+              <div className="py-16 text-center bg-white border border-dashed border-slate-200 rounded-xl">
+                <Building2 className="w-10 h-10 text-slate-300 mx-auto mb-2" />
+                <h4 className="text-sm font-bold text-slate-700">No se encontraron contactos o empresas</h4>
                 <p className="text-xs text-slate-500 mt-1 max-w-sm mx-auto">
-                  Modifique los filtros de búsqueda o registre un nuevo contacto para incorporarlo a la agenda.
+                  Ajuste los filtros de búsqueda o registre una nueva empresa o contacto individual.
                 </p>
                 <button
                   type="button"
                   onClick={() => setShowContactModal(true)}
                   className="mt-4 px-4 py-2 bg-[#0078D4] text-white text-xs font-bold rounded-lg shadow-xs hover:bg-[#106EBE]"
                 >
-                  + Registrar Contacto
+                  + Registrar Empresa / Contacto
                 </button>
               </div>
             )}
@@ -1037,7 +1521,7 @@ export const InternalCRM: React.FC<InternalCRMProps> = ({ currentRole, initialSu
       )}
 
       {/* ========================================================================= */}
-      {/* VIEW 3: CALENDARIO DE REUNIONES, ACTIVIDADES & VIDEOLLAMADAS */}
+      {/* VIEW 3: CALENDARIO DE REUNIONES & VIDEOLLAMADAS */}
       {/* ========================================================================= */}
       {activeTab === 'calendar' && (
         <div className="space-y-6">
@@ -1219,7 +1703,10 @@ export const InternalCRM: React.FC<InternalCRMProps> = ({ currentRole, initialSu
                         {/* Company & Attendee */}
                         <div className="text-[11px] text-slate-600 space-y-0.5 mb-2">
                           <p className="font-semibold text-slate-800">{m.companyName}</p>
-                          <p className="text-slate-500">Con: {m.contactName}</p>
+                          <p className="text-slate-500">
+                            Con: <strong>{m.contactName}</strong>
+                            {m.employeeName && m.employeeName !== m.contactName ? ` (${m.employeeName})` : ''}
+                          </p>
                           <p className="text-[10px] text-slate-400 font-mono">Fecha: {m.date} ({m.startTime} - {m.endTime} hs)</p>
                         </div>
 
@@ -1262,7 +1749,7 @@ export const InternalCRM: React.FC<InternalCRMProps> = ({ currentRole, initialSu
                             </a>
                           )}
 
-                          {linkedContact?.whatsappNumber && (
+                          {m.contactPhone && (
                             <button
                               type="button"
                               title="Enviar recordatorio por WhatsApp"
@@ -1272,7 +1759,7 @@ export const InternalCRM: React.FC<InternalCRMProps> = ({ currentRole, initialSu
                                   `📅 ${m.date} a las ${m.startTime} hs.\n` +
                                   `Enlace: ${m.meetingUrl}`
                                 );
-                                window.open(`https://wa.me/${linkedContact.whatsappNumber}?text=${waMsg}`, '_blank');
+                                window.open(`https://wa.me/${m.contactPhone.replace(/[^0-9]/g, '')}?text=${waMsg}`, '_blank');
                               }}
                               className="px-2 py-1 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-semibold rounded border border-emerald-200 flex items-center gap-1"
                             >
@@ -1399,6 +1886,636 @@ export const InternalCRM: React.FC<InternalCRMProps> = ({ currentRole, initialSu
       )}
 
       {/* ========================================================================= */}
+      {/* MODAL: CREAR OPORTUNIDAD / LEAD (CON SELECCIÓN DE CONTACTO DE AGENDA) */}
+      {/* ========================================================================= */}
+      {showLeadModal && (
+        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 space-y-4 animate-in fade-in zoom-in-95">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-lg bg-blue-50 text-[#0078D4] flex items-center justify-center">
+                  <TrendingUp className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-slate-900">Crear Oportunidad / Negocio en Pipeline</h3>
+                  <p className="text-[11px] text-slate-500">Vincular con contacto de la agenda o registrar nueva empresa</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowLeadModal(false)}
+                className="text-slate-400 hover:text-slate-600"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Segmented Origin Toggle */}
+            <div className="grid grid-cols-2 gap-2 bg-slate-100 p-1 rounded-lg text-xs font-semibold">
+              <button
+                type="button"
+                onClick={() => setLeadSourceMode('from_contact')}
+                className={`py-1.5 px-3 rounded-md text-center transition-all ${
+                  leadSourceMode === 'from_contact'
+                    ? 'bg-white text-[#0078D4] shadow-2xs font-bold'
+                    : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                1. Desde Contacto Agendado
+              </button>
+              <button
+                type="button"
+                onClick={() => setLeadSourceMode('new_company')}
+                className={`py-1.5 px-3 rounded-md text-center transition-all ${
+                  leadSourceMode === 'new_company'
+                    ? 'bg-white text-[#0078D4] shadow-2xs font-bold'
+                    : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                2. Nueva Empresa Externa
+              </button>
+            </div>
+
+            <form onSubmit={handleCreateLead} className="space-y-3.5 text-xs">
+              {/* If selecting from existing contacts */}
+              {leadSourceMode === 'from_contact' ? (
+                <div className="space-y-3 bg-blue-50/40 p-3 rounded-lg border border-blue-100">
+                  <div>
+                    <label className="block font-semibold text-slate-700 uppercase text-[10px] mb-1">
+                      Seleccionar Empresa o Contacto Agendado *
+                    </label>
+                    <select
+                      value={selectedContactForLead}
+                      onChange={(e) => handleContactSelectForLead(e.target.value)}
+                      className="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs text-slate-900 font-semibold focus:border-[#0078D4] focus:outline-none"
+                    >
+                      <option value="">-- Seleccionar de la agenda --</option>
+                      {contacts.map((c) => (
+                        <option key={c.id} value={c.id}>
+                          {c.type === 'empresa' ? '🏢 [Empresa] ' : '👤 [Persona] '} {c.companyName} · {c.name} ({BUSINESS_VERTICALS[c.vertical]?.shortTitle || c.vertical})
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* If the chosen contact has employees, allow selecting which employee/area is leading the deal */}
+                  {(() => {
+                    const chosen = contacts.find((c) => c.id === selectedContactForLead);
+                    if (chosen && chosen.employees && chosen.employees.length > 0) {
+                      return (
+                        <div>
+                          <label className="block font-semibold text-slate-700 uppercase text-[10px] mb-1">
+                            Colaborador / Área de Contacto
+                          </label>
+                          <select
+                            value={selectedEmployeeForLead}
+                            onChange={(e) => handleEmployeeSelectForLead(e.target.value)}
+                            className="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs text-slate-900 focus:border-[#0078D4] focus:outline-none"
+                          >
+                            <option value="">Contacto Principal: {chosen.name} (General)</option>
+                            {chosen.employees.map((emp) => (
+                              <option key={emp.id} value={emp.id}>
+                                {emp.name} · {DEPARTMENT_CONFIG[emp.department]?.short} ({emp.roleTitle})
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                      );
+                    }
+                    return null;
+                  })()}
+                </div>
+              ) : null}
+
+              {/* Company & Contact Names */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                <div>
+                  <label className="block font-semibold text-slate-700 uppercase text-[10px] mb-1">
+                    Empresa / Razón Social *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={newLeadCompany}
+                    onChange={(e) => setNewLeadCompany(e.target.value)}
+                    placeholder="Ej: Pesquera San Carlos SRL"
+                    className="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs text-slate-900 focus:border-[#0078D4] focus:outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block font-semibold text-slate-700 uppercase text-[10px] mb-1">
+                    Persona de Contacto *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={newLeadContact}
+                    onChange={(e) => setNewLeadContact(e.target.value)}
+                    placeholder="Ej: Ing. Carlos San Martín"
+                    className="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs text-slate-900 focus:border-[#0078D4] focus:outline-none"
+                  />
+                </div>
+              </div>
+
+              {/* Email & Phone */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                <div>
+                  <label className="block font-semibold text-slate-700 uppercase text-[10px] mb-1">
+                    Email de Contacto
+                  </label>
+                  <input
+                    type="email"
+                    value={newLeadEmail}
+                    onChange={(e) => setNewLeadEmail(e.target.value)}
+                    placeholder="contacto@empresa.com"
+                    className="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs text-slate-900 focus:border-[#0078D4] focus:outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block font-semibold text-slate-700 uppercase text-[10px] mb-1">
+                    Teléfono / WhatsApp
+                  </label>
+                  <input
+                    type="text"
+                    value={newLeadPhone}
+                    onChange={(e) => setNewLeadPhone(e.target.value)}
+                    placeholder="+54 280 4..."
+                    className="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs text-slate-900 focus:border-[#0078D4] focus:outline-none"
+                  />
+                </div>
+              </div>
+
+              {/* Vertical & Budget */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                <div>
+                  <label className="block font-semibold text-slate-700 uppercase text-[10px] mb-1">
+                    Vertical del Negocio
+                  </label>
+                  <select
+                    value={newLeadVertical}
+                    onChange={(e) => setNewLeadVertical(e.target.value as BusinessVertical)}
+                    className="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs text-slate-900 focus:border-[#0078D4] focus:outline-none"
+                  >
+                    {(Object.keys(BUSINESS_VERTICALS) as BusinessVertical[]).map((vKey) => (
+                      <option key={vKey} value={vKey}>
+                        {BUSINESS_VERTICALS[vKey].title}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block font-semibold text-slate-700 uppercase text-[10px] mb-1">
+                    Presupuesto Mensual Estimado (USD)
+                  </label>
+                  <input
+                    type="number"
+                    value={newLeadBudget}
+                    onChange={(e) => setNewLeadBudget(Number(e.target.value))}
+                    className="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs text-slate-900 focus:border-[#0078D4] focus:outline-none"
+                  />
+                </div>
+              </div>
+
+              {/* Notes */}
+              <div>
+                <label className="block font-semibold text-slate-700 uppercase text-[10px] mb-1">
+                  Notas de la Oportunidad / Requerimiento
+                </label>
+                <textarea
+                  rows={2}
+                  value={newLeadNotes}
+                  onChange={(e) => setNewLeadNotes(e.target.value)}
+                  placeholder="Detalles sobre necesidad contable, financiera o jurídica..."
+                  className="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs text-slate-900 focus:border-[#0078D4] focus:outline-none"
+                />
+              </div>
+
+              <div className="flex justify-end gap-2 pt-2 border-t border-slate-100">
+                <button
+                  type="button"
+                  onClick={() => setShowLeadModal(false)}
+                  className="px-3 py-1.5 text-xs text-slate-600 hover:text-slate-900"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 bg-[#0078D4] hover:bg-[#106EBE] text-white font-bold text-xs rounded-lg shadow-sm flex items-center gap-1.5"
+                >
+                  <TrendingUp className="w-3.5 h-3.5" />
+                  <span>Crear Oportunidad</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* MODAL: NUEVO CONTACTO (EMPRESA vs INDIVIDUAL CON ÁREAS) */}
+      {/* ========================================================================= */}
+      {showContactModal && (
+        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 space-y-4 animate-in fade-in zoom-in-95 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+              <div className="flex items-center gap-2">
+                <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
+                  contactType === 'empresa' ? 'bg-indigo-50 text-indigo-700' : 'bg-blue-50 text-[#0078D4]'
+                }`}>
+                  {contactType === 'empresa' ? <Building2 className="w-4 h-4" /> : <User className="w-4 h-4" />}
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-slate-900">Alta de Contacto en Agenda</h3>
+                  <p className="text-[11px] text-slate-500">Seleccione si es una Empresa o un Contacto Individual</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowContactModal(false)}
+                className="text-slate-400 hover:text-slate-600"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Step 1: Type Selection Tabs */}
+            <div className="grid grid-cols-2 gap-2 bg-slate-100 p-1 rounded-lg text-xs font-semibold">
+              <button
+                type="button"
+                onClick={() => setContactType('empresa')}
+                className={`py-2 px-3 rounded-md text-center flex items-center justify-center gap-2 transition-all ${
+                  contactType === 'empresa'
+                    ? 'bg-white text-indigo-700 shadow-2xs font-bold'
+                    : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                <Building2 className="w-4 h-4 text-indigo-600" />
+                <span>Contacto Empresa / Corporativo</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setContactType('individual')}
+                className={`py-2 px-3 rounded-md text-center flex items-center justify-center gap-2 transition-all ${
+                  contactType === 'individual'
+                    ? 'bg-white text-[#0078D4] shadow-2xs font-bold'
+                    : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                <User className="w-4 h-4 text-[#0078D4]" />
+                <span>Contacto Individual / Profesional</span>
+              </button>
+            </div>
+
+            <form onSubmit={handleCreateContact} className="space-y-3.5 text-xs">
+              {/* Type specific notice */}
+              <div className={`p-2.5 rounded-lg border text-xs leading-relaxed ${
+                contactType === 'empresa'
+                  ? 'bg-indigo-50/50 border-indigo-200 text-indigo-950'
+                  : 'bg-blue-50/50 border-blue-200 text-blue-950'
+              }`}>
+                {contactType === 'empresa' ? (
+                  <span>
+                    🏢 <strong>Contacto Empresa:</strong> Podrá agregar múltiples colaboradores y áreas de atención (Administración, Finanzas, Pagos, Envíos, Logística, Gerencia).
+                  </span>
+                ) : (
+                  <span>
+                    👤 <strong>Contacto Individual:</strong> Para profesionales, directores independientes, consultores o socios estratégicos unipersonales.
+                  </span>
+                )}
+              </div>
+
+              {/* Company vs Personal Name */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                <div>
+                  <label className="block font-semibold text-slate-700 uppercase text-[10px] mb-1">
+                    {contactType === 'empresa' ? 'Razón Social / Nombre Comercial *' : 'Nombre de Fantasía / Estudio'}
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={contactCompany}
+                    onChange={(e) => setContactCompany(e.target.value)}
+                    placeholder={contactType === 'empresa' ? 'Ej: Pesquera San Carlos SRL' : 'Ej: Estudio Jurídico Roberts'}
+                    className="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs text-slate-900 focus:border-[#0078D4] focus:outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block font-semibold text-slate-700 uppercase text-[10px] mb-1">
+                    {contactType === 'empresa' ? 'Titular / Contacto Principal *' : 'Nombre y Apellido *'}
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={contactName}
+                    onChange={(e) => setContactName(e.target.value)}
+                    placeholder="Ej: Lic. Hernán Pereyra"
+                    className="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs text-slate-900 focus:border-[#0078D4] focus:outline-none"
+                  />
+                </div>
+              </div>
+
+              {/* CUIT & Cargo */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                <div>
+                  <label className="block font-semibold text-slate-700 uppercase text-[10px] mb-1">
+                    CUIT / CUIL (Opcional)
+                  </label>
+                  <input
+                    type="text"
+                    value={contactCuit}
+                    onChange={(e) => setContactCuit(e.target.value)}
+                    placeholder="30-71894520-4"
+                    className="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs text-slate-900 focus:border-[#0078D4] focus:outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block font-semibold text-slate-700 uppercase text-[10px] mb-1">
+                    Cargo / Función / Especialidad
+                  </label>
+                  <input
+                    type="text"
+                    value={contactRole}
+                    onChange={(e) => setContactRole(e.target.value)}
+                    placeholder={contactType === 'empresa' ? 'Director General / Socio Gerente' : 'Perito Tributario / Abogado'}
+                    className="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs text-slate-900 focus:border-[#0078D4] focus:outline-none"
+                  />
+                </div>
+              </div>
+
+              {/* Department (if individual) */}
+              {contactType === 'individual' && (
+                <div>
+                  <label className="block font-semibold text-slate-700 uppercase text-[10px] mb-1">
+                    Área / Especialidad
+                  </label>
+                  <select
+                    value={contactDepartment}
+                    onChange={(e) => setContactDepartment(e.target.value as CompanyDepartment)}
+                    className="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs text-slate-900 focus:border-[#0078D4] focus:outline-none"
+                  >
+                    {(Object.keys(DEPARTMENT_CONFIG) as CompanyDepartment[]).map((deptKey) => (
+                      <option key={deptKey} value={deptKey}>
+                        {DEPARTMENT_CONFIG[deptKey].label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+
+              {/* Email & WhatsApp */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                <div>
+                  <label className="block font-semibold text-slate-700 uppercase text-[10px] mb-1">
+                    Correo Electrónico
+                  </label>
+                  <input
+                    type="email"
+                    value={contactEmail}
+                    onChange={(e) => setContactEmail(e.target.value)}
+                    placeholder="contacto@empresa.com.ar"
+                    className="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs text-slate-900 focus:border-[#0078D4] focus:outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block font-semibold text-slate-700 uppercase text-[10px] mb-1">
+                    WhatsApp (con código de país)
+                  </label>
+                  <input
+                    type="text"
+                    value={contactWhatsapp}
+                    onChange={(e) => setContactWhatsapp(e.target.value)}
+                    placeholder="5492804428812"
+                    className="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs text-slate-900 focus:border-[#0078D4] focus:outline-none"
+                  />
+                </div>
+              </div>
+
+              {/* Location & Vertical */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                <div>
+                  <label className="block font-semibold text-slate-700 uppercase text-[10px] mb-1">
+                    Localidad / Sede
+                  </label>
+                  <input
+                    type="text"
+                    value={contactLocation}
+                    onChange={(e) => setContactLocation(e.target.value)}
+                    placeholder="Trelew / Puerto Madryn, Chubut"
+                    className="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs text-slate-900 focus:border-[#0078D4] focus:outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block font-semibold text-slate-700 uppercase text-[10px] mb-1">
+                    Vertical de Negocio
+                  </label>
+                  <select
+                    value={contactVertical}
+                    onChange={(e) => setContactVertical(e.target.value as BusinessVertical)}
+                    className="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs text-slate-900 focus:border-[#0078D4] focus:outline-none"
+                  >
+                    {(Object.keys(BUSINESS_VERTICALS) as BusinessVertical[]).map((vKey) => (
+                      <option key={vKey} value={vKey}>
+                        {BUSINESS_VERTICALS[vKey].shortTitle}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              {/* Relationship Status */}
+              <div>
+                <label className="block font-semibold text-slate-700 uppercase text-[10px] mb-1">
+                  Vínculo Comercial
+                </label>
+                <select
+                  value={contactStatus}
+                  onChange={(e) => setContactStatus(e.target.value as ContactRelationshipStatus)}
+                  className="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs text-slate-900 focus:border-[#0078D4] focus:outline-none"
+                >
+                  <option value="lead">Lead Calificado</option>
+                  <option value="cliente_activo">Cliente Activo</option>
+                  <option value="partner">Partner Estratégico</option>
+                  <option value="proveedor">Proveedor</option>
+                  <option value="ex_cliente">Ex-cliente</option>
+                </select>
+              </div>
+
+              {/* Notes */}
+              <div>
+                <label className="block font-semibold text-slate-700 uppercase text-[10px] mb-1">
+                  Notas / Resumen
+                </label>
+                <textarea
+                  rows={2}
+                  value={contactNotes}
+                  onChange={(e) => setContactNotes(e.target.value)}
+                  placeholder="Información relevante sobre la empresa, necesidades o antecedentes..."
+                  className="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs text-slate-900 focus:border-[#0078D4] focus:outline-none"
+                />
+              </div>
+
+              <div className="flex justify-end gap-2 pt-2 border-t border-slate-100">
+                <button
+                  type="button"
+                  onClick={() => setShowContactModal(false)}
+                  className="px-3 py-1.5 text-xs text-slate-600 hover:text-slate-900"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-lg shadow-sm"
+                >
+                  Guardar en Agenda
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* MODAL: AGREGAR COLABORADOR / EMPLEADO A LA EMPRESA */}
+      {/* ========================================================================= */}
+      {activeCompanyForEmployee && (
+        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-200 space-y-4 animate-in fade-in zoom-in-95">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-700 flex items-center justify-center">
+                  <User className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-slate-900">Agregar Colaborador a la Estructura</h3>
+                  <p className="text-[11px] text-slate-500">{activeCompanyForEmployee.companyName}</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setActiveCompanyForEmployee(null)}
+                className="text-slate-400 hover:text-slate-600"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleAddEmployee} className="space-y-3 text-xs">
+              <div>
+                <label className="block font-semibold text-slate-700 uppercase text-[10px] mb-1">
+                  Nombre y Apellido *
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={newEmpName}
+                  onChange={(e) => setNewEmpName(e.target.value)}
+                  placeholder="Ej: Romina Beltrán"
+                  className="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs text-slate-900 focus:border-[#0078D4] focus:outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="block font-semibold text-slate-700 uppercase text-[10px] mb-1">
+                  Departamento / Área *
+                </label>
+                <select
+                  value={newEmpDept}
+                  onChange={(e) => setNewEmpDept(e.target.value as CompanyDepartment)}
+                  className="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs text-slate-900 focus:border-[#0078D4] focus:outline-none"
+                >
+                  {(Object.keys(DEPARTMENT_CONFIG) as CompanyDepartment[]).map((deptKey) => (
+                    <option key={deptKey} value={deptKey}>
+                      {DEPARTMENT_CONFIG[deptKey].label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block font-semibold text-slate-700 uppercase text-[10px] mb-1">
+                  Puesto / Función
+                </label>
+                <input
+                  type="text"
+                  value={newEmpRole}
+                  onChange={(e) => setNewEmpRole(e.target.value)}
+                  placeholder="Ej: Jefa de Facturación & Cobranzas / Logística de Envíos"
+                  className="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs text-slate-900 focus:border-[#0078D4] focus:outline-none"
+                />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                <div>
+                  <label className="block font-semibold text-slate-700 uppercase text-[10px] mb-1">
+                    Email Directo
+                  </label>
+                  <input
+                    type="email"
+                    value={newEmpEmail}
+                    onChange={(e) => setNewEmpEmail(e.target.value)}
+                    placeholder="pagos@empresa.com"
+                    className="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs text-slate-900 focus:border-[#0078D4] focus:outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block font-semibold text-slate-700 uppercase text-[10px] mb-1">
+                    WhatsApp Directo
+                  </label>
+                  <input
+                    type="text"
+                    value={newEmpWhatsapp}
+                    onChange={(e) => setNewEmpWhatsapp(e.target.value)}
+                    placeholder="5492804..."
+                    className="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs text-slate-900 focus:border-[#0078D4] focus:outline-none"
+                  />
+                </div>
+              </div>
+
+              <label className="flex items-center gap-2 cursor-pointer text-xs text-slate-700 pt-1">
+                <input
+                  type="checkbox"
+                  checked={newEmpIsPrimary}
+                  onChange={(e) => setNewEmpIsPrimary(e.target.checked)}
+                  className="rounded text-indigo-600 focus:ring-indigo-600"
+                />
+                <span>Marcar como decisor / contacto principal del área</span>
+              </label>
+
+              <div>
+                <label className="block font-semibold text-slate-700 uppercase text-[10px] mb-1">
+                  Notas sobre el rol o responsabilidades
+                </label>
+                <textarea
+                  rows={2}
+                  value={newEmpNotes}
+                  onChange={(e) => setNewEmpNotes(e.target.value)}
+                  placeholder="Ej: Responsable de emisión de órdenes de pago los días jueves..."
+                  className="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs text-slate-900 focus:border-[#0078D4] focus:outline-none"
+                />
+              </div>
+
+              <div className="flex justify-end gap-2 pt-2 border-t border-slate-100">
+                <button
+                  type="button"
+                  onClick={() => setActiveCompanyForEmployee(null)}
+                  className="px-3 py-1.5 text-xs text-slate-600 hover:text-slate-900"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-lg shadow-sm"
+                >
+                  Incorporar Colaborador
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================================= */}
       {/* MODAL: AGENDAR VIDEOLLAMADA / REUNIÓN */}
       {/* ========================================================================= */}
       {showMeetingModal && (
@@ -1440,12 +2557,13 @@ export const InternalCRM: React.FC<InternalCRMProps> = ({ currentRole, initialSu
 
               <div>
                 <label className="block font-semibold text-slate-700 uppercase text-[10px] mb-1">
-                  Contacto / Participante de la Agenda
+                  Empresa o Contacto de la Agenda
                 </label>
                 <select
                   value={meetingContactId}
                   onChange={(e) => {
                     setMeetingContactId(e.target.value);
+                    setMeetingEmployeeId('');
                     const selected = contacts.find((c) => c.id === e.target.value);
                     if (selected && !meetingTitle) {
                       setMeetingTitle(`Reunión Estratégica: ${selected.companyName}`);
@@ -1456,11 +2574,38 @@ export const InternalCRM: React.FC<InternalCRMProps> = ({ currentRole, initialSu
                   <option value="">-- Seleccionar de la agenda de contactos --</option>
                   {contacts.map((c) => (
                     <option key={c.id} value={c.id}>
-                      {c.name} · {c.companyName} ({c.email})
+                      {c.type === 'empresa' ? '🏢 ' : '👤 '} {c.companyName} · {c.name}
                     </option>
                   ))}
                 </select>
               </div>
+
+              {/* If company has employees, allow selecting which employee to meet with */}
+              {(() => {
+                const c = contacts.find((contact) => contact.id === meetingContactId);
+                if (c && c.employees && c.employees.length > 0) {
+                  return (
+                    <div>
+                      <label className="block font-semibold text-slate-700 uppercase text-[10px] mb-1">
+                        Participante Específico de la Empresa
+                      </label>
+                      <select
+                        value={meetingEmployeeId}
+                        onChange={(e) => setMeetingEmployeeId(e.target.value)}
+                        className="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs text-slate-900 focus:border-[#0078D4] focus:outline-none"
+                      >
+                        <option value="">Contacto Principal: {c.name}</option>
+                        {c.employees.map((emp) => (
+                          <option key={emp.id} value={emp.id}>
+                            {emp.name} · {DEPARTMENT_CONFIG[emp.department]?.short} ({emp.roleTitle})
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  );
+                }
+                return null;
+              })()}
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                 <div>
@@ -1539,7 +2684,7 @@ export const InternalCRM: React.FC<InternalCRMProps> = ({ currentRole, initialSu
 
               <div>
                 <label className="block font-semibold text-slate-700 uppercase text-[10px] mb-1">
-                  Enlace Personalizado de Videollamada (Opcional)
+                  Enlace Personalizado (Opcional)
                 </label>
                 <input
                   type="url"
@@ -1582,11 +2727,11 @@ export const InternalCRM: React.FC<InternalCRMProps> = ({ currentRole, initialSu
                     onChange={(e) => setMeetingSendWhatsapp(e.target.checked)}
                     className="rounded text-emerald-600 focus:ring-emerald-600"
                   />
-                  <span>Abrir WhatsApp para enviar confirmación instantánea al contacto</span>
+                  <span>Abrir WhatsApp para enviar confirmación instantánea</span>
                 </label>
               </div>
 
-              <div className="flex justify-end gap-2 pt-2">
+              <div className="flex justify-end gap-2 pt-2 border-t border-slate-100">
                 <button
                   type="button"
                   onClick={() => setShowMeetingModal(false)}
@@ -1600,176 +2745,6 @@ export const InternalCRM: React.FC<InternalCRMProps> = ({ currentRole, initialSu
                 >
                   <Video className="w-3.5 h-3.5" />
                   <span>Confirmar & Agendar</span>
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* ========================================================================= */}
-      {/* MODAL: NUEVO CONTACTO EN AGENDA */}
-      {/* ========================================================================= */}
-      {showContactModal && (
-        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 space-y-4 animate-in fade-in zoom-in-95">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center">
-                  <User className="w-4 h-4" />
-                </div>
-                <div>
-                  <h3 className="text-sm font-bold text-slate-900">Registrar Contacto en Agenda</h3>
-                  <p className="text-[11px] text-slate-500">Integración con WhatsApp directo y correo institucional</p>
-                </div>
-              </div>
-              <button
-                type="button"
-                onClick={() => setShowContactModal(false)}
-                className="text-slate-400 hover:text-slate-600"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            <form onSubmit={handleCreateContact} className="space-y-3 text-xs">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                <div>
-                  <label className="block font-semibold text-slate-700 uppercase text-[10px] mb-1">Nombre Completo *</label>
-                  <input
-                    type="text"
-                    required
-                    value={contactName}
-                    onChange={(e) => setContactName(e.target.value)}
-                    placeholder="Ing. Marcos Vallejos"
-                    className="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs text-slate-900 focus:border-[#0078D4] focus:outline-none"
-                  />
-                </div>
-                <div>
-                  <label className="block font-semibold text-slate-700 uppercase text-[10px] mb-1">Empresa / Razón Social *</label>
-                  <input
-                    type="text"
-                    required
-                    value={contactCompany}
-                    onChange={(e) => setContactCompany(e.target.value)}
-                    placeholder="Cooperativa Lanera Patagónica"
-                    className="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs text-slate-900 focus:border-[#0078D4] focus:outline-none"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                <div>
-                  <label className="block font-semibold text-slate-700 uppercase text-[10px] mb-1">Cargo / Función</label>
-                  <input
-                    type="text"
-                    value={contactRole}
-                    onChange={(e) => setContactRole(e.target.value)}
-                    placeholder="Director General / Gerente de Finanzas"
-                    className="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs text-slate-900 focus:border-[#0078D4] focus:outline-none"
-                  />
-                </div>
-                <div>
-                  <label className="block font-semibold text-slate-700 uppercase text-[10px] mb-1">Vínculo Comercial</label>
-                  <select
-                    value={contactStatus}
-                    onChange={(e) => setContactStatus(e.target.value as ContactRelationshipStatus)}
-                    className="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs text-slate-900 focus:border-[#0078D4] focus:outline-none"
-                  >
-                    <option value="lead">Lead Calificado</option>
-                    <option value="cliente_activo">Cliente Activo</option>
-                    <option value="partner">Partner Estratégico</option>
-                    <option value="proveedor">Proveedor</option>
-                    <option value="ex_cliente">Ex-cliente</option>
-                  </select>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                <div>
-                  <label className="block font-semibold text-slate-700 uppercase text-[10px] mb-1">Correo Electrónico</label>
-                  <input
-                    type="email"
-                    value={contactEmail}
-                    onChange={(e) => setContactEmail(e.target.value)}
-                    placeholder="contacto@empresa.com.ar"
-                    className="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs text-slate-900 focus:border-[#0078D4] focus:outline-none"
-                  />
-                </div>
-                <div>
-                  <label className="block font-semibold text-slate-700 uppercase text-[10px] mb-1">WhatsApp (con código de país)</label>
-                  <input
-                    type="text"
-                    value={contactWhatsapp}
-                    onChange={(e) => setContactWhatsapp(e.target.value)}
-                    placeholder="5492804428812"
-                    className="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs text-slate-900 focus:border-[#0078D4] focus:outline-none"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                <div>
-                  <label className="block font-semibold text-slate-700 uppercase text-[10px] mb-1">Localidad</label>
-                  <input
-                    type="text"
-                    value={contactLocation}
-                    onChange={(e) => setContactLocation(e.target.value)}
-                    placeholder="Trelew / Puerto Madryn, Chubut"
-                    className="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs text-slate-900 focus:border-[#0078D4] focus:outline-none"
-                  />
-                </div>
-                <div>
-                  <label className="block font-semibold text-slate-700 uppercase text-[10px] mb-1">Vertical</label>
-                  <select
-                    value={contactVertical}
-                    onChange={(e) => setContactVertical(e.target.value as BusinessVertical)}
-                    className="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs text-slate-900 focus:border-[#0078D4] focus:outline-none"
-                  >
-                    {(Object.keys(BUSINESS_VERTICALS) as BusinessVertical[]).map((vKey) => (
-                      <option key={vKey} value={vKey}>
-                        {BUSINESS_VERTICALS[vKey].shortTitle}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-
-              <div>
-                <label className="block font-semibold text-slate-700 uppercase text-[10px] mb-1">Etiquetas (separadas por coma)</label>
-                <input
-                  type="text"
-                  value={contactTags}
-                  onChange={(e) => setContactTags(e.target.value)}
-                  placeholder="Costos, Franquicias, Parque Industrial"
-                  className="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs text-slate-900 focus:border-[#0078D4] focus:outline-none"
-                />
-              </div>
-
-              <div>
-                <label className="block font-semibold text-slate-700 uppercase text-[10px] mb-1">Notas / Antecedentes</label>
-                <textarea
-                  rows={2}
-                  value={contactNotes}
-                  onChange={(e) => setContactNotes(e.target.value)}
-                  placeholder="Detalle sobre acuerdos, necesidades o historial..."
-                  className="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs text-slate-900 focus:border-[#0078D4] focus:outline-none"
-                />
-              </div>
-
-              <div className="flex justify-end gap-2 pt-2">
-                <button
-                  type="button"
-                  onClick={() => setShowContactModal(false)}
-                  className="px-3 py-2 text-xs text-slate-600 hover:text-slate-900"
-                >
-                  Cancelar
-                </button>
-                <button
-                  type="submit"
-                  className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-lg shadow-sm"
-                >
-                  Guardar Contacto
                 </button>
               </div>
             </form>
@@ -1844,7 +2819,7 @@ export const InternalCRM: React.FC<InternalCRMProps> = ({ currentRole, initialSu
                 />
               </div>
 
-              <div className="flex items-center justify-between pt-2">
+              <div className="flex items-center justify-between pt-2 border-t border-slate-100">
                 <a
                   href={`mailto:${emailRecipient}?subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(emailBody)}`}
                   className="text-xs text-[#0078D4] hover:underline flex items-center gap-1"
@@ -1920,7 +2895,7 @@ export const InternalCRM: React.FC<InternalCRMProps> = ({ currentRole, initialSu
                 />
               </div>
 
-              <div className="flex justify-end gap-2 pt-2">
+              <div className="flex justify-end gap-2 pt-2 border-t border-slate-100">
                 <button
                   type="button"
                   onClick={() => setActiveMeetingForMinutes(null)}
@@ -1933,110 +2908,6 @@ export const InternalCRM: React.FC<InternalCRMProps> = ({ currentRole, initialSu
                   className="px-4 py-2 bg-[#0078D4] hover:bg-[#106EBE] text-white font-bold text-xs rounded-lg shadow-sm"
                 >
                   Guardar Minuta
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* ========================================================================= */}
-      {/* MODAL: NUEVO LEAD */}
-      {/* ========================================================================= */}
-      {showLeadModal && (
-        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-200 space-y-4 animate-in fade-in zoom-in-95">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
-              <h3 className="text-sm font-bold text-slate-900">Crear Oportunidad / Lead en Pipeline</h3>
-              <button
-                type="button"
-                onClick={() => setShowLeadModal(false)}
-                className="text-slate-400 hover:text-slate-600"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-            <form onSubmit={handleCreateLead} className="space-y-3">
-              <div>
-                <label className="block text-xs font-semibold text-slate-700 uppercase mb-1">Empresa / Razón Social *</label>
-                <input
-                  type="text"
-                  required
-                  value={newLeadCompany}
-                  onChange={(e) => setNewLeadCompany(e.target.value)}
-                  placeholder="Ej: Frigorífico Austral SAS"
-                  className="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs text-slate-900 focus:border-[#0078D4] focus:outline-none"
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-semibold text-slate-700 uppercase mb-1">Contacto Principal *</label>
-                <input
-                  type="text"
-                  required
-                  value={newLeadContact}
-                  onChange={(e) => setNewLeadContact(e.target.value)}
-                  placeholder="Ej: Lic. Martín Rossi"
-                  className="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs text-slate-900 focus:border-[#0078D4] focus:outline-none"
-                />
-              </div>
-              <div className="grid grid-cols-2 gap-2">
-                <div>
-                  <label className="block text-xs font-semibold text-slate-700 uppercase mb-1">Email</label>
-                  <input
-                    type="email"
-                    value={newLeadEmail}
-                    onChange={(e) => setNewLeadEmail(e.target.value)}
-                    placeholder="martin@empresa.com"
-                    className="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs text-slate-900 focus:border-[#0078D4] focus:outline-none"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold text-slate-700 uppercase mb-1">Teléfono</label>
-                  <input
-                    type="text"
-                    value={newLeadPhone}
-                    onChange={(e) => setNewLeadPhone(e.target.value)}
-                    placeholder="+54 280 4..."
-                    className="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs text-slate-900 focus:border-[#0078D4] focus:outline-none"
-                  />
-                </div>
-              </div>
-              <div>
-                <label className="block text-xs font-semibold text-slate-700 uppercase mb-1">Vertical</label>
-                <select
-                  value={newLeadVertical}
-                  onChange={(e) => setNewLeadVertical(e.target.value as any)}
-                  className="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs text-slate-900 focus:border-[#0078D4] focus:outline-none"
-                >
-                  {(Object.keys(BUSINESS_VERTICALS) as BusinessVertical[]).map((vKey) => (
-                    <option key={vKey} value={vKey}>
-                      {BUSINESS_VERTICALS[vKey].title}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className="block text-xs font-semibold text-slate-700 uppercase mb-1">Presupuesto Mensual Estimado (USD)</label>
-                <input
-                  type="number"
-                  value={newLeadBudget}
-                  onChange={(e) => setNewLeadBudget(Number(e.target.value))}
-                  className="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs text-slate-900 focus:border-[#0078D4] focus:outline-none"
-                />
-              </div>
-              <div className="flex justify-end gap-2 pt-2">
-                <button
-                  type="button"
-                  onClick={() => setShowLeadModal(false)}
-                  className="px-3 py-1.5 text-xs text-slate-600 hover:text-slate-900"
-                >
-                  Cancelar
-                </button>
-                <button
-                  type="submit"
-                  className="px-4 py-2 bg-[#0078D4] hover:bg-[#106EBE] text-white font-bold text-xs rounded-lg shadow-sm"
-                >
-                  Crear Oportunidad
                 </button>
               </div>
             </form>
@@ -2082,7 +2953,7 @@ export const InternalCRM: React.FC<InternalCRMProps> = ({ currentRole, initialSu
                   className="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-xs text-slate-900 focus:border-[#0078D4] focus:outline-none"
                 />
               </div>
-              <div className="flex justify-end gap-2 pt-2">
+              <div className="flex justify-end gap-2 pt-2 border-t border-slate-100">
                 <button
                   type="button"
                   onClick={() => setShowTaskModal(false)}
@@ -2172,18 +3043,20 @@ export const InternalCRM: React.FC<InternalCRMProps> = ({ currentRole, initialSu
             </div>
 
             <div className="flex items-center justify-between pt-3 border-t border-slate-100">
-              <button
-                type="button"
-                onClick={() => {
-                  const linked = contacts.find((c) => c.leadId === selectedLead.id || c.name === selectedLead.contactName);
-                  handleOpenMeetingScheduler(linked);
-                  setSelectedLead(null);
-                }}
-                className="px-3 py-1.5 bg-blue-50 hover:bg-blue-100 text-[#0078D4] font-bold text-xs rounded-lg flex items-center gap-1.5"
-              >
-                <Video className="w-3.5 h-3.5" />
-                <span>Agendar Videollamada</span>
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    const linked = contacts.find((c) => c.id === selectedLead.contactId || c.leadId === selectedLead.id || c.name === selectedLead.contactName);
+                    handleOpenMeetingScheduler(linked);
+                    setSelectedLead(null);
+                  }}
+                  className="px-3 py-1.5 bg-blue-50 hover:bg-blue-100 text-[#0078D4] font-bold text-xs rounded-lg flex items-center gap-1.5"
+                >
+                  <Video className="w-3.5 h-3.5" />
+                  <span>Agendar Videollamada</span>
+                </button>
+              </div>
 
               <button
                 type="button"

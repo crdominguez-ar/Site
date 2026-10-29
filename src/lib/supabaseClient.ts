@@ -4,7 +4,7 @@
  */
 
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
-import { Lead, CRMTask, DeliverableReport, AdvisoryTicket, ClientProfile, LeadStage, CRMContact, CRMMeeting } from '../types';
+import { Lead, CRMTask, DeliverableReport, AdvisoryTicket, ClientProfile, LeadStage, CRMContact, CRMMeeting, CompanyEmployee } from '../types';
 
 const supabaseUrl = 
   (import.meta.env.VITE_SUPABASE_URL as string) || 
@@ -45,6 +45,7 @@ const SEED_CLIENT: ClientProfile = {
 const SEED_LEADS: Lead[] = [
   {
     id: 'lead-101',
+    contactId: 'contact-101',
     companyName: 'Cooperativa Lanera Patagónica',
     contactName: 'Ing. Marcos Vallejos',
     email: 'm.vallejos@lanapatagonica.com.ar',
@@ -61,8 +62,9 @@ const SEED_LEADS: Lead[] = [
   },
   {
     id: 'lead-102',
+    contactId: 'contact-102',
     companyName: 'Patagonia Data Engine',
-    contactName: 'Lucía Fernández',
+    contactName: 'Lic. Lucía Fernández',
     email: 'lucia@patagoniadata.io',
     phone: '+54 9 280 465-9011',
     location: 'Puerto Madryn / Remoto',
@@ -77,6 +79,7 @@ const SEED_LEADS: Lead[] = [
   },
   {
     id: 'lead-103',
+    contactId: 'contact-103',
     companyName: 'Franquicias Dulces del Valle',
     contactName: 'Esteban Domínguez Rossi',
     email: 'esteban@dulcesdelvalle.com.ar',
@@ -93,8 +96,9 @@ const SEED_LEADS: Lead[] = [
   },
   {
     id: 'lead-104',
+    contactId: 'contact-104',
     companyName: 'AeroDrone Logistics ZHC',
-    contactName: 'Agent Lead / Nicolás Braun',
+    contactName: 'Nicolás Braun',
     email: 'governance@aerodrone.ai',
     phone: '+54 9 11 5092-4411',
     location: 'Trelew Tech Hub / On-Chain',
@@ -109,6 +113,7 @@ const SEED_LEADS: Lead[] = [
   },
   {
     id: 'lead-105',
+    contactId: 'contact-105',
     companyName: 'Pesquera San Carlos SRL',
     contactName: 'Carlos San Martín',
     email: 'csanmartin@pesquerasancarlos.com.ar',
@@ -297,8 +302,10 @@ const SEED_TICKETS: AdvisoryTicket[] = [
 export const SEED_CONTACTS: CRMContact[] = [
   {
     id: 'contact-101',
+    type: 'empresa',
     name: 'Ing. Marcos Vallejos',
     companyName: 'Cooperativa Lanera Patagónica',
+    cuit: '30-65239104-7',
     roleTitle: 'Director Operativo & Planta',
     email: 'm.vallejos@lanapatagonica.com.ar',
     phone: '+54 280 442-8812',
@@ -312,11 +319,59 @@ export const SEED_CONTACTS: CRMContact[] = [
     lastContactDate: '2026-10-24T11:20:00Z',
     notes: 'Reunión acordada para validar margen de contribución. Enviar propuesta económica de honorarios de auditoría.',
     interactionCount: 6,
+    employees: [
+      {
+        id: 'emp-101-1',
+        name: 'Ing. Marcos Vallejos',
+        department: 'direccion_gerencia',
+        roleTitle: 'Director Operativo & Planta',
+        email: 'm.vallejos@lanapatagonica.com.ar',
+        phone: '+54 280 442-8812',
+        whatsappNumber: '5492804428812',
+        isPrimaryContact: true,
+        notes: 'Decisor principal técnico y de planta.'
+      },
+      {
+        id: 'emp-101-2',
+        name: 'Cra. Silvina Barrientos',
+        department: 'administracion',
+        roleTitle: 'Jefa de Administración & Liquidaciones',
+        email: 'silvina.admi@lanapatagonica.com.ar',
+        phone: '+54 280 443-1090',
+        whatsappNumber: '5492804551122',
+        isPrimaryContact: false,
+        notes: 'Maneja el sistema contable y planillas de costos del personal de fábrica.'
+      },
+      {
+        id: 'emp-101-3',
+        name: 'Pablo Antieco',
+        department: 'logistica_envios',
+        roleTitle: 'Coordinador de Envíos & Depósito Parque Industrial',
+        email: 'pablo.logistica@lanapatagonica.com.ar',
+        phone: '+54 280 442-8815',
+        whatsappNumber: '5492804337788',
+        isPrimaryContact: false,
+        notes: 'Responsable de remitos y fletes a Puerto Madryn.'
+      },
+      {
+        id: 'emp-101-4',
+        name: 'Romina Beltrán',
+        department: 'finanzas_pagos',
+        roleTitle: 'Tesorería & Cuentas a Pagar',
+        email: 'pagos@lanapatagonica.com.ar',
+        phone: '+54 280 443-1092',
+        whatsappNumber: '5492804992211',
+        isPrimaryContact: false,
+        notes: 'Gestión de cheques diferidos, banco y pagos a productores.'
+      }
+    ]
   },
   {
     id: 'contact-102',
+    type: 'empresa',
     name: 'Lic. Lucía Fernández',
     companyName: 'Patagonia Data Engine',
+    cuit: '30-71789230-9',
     roleTitle: 'Co-Founder & Head of Growth',
     email: 'lucia@patagoniadata.io',
     phone: '+54 9 280 465-9011',
@@ -330,11 +385,48 @@ export const SEED_CONTACTS: CRMContact[] = [
     lastContactDate: '2026-10-25T16:00:00Z',
     notes: 'Requiere videollamada para repasar esquema cambiario de exportación de servicios y plan CFO.',
     interactionCount: 9,
+    employees: [
+      {
+        id: 'emp-102-1',
+        name: 'Lic. Lucía Fernández',
+        department: 'direccion_gerencia',
+        roleTitle: 'Co-Founder & Head of Growth',
+        email: 'lucia@patagoniadata.io',
+        phone: '+54 9 280 465-9011',
+        whatsappNumber: '5492804659011',
+        isPrimaryContact: true,
+        notes: 'Lidera la contratación de servicios profesionales y expansión comercial.'
+      },
+      {
+        id: 'emp-102-2',
+        name: 'Matías Kogan',
+        department: 'tecnologia_sistemas',
+        roleTitle: 'VP of Engineering & Cloud Infrastructure',
+        email: 'matias@patagoniadata.io',
+        phone: '+54 9 11 4099-3322',
+        whatsappNumber: '5491140993322',
+        isPrimaryContact: false,
+        notes: 'A cargo de las APIs y costos de infraestructura AWS.'
+      },
+      {
+        id: 'emp-102-3',
+        name: 'Laura Giménez',
+        department: 'finanzas_pagos',
+        roleTitle: 'Billing & Facturación Internacional',
+        email: 'billing@patagoniadata.io',
+        phone: '+54 9 280 488-3344',
+        whatsappNumber: '5492804883344',
+        isPrimaryContact: false,
+        notes: 'Coordinación de Factura E y cobros Stripe.'
+      }
+    ]
   },
   {
     id: 'contact-103',
+    type: 'empresa',
     name: 'Esteban Domínguez Rossi',
     companyName: 'Franquicias Dulces del Valle',
+    cuit: '30-70984421-3',
     roleTitle: 'Gerente General de Expansión',
     email: 'esteban@dulcesdelvalle.com.ar',
     phone: '+54 280 448-1200',
@@ -348,11 +440,48 @@ export const SEED_CONTACTS: CRMContact[] = [
     lastContactDate: '2026-10-25T18:30:00Z',
     notes: 'Revisando Circular de Oferta de Franquicia. Coordinamos auditoría de cláusulas abusivas.',
     interactionCount: 4,
+    employees: [
+      {
+        id: 'emp-103-1',
+        name: 'Esteban Domínguez Rossi',
+        department: 'direccion_gerencia',
+        roleTitle: 'Gerente General de Expansión',
+        email: 'esteban@dulcesdelvalle.com.ar',
+        phone: '+54 280 448-1200',
+        whatsappNumber: '5492804481200',
+        isPrimaryContact: true,
+        notes: 'Interlocutor clave en la estructura de franquicias.'
+      },
+      {
+        id: 'emp-103-2',
+        name: 'Marina Hughes',
+        department: 'legales_compliance',
+        roleTitle: 'Auditora de Contratos & COF',
+        email: 'marina.legales@dulcesdelvalle.com.ar',
+        phone: '+54 280 448-1205',
+        whatsappNumber: '5492804665511',
+        isPrimaryContact: false,
+        notes: 'Intercambio jurídico con Estudio Quintana.'
+      },
+      {
+        id: 'emp-103-3',
+        name: 'Gabriel Jones',
+        department: 'logistica_envios',
+        roleTitle: 'Coordinador de Despacho & Abastecimiento a Locales',
+        email: 'distribucion@dulcesdelvalle.com.ar',
+        phone: '+54 280 448-1210',
+        whatsappNumber: '5492804771199',
+        isPrimaryContact: false,
+        notes: 'Logística de productos refrigerados y packaging.'
+      }
+    ]
   },
   {
     id: 'contact-104',
+    type: 'empresa',
     name: 'Nicolás Braun',
     companyName: 'AeroDrone Logistics ZHC',
+    cuit: '30-71954302-8',
     roleTitle: 'Representante Legal & Lead Arch.',
     email: 'governance@aerodrone.ai',
     phone: '+54 9 11 5092-4411',
@@ -366,11 +495,37 @@ export const SEED_CONTACTS: CRMContact[] = [
     lastContactDate: '2026-10-26T10:10:00Z',
     notes: 'Startup operada por IA. Requieren dictamen sobre deducibilidad de API tokens y encuadre SAS.',
     interactionCount: 3,
+    employees: [
+      {
+        id: 'emp-104-1',
+        name: 'Nicolás Braun',
+        department: 'direccion_gerencia',
+        roleTitle: 'Representante Legal & Gobernanza',
+        email: 'governance@aerodrone.ai',
+        phone: '+54 9 11 5092-4411',
+        whatsappNumber: '5491150924411',
+        isPrimaryContact: true,
+        notes: 'Firma y personería jurídica de la SAS.'
+      },
+      {
+        id: 'emp-104-2',
+        name: 'Bucle Despacho Daemon-1',
+        department: 'operaciones_planta',
+        roleTitle: 'Agente Autónomo de Ruteo & Baterías',
+        email: 'fleet-ops@aerodrone.ai',
+        phone: '+54 9 11 5092-4411',
+        whatsappNumber: '5491150924411',
+        isPrimaryContact: false,
+        notes: 'Monitoreo de gas fees y consumo de API LLM.'
+      }
+    ]
   },
   {
     id: 'contact-105',
+    type: 'empresa',
     name: 'Carlos San Martín',
     companyName: 'Pesquera San Carlos SRL',
+    cuit: '30-68192341-2',
     roleTitle: 'Director General',
     email: 'csanmartin@pesquerasancarlos.com.ar',
     phone: '+54 280 445-3390',
@@ -384,12 +539,50 @@ export const SEED_CONTACTS: CRMContact[] = [
     lastContactDate: '2026-10-26T14:10:00Z',
     notes: 'Cliente activo con abono CFO mensual. Comité directivo programado para análisis de inversión en cámaras.',
     interactionCount: 18,
+    employees: [
+      {
+        id: 'emp-105-1',
+        name: 'Carlos San Martín',
+        department: 'direccion_gerencia',
+        roleTitle: 'Director General',
+        email: 'csanmartin@pesquerasancarlos.com.ar',
+        phone: '+54 280 445-3390',
+        whatsappNumber: '5492804453390',
+        isPrimaryContact: true,
+        notes: 'Participa de los comités mensuales de dirección con el Cr. Rodrigo Domínguez.'
+      },
+      {
+        id: 'emp-105-2',
+        name: 'Lic. Hernán Pereyra',
+        department: 'administracion',
+        roleTitle: 'Gerente Administrativo & Compras',
+        email: 'hpereyra@pesquerasancarlos.com.ar',
+        phone: '+54 280 445-3394',
+        whatsappNumber: '5492804123456',
+        isPrimaryContact: false,
+        notes: 'Coordinación de facturas de combustible para buques y proveedores navales.'
+      },
+      {
+        id: 'emp-105-3',
+        name: 'Claudia Morán',
+        department: 'finanzas_pagos',
+        roleTitle: 'Responsable de Tesorería & Pagos',
+        email: 'tesoreria@pesquerasancarlos.com.ar',
+        phone: '+54 280 445-3398',
+        whatsappNumber: '5492804654321',
+        isPrimaryContact: false,
+        notes: 'Conciliaciones bancarias y seguimiento de descubiertos.'
+      }
+    ]
   },
   {
     id: 'contact-106',
+    type: 'individual',
     name: 'Dra. Valeria Quintana',
     companyName: 'Estudio Quintana & Asociados',
+    cuit: '27-29381024-5',
     roleTitle: 'Socia Directora & Asesora Legal Externa',
+    department: 'legales_compliance',
     email: 'valeria@quintanalegal.com.ar',
     phone: '+54 9 280 411-9988',
     whatsappNumber: '5492804119988',
@@ -403,9 +596,12 @@ export const SEED_CONTACTS: CRMContact[] = [
   },
   {
     id: 'contact-107',
+    type: 'individual',
     name: 'Dr. Marcelo E. Roberts',
     companyName: 'Roberts Consultores Tributarios',
+    cuit: '20-22194830-4',
     roleTitle: 'Especialista Fiscal & Perito',
+    department: 'administracion',
     email: 'marcelo@robertsconsultores.ar',
     phone: '+54 9 280 455-7722',
     whatsappNumber: '5492804557722',
@@ -717,6 +913,27 @@ class DataRepository {
     if (typeof window !== 'undefined') {
       localStorage.setItem(this.contactsKey, JSON.stringify(updated));
     }
+  }
+
+  async addEmployeeToContact(contactId: string, employeeData: Omit<CompanyEmployee, 'id'>): Promise<CRMContact> {
+    const contacts = await this.getContacts();
+    const contact = contacts.find((c) => c.id === contactId);
+    if (!contact) throw new Error('Contacto no encontrado');
+    const newEmployee: CompanyEmployee = {
+      ...employeeData,
+      id: `emp-${Date.now().toString().slice(-4)}`,
+    };
+    const currentEmployees = contact.employees || [];
+    const updatedEmployees = [...currentEmployees, newEmployee];
+    return this.updateContact(contactId, { employees: updatedEmployees });
+  }
+
+  async removeEmployeeFromContact(contactId: string, employeeId: string): Promise<CRMContact> {
+    const contacts = await this.getContacts();
+    const contact = contacts.find((c) => c.id === contactId);
+    if (!contact) throw new Error('Contacto no encontrado');
+    const updatedEmployees = (contact.employees || []).filter((e) => e.id !== employeeId);
+    return this.updateContact(contactId, { employees: updatedEmployees });
   }
 
   // CRM Meetings & Activities

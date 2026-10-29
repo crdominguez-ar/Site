@@ -92,6 +92,8 @@ export type LeadStage = 'nuevo' | 'diagnostico' | 'propuesta' | 'negociacion' | 
 
 export interface Lead {
   id: string;
+  contactId?: string; // Linked CRM contact
+  employeeId?: string; // Linked employee inside company contact
   companyName: string;
   contactName: string;
   email: string;
@@ -169,16 +171,45 @@ export interface AdvisoryTicket {
 }
 
 export type ContactRelationshipStatus = 'lead' | 'cliente_activo' | 'partner' | 'ex_cliente' | 'proveedor';
+export type ContactType = 'empresa' | 'individual';
 
-export interface CRMContact {
+export type CompanyDepartment = 
+  | 'administracion'
+  | 'finanzas_pagos'
+  | 'logistica_envios'
+  | 'direccion_gerencia'
+  | 'comercial_ventas'
+  | 'legales_compliance'
+  | 'operaciones_planta'
+  | 'recursos_humanos'
+  | 'tecnologia_sistemas'
+  | 'otro';
+
+export interface CompanyEmployee {
   id: string;
   name: string;
-  companyName: string;
+  department: CompanyDepartment;
   roleTitle: string;
   email: string;
   phone: string;
   whatsappNumber: string;
+  isPrimaryContact: boolean;
+  notes?: string;
+}
+
+export interface CRMContact {
+  id: string;
+  type: ContactType; // 'empresa' | 'individual'
+  name: string; // Contacto principal o titular
+  companyName: string; // Razón Social de la empresa o Nombre de fantasía / Estudio (individual)
+  cuit?: string;
+  roleTitle: string; // Cargo o Profesión
+  department?: CompanyDepartment;
+  email: string;
+  phone: string;
+  whatsappNumber: string;
   location: string;
+  website?: string;
   vertical: BusinessVertical;
   status: ContactRelationshipStatus;
   leadId?: string; // ID of linked lead in the pipeline
@@ -188,6 +219,7 @@ export interface CRMContact {
   notes: string;
   interactionCount: number;
   avatarUrl?: string;
+  employees?: CompanyEmployee[]; // Integración de empleados y áreas de la empresa
 }
 
 export type MeetingPlatform = 'google_meet' | 'jitsi_meet' | 'zoom' | 'teams' | 'sede_presencial';
@@ -198,6 +230,8 @@ export interface CRMMeeting {
   id: string;
   title: string;
   contactId?: string;
+  employeeId?: string;
+  employeeName?: string;
   contactName: string;
   contactEmail: string;
   contactPhone: string;
