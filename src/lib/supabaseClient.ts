@@ -4,7 +4,7 @@
  */
 
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
-import { Lead, CRMTask, DeliverableReport, AdvisoryTicket, ClientProfile, LeadStage } from '../types';
+import { Lead, CRMTask, DeliverableReport, AdvisoryTicket, ClientProfile, LeadStage, CRMContact, CRMMeeting } from '../types';
 
 const supabaseUrl = 
   (import.meta.env.VITE_SUPABASE_URL as string) || 
@@ -294,12 +294,228 @@ const SEED_TICKETS: AdvisoryTicket[] = [
   },
 ];
 
+export const SEED_CONTACTS: CRMContact[] = [
+  {
+    id: 'contact-101',
+    name: 'Ing. Marcos Vallejos',
+    companyName: 'Cooperativa Lanera Patagónica',
+    roleTitle: 'Director Operativo & Planta',
+    email: 'm.vallejos@lanapatagonica.com.ar',
+    phone: '+54 280 442-8812',
+    whatsappNumber: '5492804428812',
+    location: 'Trelew, Parque Industrial',
+    vertical: 'tradicional_pyme',
+    status: 'lead',
+    leadId: 'lead-101',
+    stage: 'negociacion',
+    tags: ['Lana & Peinado', 'Costos Fijos', 'Parque Industrial Trelew'],
+    lastContactDate: '2026-10-24T11:20:00Z',
+    notes: 'Reunión acordada para validar margen de contribución. Enviar propuesta económica de honorarios de auditoría.',
+    interactionCount: 6,
+  },
+  {
+    id: 'contact-102',
+    name: 'Lic. Lucía Fernández',
+    companyName: 'Patagonia Data Engine',
+    roleTitle: 'Co-Founder & Head of Growth',
+    email: 'lucia@patagoniadata.io',
+    phone: '+54 9 280 465-9011',
+    whatsappNumber: '5492804659011',
+    location: 'Puerto Madryn / Remoto',
+    vertical: 'digital_saas',
+    status: 'lead',
+    leadId: 'lead-102',
+    stage: 'propuesta',
+    tags: ['SaaS Export', 'Factura E', 'MULC vs MEP'],
+    lastContactDate: '2026-10-25T16:00:00Z',
+    notes: 'Requiere videollamada para repasar esquema cambiario de exportación de servicios y plan CFO.',
+    interactionCount: 9,
+  },
+  {
+    id: 'contact-103',
+    name: 'Esteban Domínguez Rossi',
+    companyName: 'Franquicias Dulces del Valle',
+    roleTitle: 'Gerente General de Expansión',
+    email: 'esteban@dulcesdelvalle.com.ar',
+    phone: '+54 280 448-1200',
+    whatsappNumber: '5492804481200',
+    location: 'Gaiman / Trelew, Chubut',
+    vertical: 'franquicias',
+    status: 'lead',
+    leadId: 'lead-103',
+    stage: 'diagnostico',
+    tags: ['Franquicias', 'Circular Oferta', 'Art. 1514 CCyC'],
+    lastContactDate: '2026-10-25T18:30:00Z',
+    notes: 'Revisando Circular de Oferta de Franquicia. Coordinamos auditoría de cláusulas abusivas.',
+    interactionCount: 4,
+  },
+  {
+    id: 'contact-104',
+    name: 'Nicolás Braun',
+    companyName: 'AeroDrone Logistics ZHC',
+    roleTitle: 'Representante Legal & Lead Arch.',
+    email: 'governance@aerodrone.ai',
+    phone: '+54 9 11 5092-4411',
+    whatsappNumber: '5491150924411',
+    location: 'Trelew Tech Hub / Remoto',
+    vertical: 'ia_zhc',
+    status: 'lead',
+    leadId: 'lead-104',
+    stage: 'nuevo',
+    tags: ['Zero-Human Co.', 'Agentes IA', 'USDC Treasury'],
+    lastContactDate: '2026-10-26T10:10:00Z',
+    notes: 'Startup operada por IA. Requieren dictamen sobre deducibilidad de API tokens y encuadre SAS.',
+    interactionCount: 3,
+  },
+  {
+    id: 'contact-105',
+    name: 'Carlos San Martín',
+    companyName: 'Pesquera San Carlos SRL',
+    roleTitle: 'Director General',
+    email: 'csanmartin@pesquerasancarlos.com.ar',
+    phone: '+54 280 445-3390',
+    whatsappNumber: '5492804453390',
+    location: 'Puerto Rawson / Trelew',
+    vertical: 'cfo_estrategico',
+    status: 'cliente_activo',
+    leadId: 'lead-105',
+    stage: 'activo',
+    tags: ['Pesca & Frigorífico', 'CFO Externo', 'Flujo 12M'],
+    lastContactDate: '2026-10-26T14:10:00Z',
+    notes: 'Cliente activo con abono CFO mensual. Comité directivo programado para análisis de inversión en cámaras.',
+    interactionCount: 18,
+  },
+  {
+    id: 'contact-106',
+    name: 'Dra. Valeria Quintana',
+    companyName: 'Estudio Quintana & Asociados',
+    roleTitle: 'Socia Directora & Asesora Legal Externa',
+    email: 'valeria@quintanalegal.com.ar',
+    phone: '+54 9 280 411-9988',
+    whatsappNumber: '5492804119988',
+    location: 'Trelew, Chubut',
+    vertical: 'franquicias',
+    status: 'partner',
+    tags: ['Derecho Corporativo', 'Contratos Franquicia', 'Socio Estratégico'],
+    lastContactDate: '2026-10-22T17:00:00Z',
+    notes: 'Partner legal para dictámenes cruzados y arbitraje comercial en Chubut.',
+    interactionCount: 12,
+  },
+  {
+    id: 'contact-107',
+    name: 'Dr. Marcelo E. Roberts',
+    companyName: 'Roberts Consultores Tributarios',
+    roleTitle: 'Especialista Fiscal & Perito',
+    email: 'marcelo@robertsconsultores.ar',
+    phone: '+54 9 280 455-7722',
+    whatsappNumber: '5492804557722',
+    location: 'Comodoro Rivadavia / Remoto',
+    vertical: 'cfo_estrategico',
+    status: 'partner',
+    tags: ['Tributario', 'Recupero IVA', 'Ley I-26 Chubut'],
+    lastContactDate: '2026-10-20T11:00:00Z',
+    notes: 'Convenio de colaboración para peritajes contables y fiscalidad de hidrocarburos.',
+    interactionCount: 7,
+  },
+];
+
+export const SEED_MEETINGS: CRMMeeting[] = [
+  {
+    id: 'meet-01',
+    title: 'Comité de Dirección CFO: Plan Financiero Q4 & Flujo 12 Meses',
+    contactId: 'contact-105',
+    contactName: 'Carlos San Martín',
+    contactEmail: 'csanmartin@pesquerasancarlos.com.ar',
+    contactPhone: '+54 280 445-3390',
+    companyName: 'Pesquera San Carlos SRL',
+    date: '2026-10-29',
+    startTime: '10:00',
+    endTime: '11:30',
+    type: 'comite_cfo',
+    platform: 'google_meet',
+    meetingUrl: 'https://meet.google.com/cr-dominguez-cfo',
+    status: 'programada',
+    description: 'Revisión mensual del tablero CFO: análisis de desvíos presupuestarios, cobranzas en moneda extranjera y asignación de fondos para la nueva bodega de Rawson.',
+    notesMinutes: 'Minuta preliminar: verificar evolución de costos de combustible y tipo de cambio oficial.',
+    leadId: 'lead-105',
+    assignedTo: 'Cr. Carlos Rodrigo Domínguez',
+    reminderSent: true,
+    createdAt: '2026-10-26T14:00:00Z',
+  },
+  {
+    id: 'meet-02',
+    title: 'Videollamada Técnica: Encuadre Factura E & Desembolsos MULC',
+    contactId: 'contact-102',
+    contactName: 'Lic. Lucía Fernández',
+    contactEmail: 'lucia@patagoniadata.io',
+    contactPhone: '+54 9 280 465-9011',
+    companyName: 'Patagonia Data Engine',
+    date: '2026-10-30',
+    startTime: '15:00',
+    endTime: '16:00',
+    type: 'videollamada',
+    platform: 'jitsi_meet',
+    meetingUrl: 'https://meet.jit.si/CrDominguez-PatagoniaData',
+    status: 'programada',
+    description: 'Sesión remota para coordinar el ingreso de divisas de clientes estadounidenses bajo el cupo de USD 36.000 anuales de servicios basados en el conocimiento.',
+    notesMinutes: 'Presentar simulación de ahorro impositivo en Factura E.',
+    leadId: 'lead-102',
+    assignedTo: 'Cr. Carlos Rodrigo Domínguez',
+    reminderSent: false,
+    createdAt: '2026-10-26T16:30:00Z',
+  },
+  {
+    id: 'meet-03',
+    title: 'Auditoría Jurídico-Contable Circular de Oferta de Franquicia',
+    contactId: 'contact-103',
+    contactName: 'Esteban Domínguez Rossi',
+    contactEmail: 'esteban@dulcesdelvalle.com.ar',
+    contactPhone: '+54 280 448-1200',
+    companyName: 'Franquicias Dulces del Valle',
+    date: '2026-11-02',
+    startTime: '11:00',
+    endTime: '12:30',
+    type: 'auditoria_franquicia',
+    platform: 'google_meet',
+    meetingUrl: 'https://meet.google.com/cr-franquicias-valle',
+    status: 'programada',
+    description: 'Revisión cláusula por cláusula de la COF según Art. 1514 CCyC: canon inicial, royalties, fondo de publicidad y delimitación territorial en el VIRCh.',
+    leadId: 'lead-103',
+    assignedTo: 'Cr. Carlos Rodrigo Domínguez',
+    reminderSent: false,
+    createdAt: '2026-10-27T09:15:00Z',
+  },
+  {
+    id: 'meet-04',
+    title: 'Mesa de Trabajo: Estructuración Tributaria & Bucles ZHC',
+    contactId: 'contact-104',
+    contactName: 'Nicolás Braun',
+    contactEmail: 'governance@aerodrone.ai',
+    contactPhone: '+54 9 11 5092-4411',
+    companyName: 'AeroDrone Logistics ZHC',
+    date: '2026-11-04',
+    startTime: '16:30',
+    endTime: '17:30',
+    type: 'videollamada',
+    platform: 'jitsi_meet',
+    meetingUrl: 'https://meet.jit.si/CrDominguez-AeroDroneZHC',
+    status: 'programada',
+    description: 'Primer encuentro con el equipo de gobierno del proyecto de logística autónoma para formalizar SAS unipersonal y encuadre de facturación automatizada.',
+    leadId: 'lead-104',
+    assignedTo: 'Cr. Carlos Rodrigo Domínguez',
+    reminderSent: false,
+    createdAt: '2026-10-27T11:00:00Z',
+  },
+];
+
 // Persistent state management using LocalStorage with fallback
 class DataRepository {
   private leadsKey = 'dl_consulting_leads';
   private tasksKey = 'dl_consulting_tasks';
   private reportsKey = 'dl_consulting_reports';
   private ticketsKey = 'dl_consulting_tickets';
+  private contactsKey = 'cr_crm_contacts';
+  private meetingsKey = 'cr_crm_meetings';
 
   constructor() {
     this.initStorage();
@@ -318,6 +534,12 @@ class DataRepository {
     }
     if (!localStorage.getItem(this.ticketsKey)) {
       localStorage.setItem(this.ticketsKey, JSON.stringify(SEED_TICKETS));
+    }
+    if (!localStorage.getItem(this.contactsKey)) {
+      localStorage.setItem(this.contactsKey, JSON.stringify(SEED_CONTACTS));
+    }
+    if (!localStorage.getItem(this.meetingsKey)) {
+      localStorage.setItem(this.meetingsKey, JSON.stringify(SEED_MEETINGS));
     }
   }
 
@@ -437,6 +659,117 @@ class DataRepository {
     const updated = [newTicket, ...current];
     localStorage.setItem(this.ticketsKey, JSON.stringify(updated));
     return newTicket;
+  }
+
+  // CRM Contacts Directory
+  async getContacts(): Promise<CRMContact[]> {
+    if (typeof window === 'undefined') return SEED_CONTACTS;
+    const local = localStorage.getItem(this.contactsKey);
+    return local ? JSON.parse(local) : SEED_CONTACTS;
+  }
+
+  async createContact(contactData: Omit<CRMContact, 'id' | 'lastContactDate' | 'interactionCount'>): Promise<CRMContact> {
+    const newContact: CRMContact = {
+      ...contactData,
+      id: `contact-${Date.now().toString().slice(-4)}`,
+      lastContactDate: new Date().toISOString(),
+      interactionCount: 1,
+    };
+    const current = await this.getContacts();
+    const updated = [newContact, ...current];
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(this.contactsKey, JSON.stringify(updated));
+    }
+    return newContact;
+  }
+
+  async updateContact(contactId: string, updates: Partial<CRMContact>): Promise<CRMContact> {
+    const current = await this.getContacts();
+    let updatedContact: CRMContact | null = null;
+    const updated = current.map((c) => {
+      if (c.id === contactId) {
+        updatedContact = { ...c, ...updates };
+        return updatedContact;
+      }
+      return c;
+    });
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(this.contactsKey, JSON.stringify(updated));
+    }
+    return updatedContact || current[0];
+  }
+
+  async deleteContact(contactId: string): Promise<void> {
+    const current = await this.getContacts();
+    const updated = current.filter((c) => c.id !== contactId);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(this.contactsKey, JSON.stringify(updated));
+    }
+  }
+
+  async recordContactInteraction(contactId: string): Promise<void> {
+    const current = await this.getContacts();
+    const updated = current.map((c) =>
+      c.id === contactId
+        ? { ...c, interactionCount: c.interactionCount + 1, lastContactDate: new Date().toISOString() }
+        : c
+    );
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(this.contactsKey, JSON.stringify(updated));
+    }
+  }
+
+  // CRM Meetings & Activities
+  async getMeetings(): Promise<CRMMeeting[]> {
+    if (typeof window === 'undefined') return SEED_MEETINGS;
+    const local = localStorage.getItem(this.meetingsKey);
+    return local ? JSON.parse(local) : SEED_MEETINGS;
+  }
+
+  async createMeeting(meetingData: Omit<CRMMeeting, 'id' | 'createdAt'>): Promise<CRMMeeting> {
+    const newMeeting: CRMMeeting = {
+      ...meetingData,
+      id: `meet-${Date.now().toString().slice(-4)}`,
+      createdAt: new Date().toISOString(),
+    };
+    const current = await this.getMeetings();
+    const updated = [newMeeting, ...current];
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(this.meetingsKey, JSON.stringify(updated));
+    }
+    // Also record an interaction with the contact if linked
+    if (meetingData.contactId) {
+      await this.recordContactInteraction(meetingData.contactId);
+    }
+    return newMeeting;
+  }
+
+  async updateMeeting(meetingId: string, updates: Partial<CRMMeeting>): Promise<CRMMeeting> {
+    const current = await this.getMeetings();
+    let updatedMeeting: CRMMeeting | null = null;
+    const updated = current.map((m) => {
+      if (m.id === meetingId) {
+        updatedMeeting = { ...m, ...updates };
+        return updatedMeeting;
+      }
+      return m;
+    });
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(this.meetingsKey, JSON.stringify(updated));
+    }
+    return updatedMeeting || current[0];
+  }
+
+  async deleteMeeting(meetingId: string): Promise<void> {
+    const current = await this.getMeetings();
+    const updated = current.filter((m) => m.id !== meetingId);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(this.meetingsKey, JSON.stringify(updated));
+    }
+  }
+
+  async saveMeetingMinutes(meetingId: string, minutes: string): Promise<CRMMeeting> {
+    return this.updateMeeting(meetingId, { notesMinutes: minutes, status: 'realizada' });
   }
 
   getClientProfile(): ClientProfile {

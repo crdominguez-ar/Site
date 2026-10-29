@@ -32,7 +32,7 @@ export interface ResendEmailLog {
   to: string[];
   from: string;
   subject: string;
-  type: 'lead_notification' | 'blog_newsletter' | 'report_delivery' | 'ticket_response' | 'system_test';
+  type: 'lead_notification' | 'blog_newsletter' | 'report_delivery' | 'ticket_response' | 'system_test' | 'meeting_invite';
   status: 'delivered' | 'sent' | 'queued' | 'simulated';
   createdAt: string;
   previewText: string;
@@ -166,4 +166,53 @@ export interface AdvisoryTicket {
   resolution?: string;
   resolvedAt?: string;
   advisorName?: string;
+}
+
+export type ContactRelationshipStatus = 'lead' | 'cliente_activo' | 'partner' | 'ex_cliente' | 'proveedor';
+
+export interface CRMContact {
+  id: string;
+  name: string;
+  companyName: string;
+  roleTitle: string;
+  email: string;
+  phone: string;
+  whatsappNumber: string;
+  location: string;
+  vertical: BusinessVertical;
+  status: ContactRelationshipStatus;
+  leadId?: string; // ID of linked lead in the pipeline
+  stage?: LeadStage;
+  tags: string[];
+  lastContactDate: string;
+  notes: string;
+  interactionCount: number;
+  avatarUrl?: string;
+}
+
+export type MeetingPlatform = 'google_meet' | 'jitsi_meet' | 'zoom' | 'teams' | 'sede_presencial';
+export type MeetingType = 'videollamada' | 'presencial' | 'telefonica' | 'comite_cfo' | 'auditoria_franquicia';
+export type MeetingStatus = 'programada' | 'en_curso' | 'realizada' | 'cancelada';
+
+export interface CRMMeeting {
+  id: string;
+  title: string;
+  contactId?: string;
+  contactName: string;
+  contactEmail: string;
+  contactPhone: string;
+  companyName: string;
+  date: string; // YYYY-MM-DD
+  startTime: string; // HH:MM
+  endTime: string; // HH:MM
+  type: MeetingType;
+  platform: MeetingPlatform;
+  meetingUrl: string;
+  status: MeetingStatus;
+  description: string;
+  notesMinutes?: string; // Minuta de reunión y compromisos
+  leadId?: string;
+  assignedTo: string;
+  reminderSent: boolean;
+  createdAt: string;
 }

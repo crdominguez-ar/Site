@@ -27,7 +27,9 @@ import {
   Calendar,
   Layers,
   Check,
-  X
+  X,
+  Phone,
+  Video
 } from 'lucide-react';
 import { dbRepository } from '../../lib/supabaseClient';
 import { userService } from '../../lib/userService';
@@ -69,6 +71,7 @@ export const WidgetizableDashboard: React.FC<WidgetizableDashboardProps> = ({
   onOpenConsultationModal 
 }) => {
   const [dashboardView, setDashboardView] = useState<'widgets' | 'crm' | 'cms'>(initialView);
+  const [crmSubTab, setCrmSubTab] = useState<'pipeline' | 'contacts' | 'calendar' | 'tasks'>('pipeline');
 
   useEffect(() => {
     if (initialView) {
@@ -510,7 +513,7 @@ export const WidgetizableDashboard: React.FC<WidgetizableDashboardProps> = ({
             </button>
           </div>
 
-          <InternalCRM currentRole={currentUser.role} />
+          <InternalCRM currentRole={currentUser.role} initialSubTab={crmSubTab} />
         </div>
       ) : (
         <div className="w-full px-4 sm:px-8 lg:px-16 xl:px-20 space-y-6">
@@ -524,18 +527,34 @@ export const WidgetizableDashboard: React.FC<WidgetizableDashboardProps> = ({
                     <TrendingUp className="w-4 h-4" />
                   </div>
                   <div>
-                    <h3 className="text-sm font-bold text-slate-900">Embudo CRM & Leads Calificados</h3>
-                    <p className="text-xs text-slate-500">Pipeline en tiempo real con diagnóstico y presupuestos proyectados</p>
+                    <h3 className="text-sm font-bold text-slate-900">Embudo CRM, Contactos & Videollamadas</h3>
+                    <p className="text-xs text-slate-500">Pipeline en tiempo real, agenda con WhatsApp, correos Resend y calendario Meet</p>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-2">
+                <div className="flex flex-wrap items-center gap-2">
                   <button
                     type="button"
-                    onClick={() => setDashboardView('crm')}
-                    className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-semibold rounded-md flex items-center gap-1.5 transition-colors cursor-pointer"
+                    onClick={() => { setCrmSubTab('contacts'); setDashboardView('crm'); }}
+                    className="px-2.5 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 text-xs font-semibold rounded-md flex items-center gap-1.5 transition-colors cursor-pointer border border-emerald-200"
                   >
-                    <span>Abrir CRM Completo</span>
+                    <Phone className="w-3.5 h-3.5 text-emerald-600" />
+                    <span>Agenda Contactos</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => { setCrmSubTab('calendar'); setDashboardView('crm'); }}
+                    className="px-2.5 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-800 text-xs font-semibold rounded-md flex items-center gap-1.5 transition-colors cursor-pointer border border-indigo-200"
+                  >
+                    <Calendar className="w-3.5 h-3.5 text-indigo-600" />
+                    <span>Calendario & Meet</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => { setCrmSubTab('pipeline'); setDashboardView('crm'); }}
+                    className="px-3 py-1.5 bg-[#0078D4] hover:bg-[#106EBE] text-white text-xs font-semibold rounded-md flex items-center gap-1.5 transition-colors cursor-pointer shadow-xs"
+                  >
+                    <span>Pipeline Completo</span>
                     <ArrowUpRight className="w-3.5 h-3.5" />
                   </button>
                 </div>

@@ -4,7 +4,7 @@
  * Plan Free: 3,000 emails/mes · 100 emails/día
  */
 
-import { ResendConfig, ResendEmailLog, Lead, DeliverableReport } from '../types';
+import { ResendConfig, ResendEmailLog, Lead, DeliverableReport, CRMMeeting } from '../types';
 
 const DEFAULT_CONFIG: ResendConfig = {
   apiKey: 're_patagonia_free_tier_live_key',
@@ -293,6 +293,88 @@ class ResendService {
       html,
       text: `Se ha emitido el reporte ${report.title} (${report.version}) en su portal de cliente.`,
       type: 'report_delivery',
+    });
+  }
+
+  /**
+   * Send formal meeting and video call invitation via Resend
+   */
+  async sendMeetingInvite(meeting: CRMMeeting): Promise<{ success: boolean; messageId: string }> {
+    const platformLabel = 
+      meeting.platform === 'google_meet' ? 'Google Meet' :
+      meeting.platform === 'jitsi_meet' ? 'Jitsi Meet (Sala Encriptada)' :
+      meeting.platform === 'zoom' ? 'Zoom Meetings' :
+      meeting.platform === 'teams' ? 'Microsoft Teams' : 'Sede Presencial Trelew';
+
+    const subject = `Invitación: ${meeting.title} · Cr Dominguez`;
+    const html = `
+      <div style="font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif; max-width: 620px; margin: 0 auto; padding: 28px 24px; border: 1px solid #e2e8f0; border-radius: 12px; background: #ffffff;">
+        <div style="border-bottom: 2px solid #0078D4; padding-bottom: 16px; margin-bottom: 20px;">
+          <h2 style="margin: 0; color: #0078D4; font-size: 20px; font-weight: 700;">Cr Dominguez</h2>
+          <p style="margin: 4px 0 0; color: #64748b; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px;">Consultoría Estratégica & Dirección Financiera CFO</p>
+        </div>
+
+        <h3 style="color: #0f172a; margin: 0 0 12px; font-size: 18px;">${meeting.title}</h3>
+        <p style="color: #475569; font-size: 14px; margin: 0 0 20px; line-height: 1.5;">
+          Estimado/a <strong>${meeting.contactName}</strong> (${meeting.companyName}), le confirmamos el agendamiento de la sesión de trabajo con el equipo de <strong>Cr. Carlos Rodrigo Domínguez</strong>.
+        </p>
+
+        <div style="background-color: #f8fafc; border: 1px solid #cbd5e1; border-radius: 8px; padding: 18px; margin-bottom: 24px;">
+          <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
+            <tr>
+              <td style="padding: 6px 0; color: #64748b; font-weight: 600; width: 120px;">Fecha:</td>
+              <td style="padding: 6px 0; color: #0f172a; font-weight: 700;">${meeting.date}</td>
+            </tr>
+            <tr>
+              <td style="padding: 6px 0; color: #64748b; font-weight: 600;">Horario:</td>
+              <td style="padding: 6px 0; color: #0f172a; font-weight: 700;">${meeting.startTime} - ${meeting.endTime} hs (Argentina)</td>
+            </tr>
+            <tr>
+              <td style="padding: 6px 0; color: #64748b; font-weight: 600;">Modalidad:</td>
+              <td style="padding: 6px 0; color: #0078D4; font-weight: 700;">${platformLabel}</td>
+            </tr>
+            ${meeting.meetingUrl ? `
+            <tr>
+              <td style="padding: 6px 0; color: #64748b; font-weight: 600;">Enlace Directo:</td>
+              <td style="padding: 6px 0;"><a href="${meeting.meetingUrl}" style="color: #0078D4; text-decoration: underline; word-break: break-all;">${meeting.meetingUrl}</a></td>
+            </tr>
+            ` : ''}
+            <tr>
+              <td style="padding: 6px 0; color: #64748b; font-weight: 600;">Responsable:</td>
+              <td style="padding: 6px 0; color: #0f172a;">${meeting.assignedTo}</td>
+            </tr>
+          </table>
+        </div>
+
+        ${meeting.description ? `
+        <div style="margin-bottom: 24px;">
+          <h4 style="margin: 0 0 6px; font-size: 13px; color: #334155; text-transform: uppercase;">Temario & Objetivos</h4>
+          <p style="margin: 0; font-size: 13px; color: #475569; background: #fff; border-left: 3px solid #0078D4; padding-left: 12px; line-height: 1.5;">${meeting.description}</p>
+        </div>
+        ` : ''}
+
+        ${meeting.meetingUrl ? `
+        <div style="text-align: center; margin: 28px 0 20px;">
+          <a href="${meeting.meetingUrl}" target="_blank" style="display: inline-block; background-color: #0078D4; color: #ffffff; text-decoration: none; font-weight: 700; font-size: 14px; padding: 12px 28px; border-radius: 6px; box-shadow: 0 2px 4px rgba(0,120,212,0.25);">
+            Unirse a la Videollamada
+          </a>
+        </div>
+        ` : ''}
+
+        <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 28px 0 16px;" />
+        <p style="font-size: 11px; color: #94a3b8; text-align: center; margin: 0; line-height: 1.4;">
+          Enviado automáticamente por <strong>Cr Dominguez</strong> desde <a href="mailto:carlos@crdominguez.ar" style="color: #94a3b8;">carlos@crdominguez.ar</a>.<br />
+          Para reprogramar o coordinar previamente, responda directamente a este correo o comuníquese por WhatsApp oficial.
+        </p>
+      </div>
+    `;
+
+    return await this.sendEmail({
+      to: [meeting.contactEmail],
+      subject,
+      html,
+      text: `${meeting.title}\nFecha: ${meeting.date} ${meeting.startTime}-${meeting.endTime}\nPlataforma: ${platformLabel}\nEnlace: ${meeting.meetingUrl || 'Presencial'}\n\n${meeting.description}`,
+      type: 'meeting_invite',
     });
   }
 }
