@@ -22,9 +22,8 @@ import {
   Cpu,
   Sparkles,
   ArrowRight,
-  CheckCircle2,
   Calendar,
-  Users
+  ShieldCheck
 } from 'lucide-react';
 
 interface NavbarProps {
@@ -44,6 +43,7 @@ export const Navbar: React.FC<NavbarProps> = ({
 }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isSuperMenuOpen, setIsSuperMenuOpen] = useState(false);
+  const [showTopCtaRibbon, setShowTopCtaRibbon] = useState(true);
   const superMenuRef = useRef<HTMLDivElement>(null);
   const superMenuButtonRef = useRef<HTMLButtonElement>(null);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -99,7 +99,6 @@ export const Navbar: React.FC<NavbarProps> = ({
       title: 'Costeo Marginal & PyMEs Patagónicas',
       desc: 'Ingeniería de costos, absorción industrial y punto de equilibrio.',
       icon: Building2,
-      tag: 'Industrial',
       tab: 'solutions' as const,
     },
     {
@@ -107,7 +106,6 @@ export const Navbar: React.FC<NavbarProps> = ({
       title: 'Economía del Conocimiento & Factura E',
       desc: 'SaaS, creadores de software, cupo de divisas y régimen fiscal.',
       icon: Globe,
-      tag: 'Exportación',
       tab: 'solutions' as const,
     },
     {
@@ -115,7 +113,6 @@ export const Navbar: React.FC<NavbarProps> = ({
       title: 'Evaluación y Blindaje de Franquicias (CCyC)',
       desc: 'Auditoría precontractual de COF, Payback real y dictámenes.',
       icon: Scale,
-      tag: 'Ley 1512',
       tab: 'solutions' as const,
     },
     {
@@ -123,7 +120,6 @@ export const Navbar: React.FC<NavbarProps> = ({
       title: 'Dirección Financiera CFO On-Demand',
       desc: 'Comités mensuales, gestión del WACC y flujos proyectados.',
       icon: LineChart,
-      tag: 'C-Level',
       tab: 'solutions' as const,
     },
     {
@@ -131,13 +127,61 @@ export const Navbar: React.FC<NavbarProps> = ({
       title: 'Empresas Autónomas IA & Criptoactivos',
       desc: 'Deducción de costos LLM, tesorerías on-chain y smart contracts.',
       icon: Cpu,
-      tag: 'Vanguardia',
       tab: 'solutions' as const,
     },
   ];
 
   return (
     <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200 fluent-shadow-card w-full max-w-full">
+      {/* ======================================================== */}
+      {/* TOP ANNOUNCEMENT & CALL TO ACTION (CTA) RIBBON           */}
+      {/* ======================================================== */}
+      {showTopCtaRibbon && (
+        <div className="w-full bg-[#080E18] text-white border-b border-slate-800 px-4 sm:px-8 py-2 text-xs relative overflow-hidden transition-all">
+          <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2.5">
+            <div className="flex items-center gap-2.5 text-center sm:text-left">
+              <span className="hidden md:inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-blue-950 text-[#38BDF8] border border-blue-800 text-[10px] font-mono font-bold uppercase tracking-wider shrink-0">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#38BDF8] animate-pulse" />
+                Auditoría 2026
+              </span>
+              <p className="text-[11px] sm:text-xs text-slate-200 font-medium">
+                ¿Tu empresa busca optimizar su carga tributaria o evaluar una franquicia? <span className="text-white font-bold">Diagnóstico preliminar sin cargo.</span>
+              </p>
+            </div>
+
+            <div className="flex items-center gap-2 shrink-0">
+              <button
+                type="button"
+                onClick={() => handleNavClick('diagnostic')}
+                className="px-3 py-1 bg-[#0078D4] hover:bg-[#106EBE] active:bg-[#005A9E] text-white font-bold text-[11px] rounded-md transition-all flex items-center gap-1.5 shadow-xs cursor-pointer"
+              >
+                <Sparkles className="w-3 h-3 text-amber-300" />
+                <span>Comenzar Diagnóstico</span>
+                <ArrowRight className="w-3 h-3" />
+              </button>
+
+              <button
+                type="button"
+                onClick={onOpenConsultationModal}
+                className="hidden sm:flex px-2.5 py-1 bg-white/10 hover:bg-white/20 text-slate-200 hover:text-white font-semibold text-[11px] rounded-md border border-white/15 transition-all items-center gap-1 cursor-pointer"
+              >
+                <span>Agendar Consulta</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setShowTopCtaRibbon(false)}
+                className="p-1 text-slate-400 hover:text-white rounded transition-colors ml-1"
+                aria-label="Cerrar aviso"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Main Navbar Bar */}
       <div className="w-full px-4 sm:px-8 lg:px-16 xl:px-20 h-16 flex items-center justify-between gap-4">
         {/* Zone 1: Brand Logo Cr Dominguez (Solo) */}
         <button
@@ -149,13 +193,13 @@ export const Navbar: React.FC<NavbarProps> = ({
           <BrandLogo size="md" variant="light" showSubtitle={true} />
         </button>
 
-        {/* Zone 2: Desktop Navigation Links with Super Menu Trigger */}
-        <nav className="hidden xl:flex items-center gap-0.5 text-xs font-semibold text-slate-600">
+        {/* Zone 2: Desktop Navigation Links (Simuladores y Diagnóstico integrados en Soluciones y Ecosistema) */}
+        <nav className="hidden xl:flex items-center gap-1 text-xs font-semibold text-slate-600">
           {/* Inicio */}
           <button
             type="button"
             onClick={() => handleNavClick('landing')}
-            className={`px-3 py-5 transition-colors whitespace-nowrap relative hover:text-slate-950 flex items-center gap-1.5 cursor-pointer ${
+            className={`px-3.5 py-5 transition-colors whitespace-nowrap relative hover:text-slate-950 flex items-center gap-1.5 cursor-pointer ${
               currentTab === 'landing' ? 'text-slate-950 font-bold' : 'text-slate-600'
             }`}
           >
@@ -165,7 +209,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             )}
           </button>
 
-          {/* Super Menu Trigger: Soluciones & Ecosistema */}
+          {/* Super Menu Trigger: Soluciones & Ecosistema (Contiene Divisiones, Simuladores y Diagnóstico) */}
           <div 
             className="relative"
             onMouseEnter={handleMouseEnter}
@@ -175,56 +219,28 @@ export const Navbar: React.FC<NavbarProps> = ({
               ref={superMenuButtonRef}
               type="button"
               onClick={() => setIsSuperMenuOpen(!isSuperMenuOpen)}
-              className={`px-3 py-5 transition-colors whitespace-nowrap relative hover:text-slate-950 flex items-center gap-1.5 cursor-pointer ${
-                isSuperMenuOpen || currentTab === 'solutions' ? 'text-[#0078D4] font-bold' : 'text-slate-600'
+              className={`px-3.5 py-5 transition-colors whitespace-nowrap relative hover:text-slate-950 flex items-center gap-1.5 cursor-pointer ${
+                isSuperMenuOpen || currentTab === 'solutions' || currentTab === 'simulators' || currentTab === 'diagnostic'
+                  ? 'text-[#0078D4] font-bold' 
+                  : 'text-slate-600'
               }`}
               aria-expanded={isSuperMenuOpen}
               aria-haspopup="true"
             >
-              <Briefcase className="w-3.5 h-3.5" />
+              <Briefcase className="w-3.5 h-3.5 text-[#0078D4]" />
               <span>Soluciones & Ecosistema</span>
               <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${isSuperMenuOpen ? 'rotate-180 text-[#0078D4]' : 'text-slate-400'}`} />
-              {(currentTab === 'solutions' || isSuperMenuOpen) && (
+              {(currentTab === 'solutions' || currentTab === 'simulators' || currentTab === 'diagnostic' || isSuperMenuOpen) && (
                 <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#0078D4]" />
               )}
             </button>
           </div>
 
-          {/* Simuladores */}
-          <button
-            type="button"
-            onClick={() => handleNavClick('simulators')}
-            className={`px-3 py-5 transition-colors whitespace-nowrap relative hover:text-slate-950 flex items-center gap-1.5 cursor-pointer ${
-              currentTab === 'simulators' ? 'text-slate-950 font-bold' : 'text-slate-600'
-            }`}
-          >
-            <Calculator className="w-3.5 h-3.5" />
-            <span>Simuladores</span>
-            {currentTab === 'simulators' && (
-              <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#0078D4]" />
-            )}
-          </button>
-
-          {/* Diagnóstico */}
-          <button
-            type="button"
-            onClick={() => handleNavClick('diagnostic')}
-            className={`px-3 py-5 transition-colors whitespace-nowrap relative hover:text-slate-950 flex items-center gap-1.5 cursor-pointer ${
-              currentTab === 'diagnostic' ? 'text-slate-950 font-bold' : 'text-slate-600'
-            }`}
-          >
-            <FileCheck className="w-3.5 h-3.5" />
-            <span>Diagnóstico</span>
-            {currentTab === 'diagnostic' && (
-              <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#0078D4]" />
-            )}
-          </button>
-
           {/* Blog & Podcast */}
           <button
             type="button"
             onClick={() => handleNavClick('blog')}
-            className={`px-3 py-5 transition-colors whitespace-nowrap relative hover:text-slate-950 flex items-center gap-1.5 cursor-pointer ${
+            className={`px-3.5 py-5 transition-colors whitespace-nowrap relative hover:text-slate-950 flex items-center gap-1.5 cursor-pointer ${
               currentTab === 'blog' ? 'text-slate-950 font-bold' : 'text-slate-600'
             }`}
           >
@@ -235,26 +251,11 @@ export const Navbar: React.FC<NavbarProps> = ({
             )}
           </button>
 
-          {/* Portal Clientes */}
-          <button
-            type="button"
-            onClick={() => handleNavClick('portal')}
-            className={`px-3 py-5 transition-colors whitespace-nowrap relative hover:text-slate-950 flex items-center gap-1.5 cursor-pointer ${
-              currentTab === 'portal' ? 'text-slate-950 font-bold' : 'text-slate-600'
-            }`}
-          >
-            <Lock className="w-3.5 h-3.5" />
-            <span>Portal Clientes</span>
-            {currentTab === 'portal' && (
-              <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#0078D4]" />
-            )}
-          </button>
-
-          {/* Dashboard & CRM (Now integrates CRM, CMS, Widgets and SEO) */}
+          {/* Dashboard & CRM (Integra CRM, CMS, Widgets y SEO) */}
           <button
             type="button"
             onClick={() => handleNavClick('dashboard')}
-            className={`px-3 py-5 transition-colors whitespace-nowrap relative hover:text-slate-950 flex items-center gap-1.5 cursor-pointer ${
+            className={`px-3.5 py-5 transition-colors whitespace-nowrap relative hover:text-slate-950 flex items-center gap-1.5 cursor-pointer ${
               currentTab === 'dashboard' || currentTab === 'crm' || currentTab === 'seo' ? 'text-[#0078D4] font-bold' : 'text-slate-600'
             }`}
           >
@@ -269,11 +270,11 @@ export const Navbar: React.FC<NavbarProps> = ({
           </button>
         </nav>
 
-        {/* Zone 3: Desktop Actions & Role Selector */}
+        {/* Zone 3: Desktop Action Buttons Cluster (Portal Clientes destacado + WhatsApp + Asesoría CTA) */}
         <div className="hidden sm:flex items-center gap-2.5 shrink-0">
           {/* Tenant role selector */}
-          <div className="flex items-center bg-slate-50 border border-slate-200 rounded-md px-2.5 py-1.5 text-xs text-slate-700 shadow-2xs">
-            <span className="hidden md:inline text-[11px] text-slate-500 font-mono mr-1.5">
+          <div className="hidden 2xl:flex items-center bg-slate-50 border border-slate-200 rounded-md px-2.5 py-1.5 text-xs text-slate-700 shadow-2xs">
+            <span className="text-[11px] text-slate-500 font-mono mr-1.5">
               Rol:
             </span>
             <select
@@ -289,30 +290,57 @@ export const Navbar: React.FC<NavbarProps> = ({
             </select>
           </div>
 
-          {/* Quick WhatsApp Header Button */}
+          {/* Botón Destacado: Portal Clientes (Fondo oscuro fiduciario con icono candado dorado) */}
+          <button
+            type="button"
+            onClick={() => handleNavClick('portal')}
+            className={`inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold rounded-lg transition-all whitespace-nowrap shrink-0 shadow-sm cursor-pointer border ${
+              currentTab === 'portal'
+                ? 'bg-slate-950 text-white border-amber-400/80 ring-2 ring-amber-400/30'
+                : 'bg-slate-900 hover:bg-slate-800 active:bg-slate-950 text-white border-slate-700 hover:border-slate-600'
+            }`}
+            title="Acceso seguro al Portal Privado de Clientes y Dictámenes"
+          >
+            <Lock className="w-3.5 h-3.5 text-amber-400" />
+            <span>Portal Clientes</span>
+          </button>
+
+          {/* Botón Destacado: WhatsApp Directo */}
           <a
             href="https://wa.me/5492804567890?text=Hola%20Cr.%20Dom%C3%ADnguez,%20quisiera%20realizar%20una%20consulta%20profesional"
             target="_blank"
             rel="noopener noreferrer"
-            className="hidden lg:inline-flex items-center gap-1.5 px-3 py-2 text-xs font-bold text-white bg-[#25D366] hover:bg-[#20ba59] active:bg-[#128C7E] rounded-md transition-colors whitespace-nowrap shrink-0 shadow-sm"
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold text-white bg-[#25D366] hover:bg-[#20ba59] active:bg-[#128C7E] rounded-lg transition-colors whitespace-nowrap shrink-0 shadow-sm"
             title="Escribir por WhatsApp directamente al Cr. Carlos Domínguez"
           >
             <MessageCircle className="w-3.5 h-3.5" />
             <span>WhatsApp</span>
           </a>
 
-          {/* Primary Action Button */}
+          {/* Botón Destacado: Llamado a la Acción Principal (Solicitar Asesoría) */}
           <button
             type="button"
             onClick={onOpenConsultationModal}
-            className="px-4 py-2 text-xs font-bold text-white bg-[#0078D4] hover:bg-[#106EBE] active:bg-[#005A9E] rounded-md transition-colors whitespace-nowrap shrink-0 shadow-sm cursor-pointer"
+            className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-bold text-white bg-[#0078D4] hover:bg-[#106EBE] active:bg-[#005A9E] rounded-lg transition-all whitespace-nowrap shrink-0 shadow-md cursor-pointer hover:shadow-lg hover:scale-[1.02]"
           >
-            Solicitar Asesoría
+            <Sparkles className="w-3.5 h-3.5 text-amber-300" />
+            <span>Solicitar Asesoría</span>
           </button>
         </div>
 
         {/* Mobile Hamburger Toggle Button */}
         <div className="flex xl:hidden items-center gap-2">
+          {/* Mobile Portal Clientes Quick Access */}
+          <button
+            type="button"
+            onClick={() => handleNavClick('portal')}
+            className="p-2 bg-slate-900 text-amber-400 rounded-md border border-slate-700 shadow-sm"
+            aria-label="Portal Clientes"
+            title="Portal Clientes"
+          >
+            <Lock className="w-4 h-4" />
+          </button>
+
           <a
             href="https://wa.me/5492804567890?text=Hola%20Cr.%20Dom%C3%ADnguez,%20quisiera%20realizar%20una%20consulta%20profesional"
             target="_blank"
@@ -342,7 +370,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           ref={superMenuRef}
           onMouseEnter={handleMouseEnter}
           onMouseLeave={handleMouseLeave}
-          className="hidden xl:block absolute top-16 left-0 right-0 w-full bg-white/98 backdrop-blur-xl border-b border-slate-200 shadow-2xl transition-all duration-200 animate-in fade-in slide-in-from-top-2 z-50"
+          className="hidden xl:block absolute top-full left-0 right-0 w-full bg-white/98 backdrop-blur-xl border-b border-slate-200 shadow-2xl transition-all duration-200 animate-in fade-in slide-in-from-top-2 z-50"
         >
           <div className="w-full max-w-7xl mx-auto px-6 lg:px-12 py-8">
             <div className="grid grid-cols-12 gap-8">
@@ -359,7 +387,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                     onClick={() => handleNavClick('solutions')}
                     className="text-xs font-bold text-[#0078D4] hover:underline flex items-center gap-1 cursor-pointer"
                   >
-                    <span>Ver catálogo completo</span>
+                    <span>Ver alcance general</span>
                     <ArrowRight className="w-3.5 h-3.5" />
                   </button>
                 </div>
@@ -396,22 +424,23 @@ export const Navbar: React.FC<NavbarProps> = ({
                 </div>
               </div>
 
-              {/* Columna 2: Herramientas Interactivas & Modelos (4 cols) */}
+              {/* Columna 2: Herramientas Interactivas & Modelos (Integrando Simuladores y Diagnóstico) (4 cols) */}
               <div className="col-span-4 space-y-4 border-r border-slate-100 pr-6">
                 <div>
                   <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-slate-500 block mb-1">
-                    Herramientas de Análisis & Diagnóstico
+                    Herramientas & Diagnósticos Integrados
                   </span>
                   <h4 className="text-xs font-black text-slate-900 uppercase">
                     Ecosistema Financiero Digital
                   </h4>
                 </div>
 
-                <div className="grid grid-cols-1 gap-2">
+                <div className="grid grid-cols-1 gap-2.5">
+                  {/* Simuladores Financieros */}
                   <button
                     type="button"
                     onClick={() => handleNavClick('simulators')}
-                    className="p-3 bg-slate-50 hover:bg-blue-50/60 rounded-xl border border-slate-200/80 hover:border-blue-200 text-left transition-all group cursor-pointer"
+                    className="p-3 bg-slate-50 hover:bg-blue-50/70 rounded-xl border border-slate-200/80 hover:border-blue-200 text-left transition-all group cursor-pointer"
                   >
                     <div className="flex items-center gap-2 mb-1">
                       <Calculator className="w-4 h-4 text-[#0078D4]" />
@@ -424,26 +453,53 @@ export const Navbar: React.FC<NavbarProps> = ({
                     </p>
                   </button>
 
+                  {/* Diagnóstico Estratégico */}
                   <button
                     type="button"
                     onClick={() => handleNavClick('diagnostic')}
-                    className="p-3 bg-slate-50 hover:bg-blue-50/60 rounded-xl border border-slate-200/80 hover:border-blue-200 text-left transition-all group cursor-pointer"
+                    className="p-3 bg-slate-50 hover:bg-emerald-50/70 rounded-xl border border-slate-200/80 hover:border-emerald-200 text-left transition-all group cursor-pointer"
                   >
                     <div className="flex items-center gap-2 mb-1">
                       <FileCheck className="w-4 h-4 text-[#107C41]" />
                       <span className="text-xs font-bold text-slate-900 group-hover:text-[#107C41]">
                         Diagnóstico Estratégico Automatizado
                       </span>
+                      <span className="px-1.5 py-0.2 bg-emerald-100 text-[#107C41] rounded text-[9px] font-bold">
+                        Sin Cargo
+                      </span>
                     </div>
                     <p className="text-[11px] text-slate-500">
-                      Evaluación inicial en 4 etapas con reporte instantáneo de salud y contingencias.
+                      Evaluación inicial en 4 etapas con reporte instantáneo de madurez y contingencias.
                     </p>
                   </button>
 
+                  {/* Portal Privado Clientes */}
+                  <button
+                    type="button"
+                    onClick={() => handleNavClick('portal')}
+                    className="p-3 bg-slate-900 hover:bg-slate-800 rounded-xl border border-slate-800 text-left transition-all group cursor-pointer text-white"
+                  >
+                    <div className="flex items-center justify-between mb-1">
+                      <div className="flex items-center gap-2">
+                        <Lock className="w-4 h-4 text-amber-400" />
+                        <span className="text-xs font-bold text-white group-hover:text-amber-300">
+                          Portal Privado de Clientes
+                        </span>
+                      </div>
+                      <span className="text-[10px] font-mono uppercase text-amber-400 font-bold">
+                        Seguro
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-slate-300">
+                      Bóveda fiduciaria para balances, auditorías, informes mensuales y dictámenes.
+                    </p>
+                  </button>
+
+                  {/* Blog & Notas */}
                   <button
                     type="button"
                     onClick={() => handleNavClick('blog')}
-                    className="p-3 bg-slate-50 hover:bg-blue-50/60 rounded-xl border border-slate-200/80 hover:border-blue-200 text-left transition-all group cursor-pointer"
+                    className="p-3 bg-slate-50 hover:bg-purple-50/70 rounded-xl border border-slate-200/80 hover:border-purple-200 text-left transition-all group cursor-pointer"
                   >
                     <div className="flex items-center gap-2 mb-1">
                       <BookOpen className="w-4 h-4 text-purple-600" />
@@ -455,30 +511,14 @@ export const Navbar: React.FC<NavbarProps> = ({
                       Doctrina sobre Ley CCyC 1512, Factura E, economía del conocimiento y finanzas.
                     </p>
                   </button>
-
-                  <button
-                    type="button"
-                    onClick={() => handleNavClick('portal')}
-                    className="p-3 bg-slate-50 hover:bg-blue-50/60 rounded-xl border border-slate-200/80 hover:border-blue-200 text-left transition-all group cursor-pointer"
-                  >
-                    <div className="flex items-center gap-2 mb-1">
-                      <Lock className="w-4 h-4 text-amber-600" />
-                      <span className="text-xs font-bold text-slate-900 group-hover:text-amber-600">
-                        Portal Privado de Clientes
-                      </span>
-                    </div>
-                    <p className="text-[11px] text-slate-500">
-                      Bóveda documental segura de balances, auditorías y dictámenes fiduciarios.
-                    </p>
-                  </button>
                 </div>
               </div>
 
-              {/* Columna 3: Dashboard de Gestión, Auditoría SEO & Contacto (3 cols) */}
+              {/* Columna 3: Dashboard de Gestión, SEO & Llamados a la Acción (3 cols) */}
               <div className="col-span-3 space-y-4 flex flex-col justify-between">
                 <div className="space-y-3">
                   <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-slate-500 block">
-                    Gestión Directiva & SEO
+                    Centro de Control & SEO
                   </span>
 
                   {/* Direct Link to SEO in Dashboard */}
@@ -489,10 +529,10 @@ export const Navbar: React.FC<NavbarProps> = ({
                   >
                     <div className="flex items-center gap-2 text-[#0078D4] mb-1">
                       <Search className="w-4 h-4" />
-                      <span className="text-xs font-black">Auditoría SEO & Metadatos</span>
+                      <span className="text-xs font-black">Auditoría SEO & Posicionamiento</span>
                     </div>
-                    <p className="text-[11px] text-slate-600">
-                      Gestiona títulos, OpenGraph social cards, Schema JSON-LD y snippets de Google Console en el Dashboard.
+                    <p className="text-[11px] text-slate-600 leading-snug">
+                      Panel de metadatos, OpenGraph social cards, Schema y Search Console (dentro del Dashboard).
                     </p>
                     <div className="mt-2 text-[10px] font-bold text-[#0078D4] flex items-center gap-1 group-hover:translate-x-0.5 transition-transform">
                       <span>Abrir módulo SEO en Dashboard</span>
@@ -508,21 +548,22 @@ export const Navbar: React.FC<NavbarProps> = ({
                   >
                     <div className="flex items-center gap-2 text-slate-900 mb-1">
                       <LayoutDashboard className="w-4 h-4 text-[#0078D4]" />
-                      <span className="text-xs font-bold">Dashboard & Pipeline CRM</span>
+                      <span className="text-xs font-bold">Dashboard Integral & CRM</span>
                     </div>
-                    <p className="text-[11px] text-slate-500">
-                      Control comercial, agenda de reuniones Meet, correos y editor visual del sitio.
+                    <p className="text-[11px] text-slate-500 leading-snug">
+                      Gestión de clientes, embudo de oportunidades y agenda de videollamadas Meet.
                     </p>
                   </button>
                 </div>
 
-                {/* Executive Contact Card */}
-                <div className="p-4 bg-slate-900 text-white rounded-xl space-y-3 shadow-md">
+                {/* Executive Call to Action Card */}
+                <div className="p-4 bg-slate-950 text-white rounded-xl space-y-3 shadow-lg border border-slate-800">
                   <div>
-                    <span className="text-[10px] font-mono uppercase tracking-wider text-[#38BDF8] block">
-                      Consultoría Personalizada
+                    <span className="text-[10px] font-mono uppercase tracking-wider text-[#38BDF8] block flex items-center gap-1.5">
+                      <ShieldCheck className="w-3 h-3 text-[#38BDF8]" />
+                      Consultoría Estratégica
                     </span>
-                    <h5 className="text-xs font-bold text-white mt-0.5">
+                    <h5 className="text-xs font-bold text-white mt-1">
                       Cr. Carlos Rodrigo Domínguez
                     </h5>
                     <span className="text-[10px] text-slate-400 block">
@@ -537,9 +578,10 @@ export const Navbar: React.FC<NavbarProps> = ({
                         setIsSuperMenuOpen(false);
                         onOpenConsultationModal();
                       }}
-                      className="w-full py-2 bg-[#0078D4] hover:bg-[#106EBE] text-white text-xs font-bold rounded-lg transition-colors text-center cursor-pointer shadow-xs"
+                      className="w-full py-2 bg-[#0078D4] hover:bg-[#106EBE] active:bg-[#005A9E] text-white text-xs font-bold rounded-lg transition-colors text-center cursor-pointer shadow-xs flex items-center justify-center gap-1.5"
                     >
-                      Agendar Consulta Directa
+                      <Sparkles className="w-3 h-3 text-amber-300" />
+                      <span>Agendar Consulta Directa</span>
                     </button>
                     <a
                       href="https://wa.me/5492804567890?text=Hola%20Cr.%20Dom%C3%ADnguez,%20quisiera%20realizar%20una%20consulta%20profesional"
@@ -563,10 +605,28 @@ export const Navbar: React.FC<NavbarProps> = ({
       {/* ======================================================== */}
       {isMobileMenuOpen && (
         <div className="xl:hidden w-full bg-white border-b border-slate-200 px-4 py-5 shadow-2xl space-y-5 animate-in slide-in-from-top-2 duration-200 max-h-[85vh] overflow-y-auto">
-          {/* Section 1: Main Pages */}
+          {/* Section 1: Main Action Banner for Mobile */}
+          <div className="p-3 bg-gradient-to-r from-blue-900 to-slate-900 text-white rounded-xl space-y-2">
+            <span className="text-[10px] font-mono text-[#38BDF8] uppercase font-bold tracking-wider block">
+              Llamado a la Acción 2026
+            </span>
+            <p className="text-xs text-slate-200">
+              Diagnóstico estratégico empresarial sin cargo para empresas y PyMEs.
+            </p>
+            <button
+              type="button"
+              onClick={() => handleNavClick('diagnostic')}
+              className="w-full py-2 bg-[#0078D4] hover:bg-[#106EBE] text-white text-xs font-bold rounded-lg transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
+            >
+              <Sparkles className="w-3.5 h-3.5 text-amber-300" />
+              <span>Iniciar Diagnóstico Gratis</span>
+            </button>
+          </div>
+
+          {/* Section 2: Main Navigation Pages */}
           <div>
             <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-slate-400 block mb-2 px-1">
-              Navegación Principal
+              Navegación del Ecosistema
             </span>
             <div className="grid grid-cols-2 gap-2">
               <button
@@ -609,7 +669,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                   currentTab === 'diagnostic' ? 'bg-blue-50 text-[#0078D4] border-blue-200' : 'bg-slate-50 text-slate-700 border-slate-200'
                 }`}
               >
-                <FileCheck className="w-4 h-4 text-[#0078D4]" />
+                <FileCheck className="w-4 h-4 text-[#107C41]" />
                 <span>Diagnóstico</span>
               </button>
 
@@ -624,20 +684,19 @@ export const Navbar: React.FC<NavbarProps> = ({
                 <span>Blog & Notas</span>
               </button>
 
+              {/* Botón Destacado: Portal Clientes */}
               <button
                 type="button"
                 onClick={() => handleNavClick('portal')}
-                className={`p-3 rounded-lg text-xs font-bold flex items-center gap-2 border text-left cursor-pointer ${
-                  currentTab === 'portal' ? 'bg-blue-50 text-[#0078D4] border-blue-200' : 'bg-slate-50 text-slate-700 border-slate-200'
-                }`}
+                className="p-3 rounded-lg text-xs font-bold flex items-center gap-2 border text-left cursor-pointer bg-slate-900 text-white border-slate-800"
               >
-                <Lock className="w-4 h-4 text-amber-600" />
+                <Lock className="w-4 h-4 text-amber-400" />
                 <span>Portal Clientes</span>
               </button>
             </div>
           </div>
 
-          {/* Section 2: Dashboard & SEO */}
+          {/* Section 3: Dashboard & SEO */}
           <div>
             <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-slate-400 block mb-2 px-1">
               Gestión Empresarial & SEO
@@ -695,9 +754,10 @@ export const Navbar: React.FC<NavbarProps> = ({
                 setIsMobileMenuOpen(false);
                 onOpenConsultationModal();
               }}
-              className="w-full py-3 text-xs font-bold text-white bg-[#0078D4] hover:bg-[#106EBE] active:bg-[#005A9E] rounded-lg transition-colors text-center shadow-sm cursor-pointer min-h-[44px]"
+              className="w-full py-3 text-xs font-bold text-white bg-[#0078D4] hover:bg-[#106EBE] active:bg-[#005A9E] rounded-lg transition-colors text-center shadow-sm cursor-pointer min-h-[44px] flex items-center justify-center gap-2"
             >
-              Solicitar Asesoría Estratégica
+              <Sparkles className="w-4 h-4 text-amber-300" />
+              <span>Solicitar Asesoría Estratégica</span>
             </button>
 
             <a
