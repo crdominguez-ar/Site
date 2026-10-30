@@ -704,6 +704,18 @@ export const SEED_MEETINGS: CRMMeeting[] = [
   },
 ];
 
+async function withTimeout<T = any>(thenable: any, timeoutMs = 2000): Promise<T> {
+  let timer: any;
+  const timeoutPromise = new Promise<never>((_, reject) => {
+    timer = setTimeout(() => reject(new Error('Supabase request timeout')), timeoutMs);
+  });
+  try {
+    return (await Promise.race([Promise.resolve(thenable), timeoutPromise])) as T;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 // Persistent state management using LocalStorage with fallback
 class DataRepository {
   private leadsKey = 'dl_consulting_leads';
@@ -741,8 +753,14 @@ class DataRepository {
 
   async getLeads(): Promise<Lead[]> {
     if (isSupabaseConfigured && supabase) {
-      const { data, error } = await supabase.from('leads').select('*').order('created_at', { ascending: false });
-      if (!error && data && data.length > 0) return data as Lead[];
+      try {
+        const { data, error } = await withTimeout(
+          supabase.from('leads').select('*').order('created_at', { ascending: false })
+        );
+        if (!error && data && data.length > 0) return data as Lead[];
+      } catch (e) {
+        console.warn('Supabase getLeads fallback to local data', e);
+      }
     }
     const local = localStorage.getItem(this.leadsKey);
     return local ? JSON.parse(local) : SEED_LEADS;
@@ -810,8 +828,12 @@ class DataRepository {
 
   async getTasks(): Promise<CRMTask[]> {
     if (isSupabaseConfigured && supabase) {
-      const { data, error } = await supabase.from('crm_tasks').select('*');
-      if (!error && data && data.length > 0) return data as CRMTask[];
+      try {
+        const { data, error } = await withTimeout(supabase.from('crm_tasks').select('*'));
+        if (!error && data && data.length > 0) return data as CRMTask[];
+      } catch (e) {
+        console.warn('Supabase getTasks fallback to local data', e);
+      }
     }
     const local = localStorage.getItem(this.tasksKey);
     return local ? JSON.parse(local) : SEED_TASKS;
@@ -872,8 +894,12 @@ class DataRepository {
 
   async getReports(): Promise<DeliverableReport[]> {
     if (isSupabaseConfigured && supabase) {
-      const { data, error } = await supabase.from('deliverable_reports').select('*');
-      if (!error && data && data.length > 0) return data as DeliverableReport[];
+      try {
+        const { data, error } = await withTimeout(supabase.from('deliverable_reports').select('*'));
+        if (!error && data && data.length > 0) return data as DeliverableReport[];
+      } catch (e) {
+        console.warn('Supabase getReports fallback to local data', e);
+      }
     }
     const local = localStorage.getItem(this.reportsKey);
     return local ? JSON.parse(local) : SEED_REPORTS;
@@ -881,8 +907,12 @@ class DataRepository {
 
   async getTickets(): Promise<AdvisoryTicket[]> {
     if (isSupabaseConfigured && supabase) {
-      const { data, error } = await supabase.from('advisory_tickets').select('*');
-      if (!error && data && data.length > 0) return data as AdvisoryTicket[];
+      try {
+        const { data, error } = await withTimeout(supabase.from('advisory_tickets').select('*'));
+        if (!error && data && data.length > 0) return data as AdvisoryTicket[];
+      } catch (e) {
+        console.warn('Supabase getTickets fallback to local data', e);
+      }
     }
     const local = localStorage.getItem(this.ticketsKey);
     return local ? JSON.parse(local) : SEED_TICKETS;
