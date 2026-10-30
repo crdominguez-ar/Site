@@ -6,19 +6,33 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { Lead, CRMTask, DeliverableReport, AdvisoryTicket, ClientProfile, LeadStage, CRMContact, CRMMeeting, CompanyEmployee } from '../types';
 
-const supabaseUrl = 
+const rawSupabaseUrl = 
   (import.meta.env.VITE_SUPABASE_URL as string) || 
   (import.meta.env.SUPABASE_URL as string) || 
   (typeof process !== 'undefined' && process.env?.SUPABASE_URL) || 
   '';
 
-const supabaseAnonKey = 
+const rawSupabaseAnonKey = 
   (import.meta.env.VITE_SUPABASE_ANON_KEY as string) || 
   (import.meta.env.SUPABASE_ANON_KEY as string) || 
   (typeof process !== 'undefined' && process.env?.SUPABASE_ANON_KEY) || 
   '';
 
-export const isSupabaseConfigured = Boolean(supabaseUrl && supabaseAnonKey);
+const supabaseUrl = rawSupabaseUrl.trim();
+const supabaseAnonKey = rawSupabaseAnonKey.trim();
+
+// Rigorously verify that Supabase credentials are real production endpoints, not example/placeholder values
+export const isSupabaseConfigured = Boolean(
+  supabaseUrl && 
+  supabaseAnonKey &&
+  !supabaseUrl.includes('your-project') &&
+  !supabaseUrl.includes('your_supabase') &&
+  !supabaseUrl.includes('example.com') &&
+  supabaseUrl.startsWith('https://') &&
+  supabaseUrl.includes('.supabase.co') &&
+  supabaseAnonKey !== 'your-supabase-anon-key' &&
+  supabaseAnonKey.length > 25
+);
 
 export const supabase: SupabaseClient | null = isSupabaseConfigured
   ? createClient(supabaseUrl, supabaseAnonKey)
@@ -704,13 +718,25 @@ export const SEED_MEETINGS: CRMMeeting[] = [
   },
 ];
 
-async function withTimeout<T = any>(thenable: any, timeoutMs = 2000): Promise<T> {
+let hasSupabaseConnectionFailed = false;
+
+async function withTimeout<T = any>(thenable: any, timeoutMs = 1500): Promise<T> {
+  if (hasSupabaseConnectionFailed) {
+    throw new Error('Supabase previously failed or unconfigured, using fast local fallback');
+  }
   let timer: any;
   const timeoutPromise = new Promise<never>((_, reject) => {
-    timer = setTimeout(() => reject(new Error('Supabase request timeout')), timeoutMs);
+    timer = setTimeout(() => {
+      hasSupabaseConnectionFailed = true;
+      reject(new Error('Supabase request timeout'));
+    }, timeoutMs);
   });
   try {
-    return (await Promise.race([Promise.resolve(thenable), timeoutPromise])) as T;
+    const result = (await Promise.race([Promise.resolve(thenable), timeoutPromise])) as T;
+    return result;
+  } catch (err) {
+    hasSupabaseConnectionFailed = true;
+    throw err;
   } finally {
     clearTimeout(timer);
   }
@@ -762,8 +788,12 @@ class DataRepository {
         console.warn('Supabase getLeads fallback to local data', e);
       }
     }
-    const local = localStorage.getItem(this.leadsKey);
-    return local ? JSON.parse(local) : SEED_LEADS;
+    try {
+      const local = typeof window !== 'undefined' ? localStorage.getItem(this.leadsKey) : null;
+      return local ? JSON.parse(local) : SEED_LEADS;
+    } catch {
+      return SEED_LEADS;
+    }
   }
 
   async createLead(leadData: Omit<Lead, 'id' | 'createdAt' | 'updatedAt'>): Promise<Lead> {
@@ -835,8 +865,12 @@ class DataRepository {
         console.warn('Supabase getTasks fallback to local data', e);
       }
     }
-    const local = localStorage.getItem(this.tasksKey);
-    return local ? JSON.parse(local) : SEED_TASKS;
+    try {
+      const local = typeof window !== 'undefined' ? localStorage.getItem(this.tasksKey) : null;
+      return local ? JSON.parse(local) : SEED_TASKS;
+    } catch {
+      return SEED_TASKS;
+    }
   }
 
   async toggleTask(taskId: string): Promise<void> {
@@ -901,8 +935,12 @@ class DataRepository {
         console.warn('Supabase getReports fallback to local data', e);
       }
     }
-    const local = localStorage.getItem(this.reportsKey);
-    return local ? JSON.parse(local) : SEED_REPORTS;
+    try {
+      const local = typeof window !== 'undefined' ? localStorage.getItem(this.reportsKey) : null;
+      return local ? JSON.parse(local) : SEED_REPORTS;
+    } catch {
+      return SEED_REPORTS;
+    }
   }
 
   async getTickets(): Promise<AdvisoryTicket[]> {
@@ -914,8 +952,12 @@ class DataRepository {
         console.warn('Supabase getTickets fallback to local data', e);
       }
     }
-    const local = localStorage.getItem(this.ticketsKey);
-    return local ? JSON.parse(local) : SEED_TICKETS;
+    try {
+      const local = typeof window !== 'undefined' ? localStorage.getItem(this.ticketsKey) : null;
+      return local ? JSON.parse(local) : SEED_TICKETS;
+    } catch {
+      return SEED_TICKETS;
+    }
   }
 
   async createTicket(ticket: Omit<AdvisoryTicket, 'id' | 'createdAt' | 'status'>): Promise<AdvisoryTicket> {
@@ -935,8 +977,12 @@ class DataRepository {
   // CRM Contacts Directory
   async getContacts(): Promise<CRMContact[]> {
     if (typeof window === 'undefined') return SEED_CONTACTS;
-    const local = localStorage.getItem(this.contactsKey);
-    return local ? JSON.parse(local) : SEED_CONTACTS;
+    try {
+      const local = localStorage.getItem(this.contactsKey);
+      return local ? JSON.parse(local) : SEED_CONTACTS;
+    } catch {
+      return SEED_CONTACTS;
+    }
   }
 
   async createContact(contactData: Omit<CRMContact, 'id' | 'lastContactDate' | 'interactionCount'>): Promise<CRMContact> {
@@ -1014,8 +1060,12 @@ class DataRepository {
   // CRM Meetings & Activities
   async getMeetings(): Promise<CRMMeeting[]> {
     if (typeof window === 'undefined') return SEED_MEETINGS;
-    const local = localStorage.getItem(this.meetingsKey);
-    return local ? JSON.parse(local) : SEED_MEETINGS;
+    try {
+      const local = localStorage.getItem(this.meetingsKey);
+      return local ? JSON.parse(local) : SEED_MEETINGS;
+    } catch {
+      return SEED_MEETINGS;
+    }
   }
 
   async createMeeting(meetingData: Omit<CRMMeeting, 'id' | 'createdAt'>): Promise<CRMMeeting> {

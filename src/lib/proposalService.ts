@@ -299,8 +299,12 @@ class ProposalService {
 
   async getProposals(): Promise<CRMProposal[]> {
     if (typeof window === 'undefined') return SEED_PROPOSALS;
-    const stored = localStorage.getItem(this.storageKey);
-    return stored ? JSON.parse(stored) : SEED_PROPOSALS;
+    try {
+      const stored = localStorage.getItem(this.storageKey);
+      return stored ? JSON.parse(stored) : SEED_PROPOSALS;
+    } catch {
+      return SEED_PROPOSALS;
+    }
   }
 
   async getProposalById(id: string): Promise<CRMProposal | null> {

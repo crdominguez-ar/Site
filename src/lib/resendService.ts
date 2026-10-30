@@ -74,8 +74,12 @@ class ResendService {
 
   getConfig(): ResendConfig {
     if (typeof window === 'undefined') return DEFAULT_CONFIG;
-    const local = localStorage.getItem(this.configKey);
-    return local ? JSON.parse(local) : DEFAULT_CONFIG;
+    try {
+      const local = localStorage.getItem(this.configKey);
+      return local ? JSON.parse(local) : DEFAULT_CONFIG;
+    } catch {
+      return DEFAULT_CONFIG;
+    }
   }
 
   saveConfig(newConfig: Partial<ResendConfig>): ResendConfig {
@@ -86,15 +90,23 @@ class ResendService {
       isConfigured: Boolean(newConfig.apiKey && newConfig.apiKey.trim().length > 0),
     };
     if (typeof window !== 'undefined') {
-      localStorage.setItem(this.configKey, JSON.stringify(updated));
+      try {
+        localStorage.setItem(this.configKey, JSON.stringify(updated));
+      } catch (e) {
+        console.warn('Error saving resend config:', e);
+      }
     }
     return updated;
   }
 
   getLogs(): ResendEmailLog[] {
     if (typeof window === 'undefined') return INITIAL_LOGS;
-    const local = localStorage.getItem(this.logsKey);
-    return local ? JSON.parse(local) : INITIAL_LOGS;
+    try {
+      const local = localStorage.getItem(this.logsKey);
+      return local ? JSON.parse(local) : INITIAL_LOGS;
+    } catch {
+      return INITIAL_LOGS;
+    }
   }
 
   private addLog(log: ResendEmailLog) {

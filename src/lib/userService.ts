@@ -112,16 +112,24 @@ class UserService {
 
   getUsers(): SystemUser[] {
     if (typeof window === 'undefined') return INITIAL_USERS;
-    const local = localStorage.getItem(this.usersKey);
-    return local ? JSON.parse(local) : INITIAL_USERS;
+    try {
+      const local = localStorage.getItem(this.usersKey);
+      return local ? JSON.parse(local) : INITIAL_USERS;
+    } catch {
+      return INITIAL_USERS;
+    }
   }
 
   getCurrentUser(): SystemUser {
     const users = this.getUsers();
     if (typeof window === 'undefined') return users[0];
-    const currentId = localStorage.getItem(this.currentUserIdKey);
-    const found = users.find((u) => u.id === currentId);
-    return found || users[0];
+    try {
+      const currentId = localStorage.getItem(this.currentUserIdKey);
+      const found = users.find((u) => u.id === currentId);
+      return found || users[0];
+    } catch {
+      return users[0];
+    }
   }
 
   setCurrentUser(userId: string): SystemUser {

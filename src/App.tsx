@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Navbar } from './components/Layout/Navbar';
 import { Footer } from './components/Layout/Footer';
 import { LandingView } from './components/Landing/LandingView';
@@ -20,19 +20,80 @@ import { WhatsAppButton } from './components/Common/WhatsAppButton';
 import { UserRole } from './types';
 import { userService } from './lib/userService';
 
+export type AppTab = 'landing' | 'solutions' | 'simulators' | 'diagnostic' | 'blog' | 'portal' | 'crm' | 'seo' | 'dashboard';
+
+const TAB_TO_PATH: Record<AppTab, string> = {
+  landing: '/',
+  solutions: '/soluciones',
+  simulators: '/simuladores',
+  diagnostic: '/diagnostico',
+  blog: '/blog',
+  portal: '/portal',
+  crm: '/crm',
+  seo: '/seo',
+  dashboard: '/dashboard',
+};
+
+const PATH_TO_TAB: Record<string, AppTab> = {
+  '/': 'landing',
+  '': 'landing',
+  '/soluciones': 'solutions',
+  '/solutions': 'solutions',
+  '/simuladores': 'simulators',
+  '/simulators': 'simulators',
+  '/calculadoras': 'simulators',
+  '/diagnostico': 'diagnostic',
+  '/diagnostic': 'diagnostic',
+  '/blog': 'blog',
+  '/articulos': 'blog',
+  '/portal': 'portal',
+  '/clientes': 'portal',
+  '/crm': 'crm',
+  '/pipeline': 'crm',
+  '/seo': 'seo',
+  '/dashboard': 'dashboard',
+};
+
+function getTabFromUrl(): AppTab {
+  if (typeof window === 'undefined') return 'landing';
+  // 1. Check hash first if present (e.g. #/portal or #crm)
+  const hash = window.location.hash.replace(/^#\/?/, '').toLowerCase().trim();
+  if (hash && PATH_TO_TAB[`/${hash}`]) {
+    return PATH_TO_TAB[`/${hash}`];
+  }
+  // 2. Check pathname
+  const path = window.location.pathname.toLowerCase().replace(/\/$/, '') || '/';
+  return PATH_TO_TAB[path] || 'landing';
+}
+
 export default function App() {
-  const [currentTab, setCurrentTab] = useState<'landing' | 'solutions' | 'simulators' | 'diagnostic' | 'blog' | 'portal' | 'crm' | 'seo' | 'dashboard'>('landing');
+  const [currentTab, setCurrentTab] = useState<AppTab>(() => getTabFromUrl());
   const [currentRole, setCurrentRole] = useState<UserRole>(() => userService.getCurrentUser().role);
   const [isConsultationModalOpen, setIsConsultationModalOpen] = useState<boolean>(false);
+
+  // Synchronize on browser Back/Forward (popstate)
+  useEffect(() => {
+    const handlePopState = () => {
+      setCurrentTab(getTabFromUrl());
+    };
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
 
   const handleRoleChange = (role: UserRole) => {
     setCurrentRole(role);
     userService.setCurrentRole(role);
   };
 
-  const handleTabChange = (tab: 'landing' | 'solutions' | 'simulators' | 'diagnostic' | 'blog' | 'portal' | 'crm' | 'seo' | 'dashboard') => {
+  const handleTabChange = (tab: AppTab) => {
     setCurrentTab(tab);
     window.scrollTo({ top: 0, behavior: 'smooth' });
+    if (typeof window !== 'undefined') {
+      const targetPath = TAB_TO_PATH[tab] || '/';
+      if (window.location.pathname !== targetPath) {
+        window.history.pushState(null, '', targetPath);
+      }
+    }
   };
 
   return (
