@@ -32,7 +32,7 @@ export interface ResendEmailLog {
   to: string[];
   from: string;
   subject: string;
-  type: 'lead_notification' | 'blog_newsletter' | 'report_delivery' | 'ticket_response' | 'system_test' | 'meeting_invite';
+  type: 'lead_notification' | 'blog_newsletter' | 'report_delivery' | 'ticket_response' | 'system_test' | 'meeting_invite' | 'proposal_delivery' | 'client_welcome';
   status: 'delivered' | 'sent' | 'queued' | 'simulated';
   createdAt: string;
   previewText: string;
@@ -115,6 +115,9 @@ export interface Lead {
   priority: 'alta' | 'media' | 'baja';
   estimatedMonthlyBudgetUsd: number;
   dealValue?: number;
+  proposalId?: string;
+  proposalTotal?: number;
+  proposalStatus?: ProposalStatus;
   revenueRange?: string;
   employeeRange?: string;
   identifiedProblem?: string;
@@ -295,3 +298,89 @@ export interface BlogPost {
   updatedAt?: string;
   isPublished?: boolean;
 }
+
+export interface SocialLinksConfig {
+  linkedin: string;
+  youtube: string;
+  instagram: string;
+  twitterX: string;
+  spotify: string;
+  whatsapp: string;
+  facebook?: string;
+  github?: string;
+}
+
+export interface AccountingServiceItem {
+  id: string;
+  code: string;
+  name: string;
+  category: 'tributaria' | 'cfo_finanzas' | 'franquicias' | 'sociedades_laboral' | 'zhc_tech';
+  description: string;
+  defaultHourlyRateArs: number;
+  defaultHourlyRateUsd: number;
+  estimatedDefaultHours: number;
+  deliverables: string[];
+  normativeFramework?: string;
+}
+
+export interface ProposalLineItem {
+  id: string;
+  serviceId?: string;
+  serviceName: string;
+  description: string;
+  hoursEstimated: number;
+  hourlyRate: number; // in proposal currency
+  subtotal: number;
+}
+
+export type ProposalStatus = 'borrador' | 'enviada' | 'en_negociacion' | 'aprobada_pagada' | 'rechazada';
+
+export interface ProposalNegotiationEntry {
+  id: string;
+  date: string;
+  version: number;
+  author: string;
+  notes: string;
+  totalAmount: number;
+  currency: 'ARS' | 'USD';
+  status: ProposalStatus;
+}
+
+export interface CRMProposal {
+  id: string;
+  proposalNumber: string; // e.g. "PROP-2026-088"
+  leadId?: string;
+  contactId?: string;
+  employeeId?: string; // Recipient employee if company
+  recipientName: string;
+  companyName: string;
+  recipientEmail: string;
+  recipientPhone: string;
+  cuit?: string;
+  title: string;
+  vertical: BusinessVertical;
+  currency: 'ARS' | 'USD';
+  version: number;
+  status: ProposalStatus;
+  issueDate: string; // YYYY-MM-DD
+  validUntilDate: string; // YYYY-MM-DD
+  items: ProposalLineItem[];
+  subtotalAmount: number;
+  discountPercent: number;
+  discountAmount: number;
+  taxRatePercent: number; // e.g. 21% or 0
+  taxAmount: number;
+  totalAmount: number;
+  totalHours: number;
+  paymentTerms: string;
+  validityDays: number;
+  scopeSummary: string;
+  specialTerms?: string;
+  negotiationHistory?: ProposalNegotiationEntry[];
+  sentAt?: string;
+  paidAt?: string;
+  activatedAt?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+

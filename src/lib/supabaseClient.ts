@@ -771,15 +771,40 @@ class DataRepository {
   }
 
   async updateLeadStage(leadId: string, stage: LeadStage): Promise<void> {
+    await this.updateLead(leadId, { stage });
+  }
+
+  async updateLead(leadId: string, updates: Partial<Lead>): Promise<Lead> {
     if (isSupabaseConfigured && supabase) {
       try {
-        await supabase.from('leads').update({ stage, updated_at: new Date().toISOString() }).eq('id', leadId);
+        await supabase.from('leads').update({ ...updates, updated_at: new Date().toISOString() }).eq('id', leadId);
       } catch (e) {
         console.warn('Supabase update fallback', e);
       }
     }
     const current = await this.getLeads();
-    const updated = current.map((l) => (l.id === leadId ? { ...l, stage, updatedAt: new Date().toISOString() } : l));
+    let updatedLead: Lead | null = null;
+    const updated = current.map((l) => {
+      if (l.id === leadId) {
+        updatedLead = { ...l, ...updates, updatedAt: new Date().toISOString() };
+        return updatedLead;
+      }
+      return l;
+    });
+    localStorage.setItem(this.leadsKey, JSON.stringify(updated));
+    return updatedLead || current[0];
+  }
+
+  async deleteLead(leadId: string): Promise<void> {
+    if (isSupabaseConfigured && supabase) {
+      try {
+        await supabase.from('leads').delete().eq('id', leadId);
+      } catch (e) {
+        console.warn('Supabase delete fallback', e);
+      }
+    }
+    const current = await this.getLeads();
+    const updated = current.filter((l) => l.id !== leadId);
     localStorage.setItem(this.leadsKey, JSON.stringify(updated));
   }
 
@@ -800,6 +825,26 @@ class DataRepository {
 
   async toggleTaskCompletion(taskId: string): Promise<void> {
     return this.toggleTask(taskId);
+  }
+
+  async updateTask(taskId: string, updates: Partial<CRMTask>): Promise<CRMTask> {
+    const current = await this.getTasks();
+    let updatedTask: CRMTask | null = null;
+    const updated = current.map((t) => {
+      if (t.id === taskId) {
+        updatedTask = { ...t, ...updates };
+        return updatedTask;
+      }
+      return t;
+    });
+    localStorage.setItem(this.tasksKey, JSON.stringify(updated));
+    return updatedTask || current[0];
+  }
+
+  async deleteTask(taskId: string): Promise<void> {
+    const current = await this.getTasks();
+    const updated = current.filter((t) => t.id !== taskId);
+    localStorage.setItem(this.tasksKey, JSON.stringify(updated));
   }
 
   async addTask(task: Omit<CRMTask, 'id'>): Promise<CRMTask> {

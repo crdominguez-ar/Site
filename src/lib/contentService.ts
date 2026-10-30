@@ -2,6 +2,7 @@ import boardroomImg from '../assets/images/strategic_financial_boardroom_1793059
 import industryImg from '../assets/images/patagonia_industry_logistics_1793065886236.jpg';
 import heroPatagoniaImg from '../assets/images/hero_patagonia_consultancy_1793059908678.jpg';
 import digitalFintechImg from '../assets/images/digital_ai_fintech_hub_1793065898721.jpg';
+import { SocialLinksConfig } from '../types';
 
 export interface SlideContent {
   id: string;
@@ -122,6 +123,7 @@ export interface SiteContent {
     city: string;
     schedule: string;
   };
+  socialLinks: SocialLinksConfig;
 }
 
 export const DEFAULT_SITE_CONTENT: SiteContent = {
@@ -429,6 +431,16 @@ export const DEFAULT_SITE_CONTENT: SiteContent = {
     city: 'Patagonia Argentina',
     schedule: 'Lunes a Viernes de 09:00 a 18:00 hs',
   },
+  socialLinks: {
+    linkedin: 'https://www.linkedin.com/in/carlos-rodrigo-dominguez',
+    youtube: 'https://www.youtube.com/@crdominguez-cfo',
+    instagram: 'https://www.instagram.com/crdominguez.ar',
+    twitterX: 'https://x.com/crdominguez_ar',
+    spotify: 'https://open.spotify.com/show/crdominguez-cfo-podcast',
+    whatsapp: '5492804567890',
+    facebook: 'https://facebook.com/crdominguez.consultoria',
+    github: 'https://github.com/crdominguez-ar',
+  },
 };
 
 const STORAGE_KEY = 'cr_site_content_v1';
@@ -448,6 +460,8 @@ class ContentService {
         ...DEFAULT_SITE_CONTENT,
         ...parsed,
         theme: { ...DEFAULT_SITE_CONTENT.theme, ...(parsed.theme || {}) },
+        socialLinks: { ...DEFAULT_SITE_CONTENT.socialLinks, ...(parsed.socialLinks || {}) },
+        contact: { ...DEFAULT_SITE_CONTENT.contact, ...(parsed.contact || {}) },
         homeBlocks: parsed.homeBlocks && parsed.homeBlocks.length ? parsed.homeBlocks : DEFAULT_SITE_CONTENT.homeBlocks,
         homeSectionHeaders: { ...DEFAULT_SITE_CONTENT.homeSectionHeaders, ...(parsed.homeSectionHeaders || {}) },
         caseStudies: parsed.caseStudies && parsed.caseStudies.length 

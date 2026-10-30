@@ -15,9 +15,12 @@ import {
   CompanyEmployee,
   MeetingPlatform, 
   MeetingType,
-  PipelineStageConfig
+  PipelineStageConfig,
+  CRMProposal
 } from '../../types';
 import { BUSINESS_VERTICALS } from '../../data/verticals';
+import { proposalService } from '../../lib/proposalService';
+import { ProposalBuilderModal } from './ProposalBuilderModal';
 import { 
   CheckSquare, Plus, Search, ArrowRight, X, Calendar as CalendarIcon, 
   Video, MessageSquare, Mail, Phone, Clock, User, Users, CheckCircle2, 
@@ -25,7 +28,7 @@ import {
   Building2, MapPin, Tag, Check, Trash2, Edit3, Shield, ArrowUpRight,
   Send, Sparkles, Briefcase, ChevronDown, ChevronUp, Star, Layers,
   Globe, AlertCircle, TrendingUp, LayoutGrid, List, SlidersHorizontal,
-  GripVertical, Settings2, RotateCcw, Eye, EyeOff
+  GripVertical, Settings2, RotateCcw, Eye, EyeOff, Award
 } from 'lucide-react';
 
 interface InternalCRMProps {
@@ -66,7 +69,14 @@ export const InternalCRM: React.FC<InternalCRMProps> = ({ currentRole, initialSu
   const [tasks, setTasks] = useState<CRMTask[]>([]);
   const [contacts, setContacts] = useState<CRMContact[]>([]);
   const [meetings, setMeetings] = useState<CRMMeeting[]>([]);
+  const [proposals, setProposals] = useState<CRMProposal[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // Proposal Presupuesto Builder Modal State
+  const [showProposalModal, setShowProposalModal] = useState(false);
+  const [proposalModalLead, setProposalModalLead] = useState<Lead | null>(null);
+  const [proposalModalContact, setProposalModalContact] = useState<CRMContact | null>(null);
+  const [proposalModalProposalId, setProposalModalProposalId] = useState<string | null>(null);
 
   // Pipeline Stage Customization
   const [pipelineStages, setPipelineStages] = useState<PipelineStageConfig[]>(() => {
@@ -188,16 +198,18 @@ export const InternalCRM: React.FC<InternalCRMProps> = ({ currentRole, initialSu
   const loadData = async () => {
     setLoading(true);
     try {
-      const [l, t, c, m] = await Promise.all([
+      const [l, t, c, m, p] = await Promise.all([
         dbRepository.getLeads(),
         dbRepository.getTasks(),
         dbRepository.getContacts(),
         dbRepository.getMeetings(),
+        proposalService.getProposals(),
       ]);
       setLeads(l);
       setTasks(t);
       setContacts(c);
       setMeetings(m);
+      setProposals(p);
 
       const defaultExpanded: Record<string, boolean> = {};
       c.forEach((contact) => {
@@ -208,6 +220,33 @@ export const InternalCRM: React.FC<InternalCRMProps> = ({ currentRole, initialSu
       setExpandedCompanyIds((prev) => ({ ...defaultExpanded, ...prev }));
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleOpenProposalModal = (lead?: Lead | null, contact?: CRMContact | null, propId?: string | null) => {
+    setProposalModalLead(lead || null);
+    setProposalModalContact(contact || null);
+    setProposalModalProposalId(propId || null);
+    setShowProposalModal(true);
+  };
+
+  const handleDeleteLead = async (leadId: string, e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
+    if (window.confirm('¿Está seguro de eliminar esta oportunidad del pipeline?')) {
+      await dbRepository.deleteLead(leadId);
+      if (selectedLead?.id === leadId) setSelectedLead(null);
+      setCopyFeedback('Oportunidad eliminada del pipeline con éxito.');
+      setTimeout(() => setCopyFeedback(null), 3000);
+      await loadData();
+    }
+  };
+
+  const handleDeleteTask = async (taskId: string) => {
+    if (window.confirm('¿Eliminar esta tarea del CRM?')) {
+      await dbRepository.deleteTask(taskId);
+      setCopyFeedback('Tarea eliminada con éxito.');
+      setTimeout(() => setCopyFeedback(null), 3000);
+      await loadData();
     }
   };
 
@@ -1385,13 +1424,50 @@ export const InternalCRM: React.FC<InternalCRMProps> = ({ currentRole, initialSu
                               )}
                             </div>
 
-                            <p className="text-[11px] text-slate-500 line-clamp-2 leading-relaxed mb-3">
+                            <p className="text-[11px] text-slate-500 line-clamp-2 leading-relaxed mb-2">
                               {lead.notes}
                             </p>
+
+                            {/* Linked Proposal Presupuesto Badge if exists */}
+                            {(() => {
+                              const leadProposal = proposals.find((p) => p.leadId === lead.id || p.id === lead.proposalId);
+                              if (!leadProposal) return null;
+                              return (
+                                <div 
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleOpenProposalModal(lead, linkedContact, leadProposal.id);
+                                  }}
+                                  className="flex items-center justify-between text-[10px] bg-blue-50/80 hover:bg-blue-100/80 border border-blue-200 text-blue-900 rounded-md px-2 py-1 mb-2 font-mono transition-colors cursor-pointer"
+                                  title="Ver propuesta presupuesto vinculada"
+                                >
+                                  <span className="font-bold flex items-center gap-1 truncate">
+                                    <FileText className="w-3 h-3 text-[#0078D4] shrink-0" />
+                                    <span className="truncate">{leadProposal.proposalNumber} (v{leadProposal.version})</span>
+                                  </span>
+                                  <span className="font-black text-[#0078D4] shrink-0 ml-1">
+                                    {leadProposal.currency === 'USD' ? 'USD ' : '$ '}{leadProposal.totalAmount.toLocaleString('es-AR')}
+                                  </span>
+                                </div>
+                              );
+                            })()}
 
                             {/* Actions and Stage Dropdown */}
                             <div className="flex items-center justify-between pt-2 border-t border-slate-100 text-[10px]" onClick={(e) => e.stopPropagation()}>
                               <div className="flex items-center gap-1">
+                                <button
+                                  type="button"
+                                  title="Plantilla de Propuesta Presupuesto & Honorarios"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleOpenProposalModal(lead, linkedContact, lead.proposalId);
+                                  }}
+                                  className="px-1.5 py-0.5 bg-blue-50 hover:bg-blue-100 text-[#0078D4] rounded font-bold transition-colors flex items-center gap-1"
+                                >
+                                  <FileText className="w-3 h-3 text-[#0078D4]" />
+                                  <span>Propuesta</span>
+                                </button>
+
                                 {linkedContact && (
                                   <button
                                     type="button"
@@ -1409,6 +1485,14 @@ export const InternalCRM: React.FC<InternalCRMProps> = ({ currentRole, initialSu
                                   className="p-1 text-[#0078D4] hover:bg-blue-50 rounded transition-colors"
                                 >
                                   <Video className="w-3.5 h-3.5" />
+                                </button>
+                                <button
+                                  type="button"
+                                  title="Eliminar Oportunidad"
+                                  onClick={(e) => handleDeleteLead(lead.id, e)}
+                                  className="p-1 text-slate-400 hover:text-rose-600 rounded transition-colors"
+                                >
+                                  <Trash2 className="w-3.5 h-3.5" />
                                 </button>
                               </div>
 
@@ -1654,12 +1738,22 @@ export const InternalCRM: React.FC<InternalCRMProps> = ({ currentRole, initialSu
                       <div className="flex flex-wrap items-center gap-2 self-start lg:self-auto">
                         <button
                           type="button"
+                          onClick={() => handleOpenProposalModal(linkedLead, contact)}
+                          className="px-2.5 py-1.5 bg-cyan-50 hover:bg-cyan-100 text-cyan-800 border border-cyan-200 font-bold text-xs rounded-lg flex items-center gap-1.5 transition-colors cursor-pointer"
+                          title="Crear o gestionar Propuesta Presupuesto para este contacto"
+                        >
+                          <FileText className="w-3.5 h-3.5 text-cyan-600" />
+                          <span>Presupuesto</span>
+                        </button>
+
+                        <button
+                          type="button"
                           onClick={() => handleOpenCreateLeadModal(contact)}
                           className="px-3 py-1.5 bg-blue-50 hover:bg-blue-100 text-[#0078D4] border border-blue-200 font-bold text-xs rounded-lg flex items-center gap-1.5 transition-colors cursor-pointer"
                           title="Crear una nueva oportunidad en el pipeline para este contacto"
                         >
                           <TrendingUp className="w-3.5 h-3.5" />
-                          <span>+ Crear Oportunidad</span>
+                          <span>+ Oportunidad</span>
                         </button>
 
                         <button
@@ -2341,6 +2435,17 @@ export const InternalCRM: React.FC<InternalCRMProps> = ({ currentRole, initialSu
                   }`}>
                     {task.priority}
                   </span>
+                  <button
+                    type="button"
+                    title="Eliminar Tarea"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDeleteTask(task.id);
+                    }}
+                    className="p-1 text-slate-400 hover:text-rose-600 rounded transition-colors"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
                 </div>
               </div>
             ))}
@@ -3565,6 +3670,38 @@ export const InternalCRM: React.FC<InternalCRMProps> = ({ currentRole, initialSu
               </div>
             </div>
 
+            {/* Proposal Presupuesto Box */}
+            <div className="bg-sky-50/70 border border-sky-200 rounded-lg p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+              <div>
+                <span className="text-[10px] uppercase font-bold text-sky-800 flex items-center gap-1.5 mb-0.5">
+                  <FileText className="w-3.5 h-3.5 text-[#0078D4]" />
+                  <span>Propuesta Presupuesto de Servicios Contables</span>
+                </span>
+                {selectedLead.proposalId ? (
+                  <p className="text-slate-700">
+                    Propuesta vinculada activa: <strong className="text-[#0078D4]">{selectedLead.proposalId}</strong>
+                    {selectedLead.proposalTotal ? ` · Total: ${selectedLead.proposalTotal.toLocaleString('es-AR')}` : ''}
+                    {selectedLead.proposalStatus ? ` (${selectedLead.proposalStatus})` : ''}
+                  </p>
+                ) : (
+                  <p className="text-slate-600">
+                    Aún no se ha emitido la propuesta para esta oportunidad.
+                  </p>
+                )}
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  const linked = contacts.find((c) => c.id === selectedLead.contactId || c.leadId === selectedLead.id || c.name === selectedLead.contactName);
+                  handleOpenProposalModal(selectedLead, linked, selectedLead.proposalId);
+                }}
+                className="px-3.5 py-1.5 bg-[#0078D4] hover:bg-[#006cbd] text-white font-bold rounded-lg text-xs flex items-center gap-1.5 shadow-xs shrink-0 self-start sm:self-auto cursor-pointer"
+              >
+                <FileText className="w-3.5 h-3.5" />
+                <span>{selectedLead.proposalId ? 'Gestionar Propuesta' : 'Crear Propuesta Presupuesto'}</span>
+              </button>
+            </div>
+
             <div>
               <span className="text-slate-700 text-xs font-bold block mb-1">Notas del Diagnóstico:</span>
               <p className="text-xs text-slate-600 bg-white p-3 rounded border border-slate-200 leading-relaxed">
@@ -3606,6 +3743,15 @@ export const InternalCRM: React.FC<InternalCRMProps> = ({ currentRole, initialSu
                   <Video className="w-3.5 h-3.5" />
                   <span>Agendar Videollamada</span>
                 </button>
+
+                <button
+                  type="button"
+                  onClick={(e) => handleDeleteLead(selectedLead.id, e)}
+                  className="px-3 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 font-bold text-xs rounded-lg flex items-center gap-1.5"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                  <span>Eliminar Oportunidad</span>
+                </button>
               </div>
 
               <button
@@ -3618,6 +3764,32 @@ export const InternalCRM: React.FC<InternalCRMProps> = ({ currentRole, initialSu
             </div>
           </div>
         </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* MODAL: PROPOSAL PRESUPUESTO BUILDER & CLIENT ACTIVATION */}
+      {/* ========================================================================= */}
+      {showProposalModal && (
+        <ProposalBuilderModal
+          isOpen={showProposalModal}
+          onClose={() => {
+            setShowProposalModal(false);
+            setProposalModalLead(null);
+            setProposalModalContact(null);
+            setProposalModalProposalId(null);
+          }}
+          proposalId={proposalModalProposalId}
+          initialLead={proposalModalLead}
+          initialContact={proposalModalContact}
+          onProposalSaved={(saved) => {
+            loadData();
+          }}
+          onClientActivated={(activated) => {
+            loadData();
+            setCopyFeedback(`¡Cliente ${activated.companyName} activado y usuario creado en el portal!`);
+            setTimeout(() => setCopyFeedback(null), 4000);
+          }}
+        />
       )}
     </div>
   );

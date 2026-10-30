@@ -28,7 +28,8 @@ import {
   MoveDown,
   Plus,
   Trash2,
-  Sparkles
+  Sparkles,
+  Share2
 } from 'lucide-react';
 
 interface WebCMSEditorProps {
@@ -37,7 +38,7 @@ interface WebCMSEditorProps {
 
 export const WebCMSEditor: React.FC<WebCMSEditorProps> = ({ onPreviewSite }) => {
   const [content, setContent] = useState<SiteContent>(() => contentService.getContent());
-  const [activeTab, setActiveTab] = useState<'blocks' | 'styles' | 'hero' | 'axes' | 'case_studies' | 'video' | 'kpis' | 'profile' | 'contact'>('blocks');
+  const [activeTab, setActiveTab] = useState<'blocks' | 'styles' | 'hero' | 'axes' | 'case_studies' | 'video' | 'kpis' | 'profile' | 'contact' | 'social'>('blocks');
   const [activeSlideIndex, setActiveSlideIndex] = useState<number>(0);
   const [activeAxisIndex, setActiveAxisIndex] = useState<number>(0);
   const [activeCaseIndex, setActiveCaseIndex] = useState<number>(0);
@@ -350,6 +351,19 @@ export const WebCMSEditor: React.FC<WebCMSEditorProps> = ({ onPreviewSite }) => 
         >
           <PhoneCall className="w-4 h-4" />
           <span>Contacto & WhatsApp</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveTab('social')}
+          className={`px-4 py-2.5 rounded-t-lg transition-colors whitespace-nowrap flex items-center gap-2 border-b-2 ${
+            activeTab === 'social'
+              ? 'border-[#0078D4] text-[#0078D4] bg-white font-bold'
+              : 'border-transparent text-slate-600 hover:text-slate-900 bg-transparent'
+          }`}
+        >
+          <Share2 className="w-4 h-4" />
+          <span>Redes Sociales & Canales</span>
         </button>
       </div>
 
@@ -1899,6 +1913,251 @@ export const WebCMSEditor: React.FC<WebCMSEditorProps> = ({ onPreviewSite }) => 
                 }
                 className="w-full text-xs px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-slate-900"
               />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* TAB 10: REDES SOCIALES & CANALES DIGITALES */}
+      {activeTab === 'social' && (
+        <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm space-y-6">
+          <div className="border-b border-slate-200 pb-3">
+            <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+              <Share2 className="w-4 h-4 text-[#0078D4]" />
+              <span>Gestión de Redes Sociales, Canales de Video & Podcasts</span>
+            </h3>
+            <p className="text-xs text-slate-500 mt-0.5">
+              Configura los perfiles y enlaces directos de la firma. Se reflejan en el Pie de Página (Footer), Menú de Navegación, Sección de Perfil del Home y Artículos del Blog.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            {/* LinkedIn */}
+            <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-2">
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
+                  <span className="w-2.5 h-2.5 rounded-full bg-[#0A66C2]" />
+                  <span>LinkedIn Profesional / Estudio</span>
+                </label>
+                {content.socialLinks?.linkedin && (
+                  <a
+                    href={content.socialLinks.linkedin}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-[11px] text-[#0A66C2] font-semibold hover:underline"
+                  >
+                    Probar Enlace ↗
+                  </a>
+                )}
+              </div>
+              <input
+                type="url"
+                value={content.socialLinks?.linkedin || ''}
+                onChange={(e) =>
+                  setContent({
+                    ...content,
+                    socialLinks: {
+                      ...(content.socialLinks || { youtube: '', instagram: '', twitterX: '', spotify: '', whatsapp: '' }),
+                      linkedin: e.target.value,
+                    },
+                  })
+                }
+                placeholder="https://www.linkedin.com/in/carlos-rodrigo-dominguez"
+                className="w-full text-xs px-3 py-2 bg-white border border-slate-300 rounded-lg text-slate-900 focus:outline-none focus:ring-1 focus:ring-[#0078D4]"
+              />
+              <p className="text-[11px] text-slate-500">
+                Perfil profesional del Cr. Carlos Rodrigo Domínguez o página corporativa de la consultora.
+              </p>
+            </div>
+
+            {/* YouTube */}
+            <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-2">
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
+                  <span className="w-2.5 h-2.5 rounded-full bg-[#FF0000]" />
+                  <span>Canal Oficial de YouTube</span>
+                </label>
+                {content.socialLinks?.youtube && (
+                  <a
+                    href={content.socialLinks.youtube}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-[11px] text-[#FF0000] font-semibold hover:underline"
+                  >
+                    Probar Enlace ↗
+                  </a>
+                )}
+              </div>
+              <input
+                type="url"
+                value={content.socialLinks?.youtube || ''}
+                onChange={(e) =>
+                  setContent({
+                    ...content,
+                    socialLinks: {
+                      ...(content.socialLinks || { linkedin: '', instagram: '', twitterX: '', spotify: '', whatsapp: '' }),
+                      youtube: e.target.value,
+                    },
+                  })
+                }
+                placeholder="https://www.youtube.com/@crdominguez-cfo"
+                className="w-full text-xs px-3 py-2 bg-white border border-slate-300 rounded-lg text-slate-900 focus:outline-none focus:ring-1 focus:ring-[#0078D4]"
+              />
+              <p className="text-[11px] text-slate-500">
+                Canal con conferencias, masterclasses de franquicias y dirección financiera.
+              </p>
+            </div>
+
+            {/* Instagram */}
+            <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-2">
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
+                  <span className="w-2.5 h-2.5 rounded-full bg-gradient-to-tr from-amber-500 to-pink-500" />
+                  <span>Instagram Corporativo</span>
+                </label>
+                {content.socialLinks?.instagram && (
+                  <a
+                    href={content.socialLinks.instagram}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-[11px] text-pink-600 font-semibold hover:underline"
+                  >
+                    Probar Enlace ↗
+                  </a>
+                )}
+              </div>
+              <input
+                type="url"
+                value={content.socialLinks?.instagram || ''}
+                onChange={(e) =>
+                  setContent({
+                    ...content,
+                    socialLinks: {
+                      ...(content.socialLinks || { linkedin: '', youtube: '', twitterX: '', spotify: '', whatsapp: '' }),
+                      instagram: e.target.value,
+                    },
+                  })
+                }
+                placeholder="https://www.instagram.com/crdominguez.ar"
+                className="w-full text-xs px-3 py-2 bg-white border border-slate-300 rounded-lg text-slate-900 focus:outline-none focus:ring-1 focus:ring-[#0078D4]"
+              />
+              <p className="text-[11px] text-slate-500">
+                Cuenta de difusión y tips tributarios/financieros para empresarios.
+              </p>
+            </div>
+
+            {/* X / Twitter */}
+            <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-2">
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
+                  <span className="w-2.5 h-2.5 rounded-full bg-slate-900" />
+                  <span>X (Twitter)</span>
+                </label>
+                {content.socialLinks?.twitterX && (
+                  <a
+                    href={content.socialLinks.twitterX}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-[11px] text-slate-900 font-semibold hover:underline"
+                  >
+                    Probar Enlace ↗
+                  </a>
+                )}
+              </div>
+              <input
+                type="url"
+                value={content.socialLinks?.twitterX || ''}
+                onChange={(e) =>
+                  setContent({
+                    ...content,
+                    socialLinks: {
+                      ...(content.socialLinks || { linkedin: '', youtube: '', instagram: '', spotify: '', whatsapp: '' }),
+                      twitterX: e.target.value,
+                    },
+                  })
+                }
+                placeholder="https://x.com/crdominguez_ar"
+                className="w-full text-xs px-3 py-2 bg-white border border-slate-300 rounded-lg text-slate-900 focus:outline-none focus:ring-1 focus:ring-[#0078D4]"
+              />
+              <p className="text-[11px] text-slate-500">
+                Opinión macroeconómica, análisis de coyuntura y regulaciones fiscales.
+              </p>
+            </div>
+
+            {/* Spotify */}
+            <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-2">
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
+                  <span className="w-2.5 h-2.5 rounded-full bg-[#1DB954]" />
+                  <span>Podcast en Spotify</span>
+                </label>
+                {content.socialLinks?.spotify && (
+                  <a
+                    href={content.socialLinks.spotify}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-[11px] text-[#1DB954] font-semibold hover:underline"
+                  >
+                    Probar Enlace ↗
+                  </a>
+                )}
+              </div>
+              <input
+                type="url"
+                value={content.socialLinks?.spotify || ''}
+                onChange={(e) =>
+                  setContent({
+                    ...content,
+                    socialLinks: {
+                      ...(content.socialLinks || { linkedin: '', youtube: '', instagram: '', twitterX: '', whatsapp: '' }),
+                      spotify: e.target.value,
+                    },
+                  })
+                }
+                placeholder="https://open.spotify.com/show/crdominguez-cfo-podcast"
+                className="w-full text-xs px-3 py-2 bg-white border border-slate-300 rounded-lg text-slate-900 focus:outline-none focus:ring-1 focus:ring-[#0078D4]"
+              />
+              <p className="text-[11px] text-slate-500">
+                Canal de podcast con análisis de casos y entrevistas a empresarios patagónicos.
+              </p>
+            </div>
+
+            {/* WhatsApp */}
+            <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-2">
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
+                  <span className="w-2.5 h-2.5 rounded-full bg-[#25D366]" />
+                  <span>WhatsApp Corporativo (Número Internacional)</span>
+                </label>
+                {content.socialLinks?.whatsapp && (
+                  <a
+                    href={`https://wa.me/${content.socialLinks.whatsapp}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-[11px] text-[#25D366] font-semibold hover:underline"
+                  >
+                    Abrir Chat ↗
+                  </a>
+                )}
+              </div>
+              <input
+                type="text"
+                value={content.socialLinks?.whatsapp || ''}
+                onChange={(e) =>
+                  setContent({
+                    ...content,
+                    socialLinks: {
+                      ...(content.socialLinks || { linkedin: '', youtube: '', instagram: '', twitterX: '', spotify: '' }),
+                      whatsapp: e.target.value,
+                    },
+                  })
+                }
+                placeholder="5492804567890 (sin '+' ni guiones)"
+                className="w-full text-xs px-3 py-2 bg-white border border-slate-300 rounded-lg text-slate-900 focus:outline-none focus:ring-1 focus:ring-[#0078D4]"
+              />
+              <p className="text-[11px] text-slate-500">
+                Número para enlace directo de consulta inmediata desde cualquier parte del sitio.
+              </p>
             </div>
           </div>
         </div>

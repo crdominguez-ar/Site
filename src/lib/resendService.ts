@@ -4,7 +4,7 @@
  * Plan Free: 3,000 emails/mes · 100 emails/día
  */
 
-import { ResendConfig, ResendEmailLog, Lead, DeliverableReport, CRMMeeting } from '../types';
+import { ResendConfig, ResendEmailLog, Lead, DeliverableReport, CRMMeeting, CRMProposal } from '../types';
 
 const DEFAULT_CONFIG: ResendConfig = {
   apiKey: 're_patagonia_free_tier_live_key',
@@ -377,6 +377,217 @@ class ResendService {
       type: 'meeting_invite',
     });
   }
+
+  /**
+   * Send formal budget & services proposal email
+   */
+  async sendProposalEmail(
+    proposal: CRMProposal, 
+    recipientEmail: string, 
+    customNotes?: string
+  ): Promise<{ success: boolean; messageId: string }> {
+    const currencySign = proposal.currency === 'USD' ? 'USD ' : '$ ';
+    const subject = `Propuesta de Servicios #${proposal.proposalNumber} (v${proposal.version}) · Cr Dominguez`;
+    
+    const itemsHtml = proposal.items.map((it, idx) => `
+      <tr style="border-bottom: 1px solid #e2e8f0;">
+        <td style="padding: 10px 8px; color: #0f172a; font-weight: 600; font-size: 13px;">${idx + 1}. ${it.serviceName}</td>
+        <td style="padding: 10px 8px; color: #475569; font-size: 13px; text-align: center;">${it.hoursEstimated} hs</td>
+        <td style="padding: 10px 8px; color: #475569; font-size: 13px; text-align: right;">${currencySign}${it.hourlyRate.toLocaleString('es-AR')}</td>
+        <td style="padding: 10px 8px; color: #0f172a; font-weight: 700; font-size: 13px; text-align: right;">${currencySign}${it.subtotal.toLocaleString('es-AR')}</td>
+      </tr>
+      <tr>
+        <td colspan="4" style="padding: 0 8px 10px; color: #64748b; font-size: 12px; font-style: italic;">${it.description}</td>
+      </tr>
+    `).join('');
+
+    const html = `
+      <div style="font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif; max-width: 660px; margin: 0 auto; padding: 28px 24px; border: 1px solid #e2e8f0; border-radius: 12px; background: #ffffff;">
+        <div style="border-bottom: 3px solid #0078D4; padding-bottom: 16px; margin-bottom: 24px;">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+              <h2 style="margin: 0; color: #0078D4; font-size: 22px; font-weight: 800;">Cr Dominguez</h2>
+              <p style="margin: 4px 0 0; color: #64748b; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px;">Consultoría Estratégica & Dirección Financiera CFO</p>
+            </div>
+            <div style="text-align: right;">
+              <span style="display: inline-block; padding: 4px 10px; background: #f0f9ff; color: #0284c7; border: 1px solid #bae6fd; border-radius: 6px; font-weight: 700; font-size: 12px;">${proposal.proposalNumber} · v${proposal.version}</span>
+            </div>
+          </div>
+        </div>
+
+        <p style="color: #334155; font-size: 14px; margin: 0 0 16px; line-height: 1.6;">
+          Estimado/a <strong>${proposal.recipientName}</strong> (${proposal.companyName}):
+        </p>
+        <p style="color: #475569; font-size: 14px; margin: 0 0 20px; line-height: 1.6;">
+          Es un placer presentarle la propuesta técnico-profesional de servicios contables, auditoría y dirección financiera estratégica elaborada especialmente para su organización.
+        </p>
+
+        ${customNotes ? `
+        <div style="background-color: #f1f5f9; border-left: 4px solid #0078D4; padding: 12px 16px; margin-bottom: 20px; border-radius: 0 6px 6px 0;">
+          <p style="margin: 0; font-size: 13px; color: #334155; font-style: italic;">${customNotes}</p>
+        </div>
+        ` : ''}
+
+        <div style="background-color: #ffffff; border: 1px solid #cbd5e1; border-radius: 8px; overflow: hidden; margin-bottom: 24px;">
+          <div style="background-color: #f8fafc; padding: 10px 14px; border-bottom: 1px solid #cbd5e1;">
+            <h4 style="margin: 0; font-size: 13px; color: #0f172a; text-transform: uppercase; letter-spacing: 0.5px;">Detalle de Honorarios & Servicios Contables</h4>
+          </div>
+          <table style="width: 100%; border-collapse: collapse; text-align: left;">
+            <thead>
+              <tr style="background-color: #f1f5f9; border-bottom: 1px solid #e2e8f0; font-size: 11px; text-transform: uppercase; color: #475569;">
+                <th style="padding: 8px;">Servicio</th>
+                <th style="padding: 8px; text-align: center;">Horas</th>
+                <th style="padding: 8px; text-align: right;">Precio / Hora</th>
+                <th style="padding: 8px; text-align: right;">Subtotal</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${itemsHtml}
+            </tbody>
+            <tfoot>
+              ${proposal.discountPercent > 0 ? `
+              <tr style="border-top: 1px solid #e2e8f0;">
+                <td colspan="3" style="padding: 6px 8px; text-align: right; color: #64748b; font-size: 12px;">Bonificación especial (${proposal.discountPercent}%):</td>
+                <td style="padding: 6px 8px; text-align: right; color: #dc2626; font-size: 12px; font-weight: 600;">-${currencySign}${proposal.discountAmount.toLocaleString('es-AR')}</td>
+              </tr>
+              ` : ''}
+              ${proposal.taxAmount > 0 ? `
+              <tr>
+                <td colspan="3" style="padding: 6px 8px; text-align: right; color: #64748b; font-size: 12px;">IVA (${proposal.taxRatePercent}%):</td>
+                <td style="padding: 6px 8px; text-align: right; color: #475569; font-size: 12px;">+${currencySign}${proposal.taxAmount.toLocaleString('es-AR')}</td>
+              </tr>
+              ` : ''}
+              <tr style="border-top: 2px solid #0078D4; background-color: #f8fafc;">
+                <td colspan="3" style="padding: 10px 8px; text-align: right; color: #0f172a; font-size: 14px; font-weight: 800;">HONORARIOS TOTALES (${proposal.currency}):</td>
+                <td style="padding: 10px 8px; text-align: right; color: #0078D4; font-size: 16px; font-weight: 800;">${currencySign}${proposal.totalAmount.toLocaleString('es-AR')}</td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+
+        <div style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 14px; margin-bottom: 24px; font-size: 12px; color: #475569;">
+          <p style="margin: 0 0 6px;"><strong>Condiciones de Pago:</strong> ${proposal.paymentTerms}</p>
+          <p style="margin: 0 0 6px;"><strong>Validez de la Propuesta:</strong> ${proposal.validityDays} días corridos (hasta el ${proposal.validUntilDate}).</p>
+          <p style="margin: 0;"><strong>Horas Estimadas:</strong> ${proposal.totalHours} hs profesionales de socio consultor y staff auditor.</p>
+        </div>
+
+        <div style="text-align: center; margin: 28px 0 20px;">
+          <a href="https://wa.me/5492804567890?text=${encodeURIComponent(`Hola Cr. Domínguez, recibí la propuesta #${proposal.proposalNumber} y deseo avanzar con la contratación.`)}" target="_blank" style="display: inline-block; background-color: #25D366; color: #ffffff; text-decoration: none; font-weight: 700; font-size: 14px; padding: 12px 24px; border-radius: 6px; box-shadow: 0 2px 4px rgba(37,211,102,0.25);">
+            Aprobar Propuesta vía WhatsApp
+          </a>
+        </div>
+
+        <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 28px 0 16px;" />
+        <p style="font-size: 11px; color: #94a3b8; text-align: center; margin: 0; line-height: 1.4;">
+          Emitido por <strong>Cr. Carlos Rodrigo Domínguez</strong> · Matrícula Profesional Oficial CPCE Chubut.<br />
+          Sede Central: Trelew, Chubut, Patagonia Argentina · Tel: +54 280 442-8812 · <a href="https://crdominguez.ar" style="color: #94a3b8;">crdominguez.ar</a>
+        </p>
+      </div>
+    `;
+
+    return await this.sendEmail({
+      to: [recipientEmail],
+      subject,
+      html,
+      text: `Propuesta #${proposal.proposalNumber} para ${proposal.companyName}\nTotal: ${currencySign}${proposal.totalAmount}\nCondiciones: ${proposal.paymentTerms}`,
+      type: 'proposal_delivery',
+    });
+  }
+
+  /**
+   * Send automatic welcome email with credentials upon client activation
+   */
+  async sendClientWelcomeEmail(params: {
+    name: string;
+    email: string;
+    companyName: string;
+    temporaryPassword: string;
+    contractedServices: string[];
+    proposalNumber?: string;
+    totalAmount?: number;
+    currency?: string;
+    isCompany?: boolean;
+    loginUrl: string;
+  }): Promise<{ success: boolean; messageId: string }> {
+    const subject = `¡Bienvenido a Cr Dominguez! Acceso a su Portal de Clientes (${params.companyName})`;
+    
+    const servicesListHtml = params.contractedServices.map((s) => `
+      <li style="margin-bottom: 6px; color: #334155; font-size: 13px;">✓ <strong>${s}</strong></li>
+    `).join('');
+
+    const html = `
+      <div style="font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif; max-width: 640px; margin: 0 auto; padding: 28px 24px; border: 1px solid #e2e8f0; border-radius: 12px; background: #ffffff;">
+        <div style="border-bottom: 3px solid #107C41; padding-bottom: 16px; margin-bottom: 24px;">
+          <h2 style="margin: 0; color: #107C41; font-size: 22px; font-weight: 800;">Cr Dominguez</h2>
+          <p style="margin: 4px 0 0; color: #64748b; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px;">Consultoría Estratégica & Dirección Financiera CFO</p>
+        </div>
+
+        <div style="background-color: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 8px; padding: 16px; margin-bottom: 20px;">
+          <h3 style="margin: 0 0 6px; color: #065f46; font-size: 16px;">¡Bienvenido/a a la firma, ${params.name}!</h3>
+          <p style="margin: 0; color: #047857; font-size: 13px; line-height: 1.5;">
+            Confirmamos la recepción del pago y la formalización de la contratación de servicios para <strong>${params.companyName}</strong>${params.proposalNumber ? ` (Propuesta #${params.proposalNumber})` : ''}.
+          </p>
+        </div>
+
+        <p style="color: #475569; font-size: 14px; line-height: 1.6; margin: 0 0 16px;">
+          A partir de este momento, cuenta con acceso completo a su <strong>Portal Privado de Clientes y Bóveda Documental</strong>, donde podrá consultar dictámenes financieros, calendarios impositivos, vencimientos y coordinar comités ejecutivos.
+        </p>
+
+        <div style="background-color: #080E18; color: #ffffff; border-radius: 8px; padding: 20px; margin-bottom: 24px;">
+          <h4 style="margin: 0 0 12px; font-size: 14px; color: #38BDF8; text-transform: uppercase; letter-spacing: 0.5px;">Sus Credenciales de Acceso al Portal</h4>
+          <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
+            <tr>
+              <td style="padding: 6px 0; color: #94a3b8; width: 140px;">URL de Acceso:</td>
+              <td style="padding: 6px 0;"><a href="${params.loginUrl}" style="color: #38BDF8; font-weight: 600; text-decoration: underline;">${params.loginUrl}</a></td>
+            </tr>
+            <tr>
+              <td style="padding: 6px 0; color: #94a3b8;">Usuario / Email:</td>
+              <td style="padding: 6px 0; font-weight: 700; color: #ffffff;">${params.email}</td>
+            </tr>
+            <tr>
+              <td style="padding: 6px 0; color: #94a3b8;">Contraseña Temporal:</td>
+              <td style="padding: 6px 0;"><code style="background: rgba(255,255,255,0.15); padding: 3px 8px; border-radius: 4px; font-family: monospace; font-size: 14px; color: #4ade80;">${params.temporaryPassword}</code></td>
+            </tr>
+            <tr>
+              <td style="padding: 6px 0; color: #94a3b8;">Empresa / Razón Social:</td>
+              <td style="padding: 6px 0; color: #f1f5f9;">${params.companyName}</td>
+            </tr>
+          </table>
+          <p style="margin: 12px 0 0; font-size: 11px; color: #94a3b8;">
+            * Por seguridad, le sugerimos modificar su contraseña tras el primer inicio de sesión.
+          </p>
+        </div>
+
+        <div style="margin-bottom: 24px;">
+          <h4 style="margin: 0 0 10px; font-size: 13px; color: #0f172a; text-transform: uppercase;">Servicios Profesionales Contratados</h4>
+          <ul style="padding-left: 18px; margin: 0; list-style-type: none;">
+            ${servicesListHtml}
+          </ul>
+        </div>
+
+        <div style="text-align: center; margin: 28px 0 20px;">
+          <a href="${params.loginUrl}" target="_blank" style="display: inline-block; background-color: #0078D4; color: #ffffff; text-decoration: none; font-weight: 700; font-size: 14px; padding: 12px 32px; border-radius: 6px; box-shadow: 0 2px 4px rgba(0,120,212,0.25);">
+            Ingresar al Portal de Clientes
+          </a>
+        </div>
+
+        <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 28px 0 16px;" />
+        <p style="font-size: 11px; color: #94a3b8; text-align: center; margin: 0; line-height: 1.4;">
+          Socio a cargo: <strong>Cr. Carlos Rodrigo Domínguez</strong> · Director de Consultoría & CFO.<br />
+          Para soporte técnico o consultas urgentes, responda a este email o comuníquese a <a href="mailto:carlos@crdominguez.ar" style="color: #94a3b8;">carlos@crdominguez.ar</a>.
+        </p>
+      </div>
+    `;
+
+    return await this.sendEmail({
+      to: [params.email],
+      subject,
+      html,
+      text: `Bienvenido a Cr Dominguez. Sus credenciales para ${params.loginUrl} son: Usuario: ${params.email}, Contraseña: ${params.temporaryPassword}`,
+      type: 'client_welcome',
+    });
+  }
 }
 
 export const resendService = new ResendService();
+
