@@ -4,6 +4,19 @@
   "outputDirectory": "dist",
   "framework": "vite",
   "cleanUrls": true,
+  "redirects": [
+    {
+      "source": "/:path*",
+      "has": [
+        {
+          "type": "host",
+          "value": "crdominguez.ar"
+        }
+      ],
+      "destination": "https://www.crdominguez.ar/:path*",
+      "permanent": true
+    }
+  ],
   "rewrites": [
     {
       "source": "/((?!assets/|favicon\\.svg|favicon\\.ico|robots\\.txt).*)",

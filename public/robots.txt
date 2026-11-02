@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://crdominguez.ar/sitemap.xml
+Sitemap: https://www.crdominguez.ar/sitemap.xml
