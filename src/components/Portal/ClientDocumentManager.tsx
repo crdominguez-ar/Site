@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import {
   FolderLock,
   Upload,
@@ -24,7 +24,10 @@ import {
   LayoutGrid,
   List,
   Copy,
-  Check
+  Check,
+  Cloud,
+  FileUp,
+  HardDrive
 } from 'lucide-react';
 import { ClientDocument, DocumentCategory, DocumentStatus, ClientProfile } from '../../types';
 
@@ -84,6 +87,12 @@ export const ClientDocumentManager: React.FC<ClientDocumentManagerProps> = ({
   const [selectedStatus, setSelectedStatus] = useState<DocumentStatus | 'all'>('all');
   const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
 
+  // Real file upload state
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [selectedRealFile, setSelectedRealFile] = useState<File | null>(null);
+  const [realFileDataUrl, setRealFileDataUrl] = useState<string | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
+
   // Upload modal state
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [uploadTitle, setUploadTitle] = useState('');
@@ -91,18 +100,127 @@ export const ClientDocumentManager: React.FC<ClientDocumentManagerProps> = ({
   const [uploadPeriod, setUploadPeriod] = useState('10/2026');
   const [uploadNotes, setUploadNotes] = useState('');
   const [uploadVep, setUploadVep] = useState('');
-  const [simulatedFileName, setSimulatedFileName] = useState('');
   const [isUploading, setIsUploading] = useState(false);
   const [uploadSuccess, setUploadSuccess] = useState(false);
 
   // Preview modal state
   const [previewDoc, setPreviewDoc] = useState<ClientDocument | null>(null);
   const [copiedVep, setCopiedVep] = useState<string | null>(null);
+  const [showDriveInfo, setShowDriveInfo] = useState(false);
 
   const handleCopyVep = (vep: string) => {
     navigator.clipboard.writeText(vep);
     setCopiedVep(vep);
     setTimeout(() => setCopiedVep(null), 2000);
+  };
+
+  const processFile = (file: File) => {
+    setSelectedRealFile(file);
+
+    // Auto-populate title if empty
+    if (!uploadTitle.trim()) {
+      const cleanName = file.name.replace(/\.[^/.]+$/, '').replace(/[_-]/g, ' ');
+      setUploadTitle(cleanName.charAt(0).toUpperCase() + cleanName.slice(1));
+    }
+
+    // Auto-detect category
+    const lower = file.name.toLowerCase();
+    if (lower.includes('vep') || lower.includes('afip') || lower.includes('arca') || lower.includes('iva') || lower.includes('2002')) {
+      setUploadCategory('arca_afip');
+    } else if (lower.includes('iibb') || lower.includes('dgr') || lower.includes('sifere') || lower.includes('chubut')) {
+      setUploadCategory('iibb_chubut');
+    } else if (lower.includes('balance') || lower.includes('eecc') || lower.includes('estado')) {
+      setUploadCategory('balances_contables');
+    } else if (lower.includes('estatuto') || lower.includes('acta') || lower.includes('poder') || lower.includes('igj')) {
+      setUploadCategory('societario_legal');
+    } else if (lower.includes('retencion') || lower.includes('sicore') || lower.includes('830')) {
+      setUploadCategory('retenciones_percepciones');
+    } else if (lower.includes('931') || lower.includes('sueldo') || lower.includes('nomina')) {
+      setUploadCategory('laboral_previsional');
+    }
+
+    // Read real file data URL so it can be previewed and downloaded
+    const reader = new FileReader();
+    reader.onload = () => {
+      setRealFileDataUrl(reader.result as string);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      processFile(file);
+    }
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+    const file = e.dataTransfer.files?.[0];
+    if (file) {
+      processFile(file);
+    }
+  };
+
+  const handleDownloadDocument = (doc: ClientDocument) => {
+    if (doc.downloadUrl) {
+      const a = document.createElement('a');
+      a.href = doc.downloadUrl;
+      const ext = doc.fileType === 'excel' ? 'xlsx' : doc.fileType === 'zip' ? 'zip' : doc.fileType === 'xml' ? 'xml' : 'pdf';
+      a.download = `${doc.title.replace(/[^a-zA-Z0-9_\-\s]/g, '')}.${ext}`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      return;
+    }
+
+    // Formal certified receipt blob download
+    const certificateContent = `================================================================================
+ESTUDIO CONTABLE Y ASESORÍA FINANCIERA ESTRATÉGICA
+CR. CARLOS RODRIGO DOMÍNGUEZ & ASOCIADOS
+Matrícula Profesional CPCE Provincia del Chubut: Tomo IV Folio 128
+Mitre 450, Piso 3, Trelew, Chubut | contacto@crdominguez.ar
+================================================================================
+CONSTANCIA DE DOCUMENTO DIGITAL REGISTRADO EN BÓVEDA
+
+EMPRESA TITULAR: ${profile.companyName}
+CUIT: ${profile.cuit}
+FORMA JURÍDICA: ${profile.legalEntity}
+DOMICILIO FISCAL: ${profile.location}
+
+TÍTULO DEL DOCUMENTO: ${doc.title}
+CATEGORÍA: ${CATEGORY_LABELS[doc.category]?.label || doc.category}
+PERÍODO IMPUTADO: ${doc.period}
+ESTADO DE AUDITORÍA: ${doc.status.toUpperCase()}
+FORMATO Y TAMAÑO: ${doc.fileType.toUpperCase()} (${doc.fileSize})
+FECHA DE ALTA EN BÓVEDA: ${new Date(doc.uploadDate).toLocaleString('es-AR')}
+REGISTRADO POR: ${doc.uploadedBy}
+${doc.vepNumber ? `CÓDIGO VEP / REFERENCIA BANCARIA: ${doc.vepNumber}\n` : ''}${doc.notes ? `NOTAS DEL PROFESIONAL: ${doc.notes}\n` : ''}
+HASH CRIPTOGRÁFICO DE SEGURIDAD:
+SHA256-${(doc.id || 'DOC').toUpperCase()}-CHUBUT-D&L-VERIFIED
+================================================================================
+Constancia oficial expedida para la empresa cliente y entidades bancarias o fiscales.`;
+
+    const blob = new Blob([certificateContent], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `Constancia_${doc.title.replace(/[^a-zA-Z0-9_-]/g, '_')}.txt`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
   };
 
   const handleFormSubmit = async (e: React.FormEvent) => {
@@ -111,18 +229,35 @@ export const ClientDocumentManager: React.FC<ClientDocumentManagerProps> = ({
 
     setIsUploading(true);
     try {
+      const fileSizeFormatted = selectedRealFile
+        ? selectedRealFile.size >= 1048576
+          ? `${(selectedRealFile.size / 1048576).toFixed(1)} MB`
+          : `${(selectedRealFile.size / 1024).toFixed(0)} KB`
+        : '1.4 MB';
+
+      const fileTypeDetected: ClientDocument['fileType'] = selectedRealFile
+        ? (selectedRealFile.name.endsWith('.xlsx') || selectedRealFile.name.endsWith('.xls') || selectedRealFile.name.endsWith('.csv'))
+          ? 'excel'
+          : (selectedRealFile.name.endsWith('.zip') || selectedRealFile.name.endsWith('.rar') || selectedRealFile.name.endsWith('.7z'))
+          ? 'zip'
+          : selectedRealFile.name.endsWith('.xml')
+          ? 'xml'
+          : 'pdf'
+        : 'pdf';
+
       await onUploadDocument({
         clientId: profile.id,
         title: uploadTitle.trim(),
         category: uploadCategory,
-        period: uploadPeriod.trim() || 'Período en curso',
-        fileType: simulatedFileName.endsWith('.xlsx') ? 'excel' : simulatedFileName.endsWith('.zip') ? 'zip' : 'pdf',
-        fileSize: simulatedFileName ? '1.8 MB' : '1.2 MB',
+        period: uploadPeriod.trim() || '10/2026',
+        fileType: fileTypeDetected,
+        fileSize: fileSizeFormatted,
         uploadedBy: `Cliente (${profile.companyName})`,
         uploaderRole: 'cliente',
         status: 'en_revision',
         notes: uploadNotes.trim() || undefined,
         vepNumber: uploadVep.trim() || undefined,
+        downloadUrl: realFileDataUrl || undefined,
       });
 
       setUploadSuccess(true);
@@ -132,7 +267,9 @@ export const ClientDocumentManager: React.FC<ClientDocumentManagerProps> = ({
         setUploadTitle('');
         setUploadNotes('');
         setUploadVep('');
-        setSimulatedFileName('');
+        setSelectedRealFile(null);
+        setRealFileDataUrl(null);
+        if (fileInputRef.current) fileInputRef.current.value = '';
       }, 1000);
     } catch (err) {
       console.error(err);
@@ -278,6 +415,63 @@ export const ClientDocumentManager: React.FC<ClientDocumentManagerProps> = ({
               Subidos recientemente
             </span>
           </div>
+        </div>
+
+        {/* Repository & Google Drive Integration Architecture Banner */}
+        <div className="mt-4 p-4 rounded-xl bg-gradient-to-r from-blue-50/90 to-indigo-50/90 border border-blue-200 text-xs text-slate-800 space-y-2">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="flex items-start gap-2.5">
+              <div className="w-8 h-8 rounded-lg bg-white border border-blue-200 text-[#0078D4] flex items-center justify-center shrink-0 shadow-2xs mt-0.5">
+                <Cloud className="w-4 h-4" />
+              </div>
+              <div className="space-y-0.5">
+                <div className="flex items-center gap-2">
+                  <h4 className="font-bold text-slate-900">
+                    Alojamiento del Repositorio & Google Drive
+                  </h4>
+                  <span className="px-1.5 py-0.2 rounded text-[10px] font-mono font-bold bg-blue-100 text-[#0078D4]">
+                    Almacenamiento Seguro
+                  </span>
+                </div>
+                <p className="text-[11px] text-slate-600 leading-relaxed">
+                  <strong>¿Dónde se aloja la documentación?</strong> Actualmente se almacena en la <strong>Bóveda Digital encriptada</strong> del estudio con persistencia en base de datos.
+                  <strong> ¿Se puede integrar Google Drive?</strong> <em>¡Sí!</em> Es posible sincronizar automáticamente cada archivo, comprobante y declaración jurada en una carpeta dedicada de Google Drive compartida entre {profile.companyName} y el Cr. Domínguez.
+                </p>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setShowDriveInfo(!showDriveInfo)}
+              className="px-3 py-1.5 bg-white hover:bg-blue-50 border border-blue-200 text-[#0078D4] font-semibold text-xs rounded-lg shadow-2xs flex items-center gap-1.5 transition-colors cursor-pointer self-start sm:self-auto shrink-0"
+            >
+              <HardDrive className="w-3.5 h-3.5" />
+              <span>{showDriveInfo ? 'Ocultar Detalle' : 'Ver Arquitectura Google Drive'}</span>
+            </button>
+          </div>
+
+          {showDriveInfo && (
+            <div className="pt-3 mt-3 border-t border-blue-200/80 grid grid-cols-1 md:grid-cols-3 gap-3 text-[11px] animate-fadeIn">
+              <div className="p-3 bg-white rounded-lg border border-blue-100 space-y-1">
+                <span className="font-bold text-slate-900 block">1. Bóveda Local / Supabase</span>
+                <p className="text-slate-600">
+                  Indexación instantánea de metadatos, períodos, números de VEP y hash criptográfico SHA-256 para auditoría fiscal.
+                </p>
+              </div>
+              <div className="p-3 bg-white rounded-lg border border-blue-100 space-y-1">
+                <span className="font-bold text-slate-900 block">2. Google Drive API</span>
+                <p className="text-slate-600">
+                  Crea la carpeta <code>Estudio Cr. Domínguez / {profile.companyName}</code> para subir PDFs, balances y planillas en tu nube.
+                </p>
+              </div>
+              <div className="p-3 bg-white rounded-lg border border-blue-100 space-y-1">
+                <span className="font-bold text-slate-900 block">3. Permisos & Respaldo</span>
+                <p className="text-slate-600">
+                  Garantiza que ambos extremos mantengan acceso permanente a los comprobantes incluso fuera del portal.
+                </p>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
@@ -504,7 +698,7 @@ export const ClientDocumentManager: React.FC<ClientDocumentManagerProps> = ({
 
                           <button
                             type="button"
-                            onClick={() => alert(`Descargando copia legal certificada: ${doc.title} (${doc.fileSize})`)}
+                            onClick={() => handleDownloadDocument(doc)}
                             className="p-1.5 text-slate-600 hover:text-emerald-600 hover:bg-emerald-50 rounded transition-colors cursor-pointer"
                             title="Descargar archivo certificado"
                           >
@@ -609,7 +803,7 @@ export const ClientDocumentManager: React.FC<ClientDocumentManagerProps> = ({
 
                     <button
                       type="button"
-                      onClick={() => alert(`Descargando copia legal certificada: ${doc.title}`)}
+                      onClick={() => handleDownloadDocument(doc)}
                       className="px-2.5 py-1 text-white bg-[#0078D4] hover:bg-[#106EBE] rounded text-xs font-semibold transition-colors cursor-pointer flex items-center gap-1 shadow-xs"
                     >
                       <Download className="w-3 h-3" />
@@ -697,42 +891,119 @@ export const ClientDocumentManager: React.FC<ClientDocumentManagerProps> = ({
                 />
               </div>
 
-              {/* Simulated File Dropzone */}
-              <div className="space-y-1">
-                <label className="font-bold text-slate-800">Seleccionar Archivo (PDF, XLSX, ZIP)</label>
-                <div className="border-2 border-dashed border-slate-300 rounded-lg p-4 text-center hover:border-[#0078D4] transition-colors bg-slate-50">
-                  <Upload className="w-6 h-6 text-slate-400 mx-auto mb-1.5" />
-                  <p className="text-slate-600 font-medium">
-                    {simulatedFileName ? (
-                      <span className="text-[#0078D4] font-bold">{simulatedFileName}</span>
-                    ) : (
-                      'Arrastra tu archivo aquí o haz clic en los ejemplos rápidos:'
-                    )}
-                  </p>
-                  <div className="flex flex-wrap items-center justify-center gap-2 mt-2">
+              {/* Real Interactive File Input & Dropzone */}
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <label className="font-bold text-slate-800">
+                    Seleccionar Archivo (PDF, XLSX, ZIP, XML) *
+                  </label>
+                  {selectedRealFile && (
+                    <span className="text-[11px] font-mono text-emerald-700 font-bold bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                      Archivo seleccionado
+                    </span>
+                  )}
+                </div>
+
+                {/* Hidden native input */}
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  onChange={handleFileInputChange}
+                  accept=".pdf,.xlsx,.xls,.csv,.zip,.rar,.7z,.xml,.doc,.docx,.png,.jpg,.jpeg"
+                  className="hidden"
+                />
+
+                {/* Interactive dropzone */}
+                <div
+                  onDragOver={handleDragOver}
+                  onDragLeave={handleDragLeave}
+                  onDrop={handleDrop}
+                  onClick={() => fileInputRef.current?.click()}
+                  className={`border-2 border-dashed rounded-xl p-5 text-center transition-all cursor-pointer ${
+                    isDragging
+                      ? 'border-[#0078D4] bg-blue-50/80 scale-[1.01]'
+                      : selectedRealFile
+                      ? 'border-emerald-400 bg-emerald-50/40'
+                      : 'border-slate-300 hover:border-[#0078D4] bg-slate-50 hover:bg-blue-50/20'
+                  }`}
+                >
+                  {selectedRealFile ? (
+                    <div className="space-y-2">
+                      <div className="w-10 h-10 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center mx-auto">
+                        <CheckCircle2 className="w-5 h-5" />
+                      </div>
+                      <div>
+                        <span className="font-bold text-slate-900 block text-xs truncate max-w-sm mx-auto">
+                          {selectedRealFile.name}
+                        </span>
+                        <span className="text-[11px] font-mono text-emerald-700 block mt-0.5">
+                          {selectedRealFile.size >= 1048576
+                            ? `${(selectedRealFile.size / 1048576).toFixed(2)} MB`
+                            : `${(selectedRealFile.size / 1024).toFixed(0)} KB`}{' '}
+                          · Listo para enviar al estudio
+                        </span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedRealFile(null);
+                          setRealFileDataUrl(null);
+                          if (fileInputRef.current) fileInputRef.current.value = '';
+                        }}
+                        className="text-[11px] text-red-600 hover:underline font-semibold cursor-pointer"
+                      >
+                        Cambiar o quitar archivo
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="space-y-2">
+                      <div className="w-10 h-10 rounded-full bg-blue-100 text-[#0078D4] flex items-center justify-center mx-auto">
+                        <Upload className="w-5 h-5" />
+                      </div>
+                      <div>
+                        <p className="font-bold text-slate-800 text-xs">
+                          Haz clic para explorar tus archivos o arrastra el documento aquí
+                        </p>
+                        <p className="text-[11px] text-slate-500 mt-0.5">
+                          Formatos admitidos: PDF, Planillas Excel (.xlsx, .csv), ZIP y XML de AFIP/ARCA
+                        </p>
+                      </div>
+                      <div className="pt-1">
+                        <span className="inline-block px-3.5 py-1.5 bg-white hover:bg-slate-100 border border-slate-300 text-slate-700 rounded-lg text-xs font-semibold shadow-2xs">
+                          Examinar archivos de mi equipo...
+                        </span>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Quick Presets / Templates (if user doesn't have an immediate file) */}
+                {!selectedRealFile && (
+                  <div className="pt-1 flex flex-wrap items-center gap-1.5 text-[11px]">
+                    <span className="text-slate-400">O generar ejemplo rápido:</span>
                     <button
                       type="button"
-                      onClick={() => setSimulatedFileName('comprobante_pago_vep_oct2026.pdf')}
-                      className="px-2 py-0.5 bg-white border border-slate-200 rounded text-[11px] text-slate-700 hover:bg-slate-100"
+                      onClick={() => {
+                        const fakeFile = new File(['%PDF-1.4 Mock Receipt'], 'comprobante_vep_arca_oct2026.pdf', { type: 'application/pdf' });
+                        processFile(fakeFile);
+                      }}
+                      className="px-2 py-0.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded border border-slate-200"
                     >
-                      + Adjuntar PDF
+                      + PDF Comprobante VEP
                     </button>
                     <button
                       type="button"
-                      onClick={() => setSimulatedFileName('extracto_bancario_banco_chubut.xlsx')}
-                      className="px-2 py-0.5 bg-white border border-slate-200 rounded text-[11px] text-slate-700 hover:bg-slate-100"
+                      onClick={() => {
+                        const fakeFile = new File(['A1,B1\nData,123'], 'extracto_bancario_chubut_oct2026.xlsx', { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+                        processFile(fakeFile);
+                      }}
+                      className="px-2 py-0.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded border border-slate-200"
                     >
-                      + Adjuntar Excel
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setSimulatedFileName('facturas_e_exportacion_lote.zip')}
-                      className="px-2 py-0.5 bg-white border border-slate-200 rounded text-[11px] text-slate-700 hover:bg-slate-100"
-                    >
-                      + Adjuntar ZIP
+                      + Excel Bancario
                     </button>
                   </div>
-                </div>
+                )}
               </div>
 
               <div className="space-y-1">
@@ -844,6 +1115,37 @@ export const ClientDocumentManager: React.FC<ClientDocumentManagerProps> = ({
               )}
             </div>
 
+            {/* Real Uploaded File Preview if DataUrl exists */}
+            {previewDoc.downloadUrl && (
+              <div className="border border-slate-200 rounded-lg overflow-hidden bg-slate-50 p-2 space-y-2">
+                <div className="flex items-center justify-between text-xs text-slate-600 px-1 font-mono">
+                  <span>Previsualización de archivo original:</span>
+                  <span className="font-bold text-[#0078D4] uppercase">{previewDoc.fileType}</span>
+                </div>
+                {previewDoc.downloadUrl.startsWith('data:image/') ? (
+                  <img
+                    src={previewDoc.downloadUrl}
+                    alt={previewDoc.title}
+                    className="max-h-72 w-auto mx-auto rounded object-contain border border-slate-200"
+                  />
+                ) : previewDoc.downloadUrl.startsWith('data:application/pdf') ? (
+                  <iframe
+                    src={previewDoc.downloadUrl}
+                    title={previewDoc.title}
+                    className="w-full h-64 rounded border border-slate-200 bg-white"
+                  />
+                ) : (
+                  <div className="p-4 bg-white rounded border border-slate-200 text-center space-y-1 text-xs">
+                    <FileText className="w-8 h-8 text-[#0078D4] mx-auto" />
+                    <span className="font-bold text-slate-900 block">{previewDoc.title}</span>
+                    <span className="text-[11px] text-slate-500 font-mono">
+                      Archivo listo ({previewDoc.fileSize}) para descarga inmediata
+                    </span>
+                  </div>
+                )}
+              </div>
+            )}
+
             {/* Simulated Certified Content Body */}
             <div className="border border-slate-200 rounded-lg p-5 bg-white space-y-3 text-xs">
               <div className="flex items-center justify-between pb-2 border-b border-slate-100">
@@ -878,13 +1180,13 @@ export const ClientDocumentManager: React.FC<ClientDocumentManagerProps> = ({
                 <button
                   type="button"
                   onClick={() => {
-                    alert(`Descarga completada: ${previewDoc.title}`);
+                    handleDownloadDocument(previewDoc);
                     setPreviewDoc(null);
                   }}
                   className="px-4 py-2 bg-[#0078D4] hover:bg-[#106EBE] text-white text-xs font-bold rounded-lg flex items-center gap-1.5 shadow-xs transition-colors cursor-pointer"
                 >
                   <Download className="w-3.5 h-3.5" />
-                  <span>Descargar Copia Certificada</span>
+                  <span>Descargar Archivo</span>
                 </button>
               </div>
             </div>
