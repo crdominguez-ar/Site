@@ -29,7 +29,10 @@ import {
   Check,
   X,
   Phone,
-  Video
+  Video,
+  Menu,
+  CalendarCheck,
+  Calculator
 } from 'lucide-react';
 import { dbRepository } from '../../lib/supabaseClient';
 import { userService } from '../../lib/userService';
@@ -51,10 +54,14 @@ import {
 import { InternalCRM } from '../CRM/InternalCRM';
 import { WebCMSEditor } from './WebCMSEditor';
 import { SEOControlPanel } from '../SEO/SEOControlPanel';
+import { DashboardSidebar, DashboardViewId } from './DashboardSidebar';
+import { TaxCalendarTool } from './TaxCalendarTool';
+import { CashFlowRunwayTool } from './CashFlowRunwayTool';
+import { FeePricingMatrixTool } from './FeePricingMatrixTool';
 
 interface WidgetizableDashboardProps {
-  initialView?: 'widgets' | 'crm' | 'cms' | 'seo';
-  onNavigateTab: (tab: 'landing' | 'solutions' | 'simulators' | 'diagnostic' | 'blog' | 'portal' | 'crm' | 'seo') => void;
+  initialView?: DashboardViewId;
+  onNavigateTab: (tab: 'landing' | 'solutions' | 'simulators' | 'diagnostic' | 'blog' | 'portal' | 'crm' | 'seo' | 'dashboard') => void;
   onOpenConsultationModal: () => void;
 }
 
@@ -74,8 +81,25 @@ export const WidgetizableDashboard: React.FC<WidgetizableDashboardProps> = ({
   onNavigateTab, 
   onOpenConsultationModal 
 }) => {
-  const [dashboardView, setDashboardView] = useState<'widgets' | 'crm' | 'cms' | 'seo'>(initialView);
+  const [dashboardView, setDashboardView] = useState<DashboardViewId>(initialView);
   const [crmSubTab, setCrmSubTab] = useState<'pipeline' | 'contacts' | 'calendar' | 'tasks'>('pipeline');
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState<boolean>(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('dl_dashboard_sidebar_collapsed') === 'true';
+    }
+    return false;
+  });
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+
+  const toggleSidebar = () => {
+    setIsSidebarCollapsed((prev) => {
+      const next = !prev;
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('dl_dashboard_sidebar_collapsed', String(next));
+      }
+      return next;
+    });
+  };
 
   useEffect(() => {
     if (initialView) {
@@ -331,103 +355,82 @@ export const WidgetizableDashboard: React.FC<WidgetizableDashboardProps> = ({
   };
 
   return (
-    <div className="w-full space-y-8 bg-[#F8FAFC] pb-16">
-      {/* Top Executive Header */}
-      <div className="w-full bg-white border-b border-slate-200 px-4 sm:px-8 lg:px-16 xl:px-20 py-6 sm:py-8 shadow-xs">
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
-          <div>
-            <div className="flex items-center gap-2 text-xs font-mono font-bold text-[#0078D4] uppercase tracking-wider mb-1.5">
-              <LayoutDashboard className="w-4 h-4" />
-              <span>Panel de Control & Centro de Operaciones</span>
-              <span>·</span>
-              <span className="text-slate-500">Trelew, Chubut</span>
-            </div>
-            <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
-              Dashboard Ejecutivo
-            </h1>
-            <p className="text-xs sm:text-sm text-slate-600 mt-1 max-w-3xl">
-              Gestión unificada de Pipeline CRM, Control SEO orgánico, envíos transaccionales con <strong>Resend.com (Plan Free)</strong> y matriz de roles de usuarios y clientes.
-            </p>
-          </div>
+    <div className="flex min-h-screen bg-[#F8FAFC]">
+      {/* Collapsible Left Sidebar */}
+      <DashboardSidebar
+        activeView={dashboardView}
+        onSelectView={(view) => setDashboardView(view)}
+        isCollapsed={isSidebarCollapsed}
+        onToggleCollapse={toggleSidebar}
+        mobileOpen={mobileSidebarOpen}
+        onCloseMobile={() => setMobileSidebarOpen(false)}
+        currentUser={currentUser}
+        onExitToWebsite={() => onNavigateTab('landing')}
+        urgentTaxCount={2}
+        openLeadsCount={leads.filter((l) => l.stage !== 'activo').length}
+      />
 
-          {/* Action Toolbar: View Switcher, Customizer & Role Identity */}
-          <div className="flex flex-wrap items-center gap-3">
-            {/* View Switcher: Widgets vs CRM vs CMS */}
-            <div className="flex flex-wrap items-center bg-slate-100 p-1 rounded-lg border border-slate-200 shadow-2xs">
+      {/* Main Viewport Content Area */}
+      <div className="flex-1 min-w-0 flex flex-col pb-16">
+        {/* Top Executive Header Bar */}
+        <div className="w-full bg-white border-b border-slate-200 px-4 sm:px-8 py-4 sm:py-5 shadow-xs sticky top-0 z-20">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              {/* Mobile hamburger toggle */}
               <button
                 type="button"
-                onClick={() => setDashboardView('widgets')}
-                className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
-                  dashboardView === 'widgets'
-                    ? 'bg-white text-[#0078D4] shadow-xs'
-                    : 'text-slate-600 hover:text-slate-900'
-                }`}
+                onClick={() => setMobileSidebarOpen(true)}
+                className="md:hidden p-2 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors"
+                aria-label="Abrir menú lateral"
               >
-                <LayoutDashboard className="w-3.5 h-3.5" />
-                <span>Vista Widgets</span>
+                <Menu className="w-5 h-5" />
               </button>
-              <button
-                type="button"
-                onClick={() => setDashboardView('crm')}
-                className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
-                  dashboardView === 'crm'
-                    ? 'bg-white text-[#0078D4] shadow-xs'
-                    : 'text-slate-600 hover:text-slate-900'
-                }`}
-              >
-                <Users className="w-3.5 h-3.5" />
-                <span>Gestión CRM</span>
-                <span className="ml-0.5 px-1.5 py-0.2 bg-blue-100 text-[#0078D4] rounded-full text-[10px] font-bold">
-                  {leads.length}
-                </span>
-              </button>
-              <button
-                type="button"
-                onClick={() => setDashboardView('cms')}
-                className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
-                  dashboardView === 'cms'
-                    ? 'bg-white text-[#0078D4] shadow-xs'
-                    : 'text-slate-600 hover:text-slate-900'
-                }`}
-              >
-                <Sliders className="w-3.5 h-3.5 text-[#0078D4]" />
-                <span>Editor Web (CMS)</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => setDashboardView('seo')}
-                className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
-                  dashboardView === 'seo'
-                    ? 'bg-white text-[#0078D4] shadow-xs'
-                    : 'text-slate-600 hover:text-slate-900'
-                }`}
-              >
-                <Search className="w-3.5 h-3.5 text-[#0078D4]" />
-                <span>Auditoría SEO</span>
-              </button>
-            </div>
 
-            {dashboardView === 'widgets' && (
-              <button
-                type="button"
-                onClick={() => setShowCustomizer(!showCustomizer)}
-                className="px-3.5 py-2 bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 font-semibold text-xs rounded-md shadow-xs flex items-center gap-2 transition-colors cursor-pointer"
-              >
-                <Sliders className="w-3.5 h-3.5 text-[#0078D4]" />
-                <span>Personalizar ({widgets.filter((w) => w.enabled).length}/{widgets.length})</span>
-              </button>
-            )}
-
-            {/* Current User Badge */}
-            <div className="flex items-center gap-2.5 px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-md">
-              <div className="w-6 h-6 rounded-full bg-[#0078D4] text-white flex items-center justify-center font-bold text-[10px]">
-                {currentUser.name.charAt(0)}
+              <div>
+                <div className="flex items-center gap-2 text-xs font-mono font-bold text-[#0078D4] uppercase tracking-wider mb-1">
+                  <LayoutDashboard className="w-3.5 h-3.5" />
+                  <span>Cr. Domínguez & Asoc.</span>
+                  <span>·</span>
+                  <span className="text-slate-500">Centro de Operaciones Patagonia</span>
+                </div>
+                <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
+                  {dashboardView === 'widgets' && 'Visión General & Widgets'}
+                  {dashboardView === 'crm' && 'Embudo Comercial & Pipeline CRM'}
+                  {dashboardView === 'tax_calendar' && 'Calendario Fiscal ARCA & DGR Chubut'}
+                  {dashboardView === 'cash_flow' && 'Proyector de Cash Flow & Runway PyME'}
+                  {dashboardView === 'fee_pricing' && 'Cotizador de Servicios Contables & Horas'}
+                  {dashboardView === 'cms' && 'Gestor de Contenidos Web & Sliders'}
+                  {dashboardView === 'seo' && 'Auditoría SEO & Posicionamiento'}
+                  {dashboardView === 'users' && 'Centro de Control de Usuarios (RBAC)'}
+                  {dashboardView === 'email' && 'Comunicaciones & Resend.com'}
+                </h1>
               </div>
-              <div className="text-left">
-                <span className="text-xs font-bold text-slate-900 block leading-tight">{currentUser.name}</span>
-                <span className="text-[10px] text-slate-500 font-mono block">
-                  {userService.getRoleLabel(currentUser.role)}
-                </span>
+            </div>
+
+            {/* Quick Actions & User Card */}
+            <div className="flex flex-wrap items-center gap-2.5">
+              {dashboardView === 'widgets' && (
+                <button
+                  type="button"
+                  onClick={() => setShowCustomizer(!showCustomizer)}
+                  className="px-3.5 py-2 bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 font-semibold text-xs rounded-lg shadow-xs flex items-center gap-2 transition-colors cursor-pointer"
+                >
+                  <Sliders className="w-3.5 h-3.5 text-[#0078D4]" />
+                  <span>Personalizar ({widgets.filter((w) => w.enabled).length}/{widgets.length})</span>
+                </button>
+              )}
+
+              {/* Current User Pill */}
+              <div className="flex items-center gap-2.5 px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg">
+                <div className="w-6 h-6 rounded-full bg-[#0078D4] text-white flex items-center justify-center font-bold text-[10px]">
+                  {currentUser.name.charAt(0)}
+                </div>
+                <div className="hidden sm:block text-left">
+                  <span className="text-xs font-bold text-slate-900 block leading-tight">{currentUser.name}</span>
+                  <span className="text-[10px] text-slate-500 font-mono block">
+                    {userService.getRoleLabel(currentUser.role)}
+                  </span>
+                </div>
               </div>
             </div>
           </div>
@@ -509,77 +512,81 @@ export const WidgetizableDashboard: React.FC<WidgetizableDashboardProps> = ({
         )}
       </div>
 
-      {/* Main Content: CMS, CRM Integrado or Widgets Board */}
-      {dashboardView === 'cms' ? (
-        <div className="w-full px-4 sm:px-8 lg:px-16 xl:px-20 space-y-4">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white border border-slate-200 rounded-xl px-4 sm:px-5 py-3 shadow-xs">
-            <div className="flex items-center gap-2 text-xs font-semibold text-slate-700">
-              <Sliders className="w-4 h-4 text-[#0078D4]" />
-              <span>Gestor de Contenido Web & Sliders (CMS)</span>
-              <span className="hidden sm:inline text-slate-400">·</span>
-              <span className="hidden sm:inline text-slate-500 font-normal">Edición en tiempo real de textos, fotos y enlaces de la web</span>
+      {/* Main Viewport Content Router */}
+      <div className="w-full px-4 sm:px-8 lg:px-12 py-6">
+        {dashboardView === 'tax_calendar' ? (
+          <TaxCalendarTool />
+        ) : dashboardView === 'cash_flow' ? (
+          <CashFlowRunwayTool />
+        ) : dashboardView === 'fee_pricing' ? (
+          <FeePricingMatrixTool onGoToCRM={() => setDashboardView('crm')} />
+        ) : dashboardView === 'cms' ? (
+          <div className="space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white border border-slate-200 rounded-xl px-4 sm:px-5 py-3 shadow-xs">
+              <div className="flex items-center gap-2 text-xs font-semibold text-slate-700">
+                <Sliders className="w-4 h-4 text-[#0078D4]" />
+                <span>Gestor de Contenido Web & Sliders (CMS)</span>
+                <span className="hidden sm:inline text-slate-400">·</span>
+                <span className="hidden sm:inline text-slate-500 font-normal">Edición en tiempo real de textos, fotos y enlaces de la web</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setDashboardView('widgets')}
+                className="text-xs font-bold text-[#0078D4] hover:underline flex items-center gap-1.5 cursor-pointer self-start sm:self-auto"
+              >
+                <LayoutDashboard className="w-3.5 h-3.5" />
+                <span>Volver a Vista Widgets</span>
+              </button>
             </div>
-            <button
-              type="button"
-              onClick={() => setDashboardView('widgets')}
-              className="text-xs font-bold text-[#0078D4] hover:underline flex items-center gap-1.5 cursor-pointer self-start sm:self-auto"
-            >
-              <LayoutDashboard className="w-3.5 h-3.5" />
-              <span>Volver a Vista Widgets</span>
-            </button>
+            <WebCMSEditor onPreviewSite={() => onNavigateTab('landing')} />
           </div>
-
-          <WebCMSEditor onPreviewSite={() => onNavigateTab('landing')} />
-        </div>
-      ) : dashboardView === 'crm' ? (
-        <div className="w-full px-4 sm:px-8 lg:px-16 xl:px-20 space-y-4">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white border border-slate-200 rounded-xl px-4 sm:px-5 py-3 shadow-xs">
-            <div className="flex items-center gap-2 text-xs font-semibold text-slate-700">
-              <Users className="w-4 h-4 text-[#0078D4]" />
-              <span>Módulo CRM Integrado</span>
-              <span className="hidden sm:inline text-slate-400">·</span>
-              <span className="hidden sm:inline text-slate-500 font-normal">Pipeline de Oportunidades & Gestión de Clientes en Vivo</span>
+        ) : dashboardView === 'crm' ? (
+          <div className="space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white border border-slate-200 rounded-xl px-4 sm:px-5 py-3 shadow-xs">
+              <div className="flex items-center gap-2 text-xs font-semibold text-slate-700">
+                <Users className="w-4 h-4 text-[#0078D4]" />
+                <span>Módulo CRM Integrado</span>
+                <span className="hidden sm:inline text-slate-400">·</span>
+                <span className="hidden sm:inline text-slate-500 font-normal">Pipeline de Oportunidades & Gestión de Clientes en Vivo</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setDashboardView('widgets')}
+                className="text-xs font-bold text-[#0078D4] hover:underline flex items-center gap-1.5 cursor-pointer self-start sm:self-auto"
+              >
+                <LayoutDashboard className="w-3.5 h-3.5" />
+                <span>Volver a Vista Widgets</span>
+              </button>
             </div>
-            <button
-              type="button"
-              onClick={() => setDashboardView('widgets')}
-              className="text-xs font-bold text-[#0078D4] hover:underline flex items-center gap-1.5 cursor-pointer self-start sm:self-auto"
-            >
-              <LayoutDashboard className="w-3.5 h-3.5" />
-              <span>Volver a Vista Widgets</span>
-            </button>
+            <InternalCRM currentRole={currentUser.role} initialSubTab={crmSubTab} />
           </div>
-
-          <InternalCRM currentRole={currentUser.role} initialSubTab={crmSubTab} />
-        </div>
-      ) : dashboardView === 'seo' ? (
-        <div className="w-full px-4 sm:px-8 lg:px-16 xl:px-20 space-y-4">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white border border-slate-200 rounded-xl px-4 sm:px-5 py-3 shadow-xs">
-            <div className="flex items-center gap-2 text-xs font-semibold text-slate-700">
-              <Search className="w-4 h-4 text-[#0078D4]" />
-              <span>Auditoría SEO & Posicionamiento en Buscadores</span>
-              <span className="hidden sm:inline text-slate-400">·</span>
-              <span className="hidden sm:inline text-slate-500 font-normal">Panel de Control de Metadatos, OpenGraph y Snippets de Google</span>
+        ) : dashboardView === 'seo' ? (
+          <div className="space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white border border-slate-200 rounded-xl px-4 sm:px-5 py-3 shadow-xs">
+              <div className="flex items-center gap-2 text-xs font-semibold text-slate-700">
+                <Search className="w-4 h-4 text-[#0078D4]" />
+                <span>Auditoría SEO & Posicionamiento en Buscadores</span>
+                <span className="hidden sm:inline text-slate-400">·</span>
+                <span className="hidden sm:inline text-slate-500 font-normal">Panel de Control de Metadatos, OpenGraph y Snippets de Google</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setDashboardView('widgets')}
+                className="text-xs font-bold text-[#0078D4] hover:underline flex items-center gap-1.5 cursor-pointer self-start sm:self-auto"
+              >
+                <LayoutDashboard className="w-3.5 h-3.5" />
+                <span>Volver a Vista Widgets</span>
+              </button>
             </div>
-            <button
-              type="button"
-              onClick={() => setDashboardView('widgets')}
-              className="text-xs font-bold text-[#0078D4] hover:underline flex items-center gap-1.5 cursor-pointer self-start sm:self-auto"
-            >
-              <LayoutDashboard className="w-3.5 h-3.5" />
-              <span>Volver a Vista Widgets</span>
-            </button>
+            <SEOControlPanel />
           </div>
-
-          <SEOControlPanel />
-        </div>
-      ) : (
-        <div className="w-full px-4 sm:px-8 lg:px-16 xl:px-20 space-y-6">
-          
-          {/* ROW 1: CRM Pipeline & Quick Actions (Full width) */}
-          {isWidgetVisible('crm_pipeline') && (
-            <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-xs space-y-5">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-100">
+        ) : (
+          <div className="w-full space-y-6">
+            
+            {/* ROW 1: CRM Pipeline & Quick Actions (Full width) */}
+            {(dashboardView === 'widgets' && isWidgetVisible('crm_pipeline')) && (
+              <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-xs space-y-5">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-100">
                 <div className="flex items-center gap-2.5">
                   <div className="w-8 h-8 rounded-lg bg-blue-50 text-[#0078D4] flex items-center justify-center">
                     <TrendingUp className="w-4 h-4" />
@@ -683,7 +690,8 @@ export const WidgetizableDashboard: React.FC<WidgetizableDashboardProps> = ({
         )}
 
         {/* ROW 2: Split Half-Width Widgets (CRM Tasks & Financial KPIs) */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {dashboardView === 'widgets' && (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Widget: CRM Tasks */}
           {isWidgetVisible('crm_tasks') && (
             <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-xs space-y-4 flex flex-col justify-between">
@@ -814,9 +822,10 @@ export const WidgetizableDashboard: React.FC<WidgetizableDashboardProps> = ({
             </div>
           )}
         </div>
+        )}
 
         {/* ROW 3: Resend.com Free Tier Integration Widget (Full width) */}
-        {isWidgetVisible('resend_email') && (
+        {(dashboardView === 'email' || (dashboardView === 'widgets' && isWidgetVisible('resend_email'))) && (
           <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-xs space-y-6">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-100">
               <div className="flex items-center gap-3">
@@ -973,7 +982,8 @@ export const WidgetizableDashboard: React.FC<WidgetizableDashboardProps> = ({
         )}
 
         {/* ROW 4: Split SEO Health & Google Search Console Queries */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {dashboardView === 'widgets' && (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Widget: SEO Health */}
           {isWidgetVisible('seo_health') && (
             <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-xs space-y-4">
@@ -1058,9 +1068,10 @@ export const WidgetizableDashboard: React.FC<WidgetizableDashboardProps> = ({
             </div>
           )}
         </div>
+        )}
 
         {/* ROW 5: Blog Publishing & Resend Distribution (Full width) */}
-        {isWidgetVisible('blog_publishing') && (
+        {(dashboardView === 'widgets' && isWidgetVisible('blog_publishing')) && (
           <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-xs space-y-5">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-100">
               <div className="flex items-center gap-2.5">
@@ -1170,7 +1181,7 @@ export const WidgetizableDashboard: React.FC<WidgetizableDashboardProps> = ({
         )}
 
         {/* ROW 6: RBAC User Management Widget (Full width) */}
-        {isWidgetVisible('user_management') && (
+        {(dashboardView === 'users' || (dashboardView === 'widgets' && isWidgetVisible('user_management'))) && (
           <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-xs space-y-5">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-100">
               <div className="flex items-center gap-2.5">
@@ -1471,6 +1482,7 @@ export const WidgetizableDashboard: React.FC<WidgetizableDashboardProps> = ({
           onNavigateTab('blog');
         }}
       />
+      </div>
     </div>
   );
 };
