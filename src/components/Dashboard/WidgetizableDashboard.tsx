@@ -438,82 +438,83 @@ export const WidgetizableDashboard: React.FC<WidgetizableDashboardProps> = ({
 
         {/* Widget Customizer Drawer / Dropdown */}
         {showCustomizer && (
-          <div className="mt-6 p-5 bg-slate-50 border border-slate-200 rounded-xl shadow-xs space-y-4 animate-fadeIn">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-200">
-              <div className="flex items-center gap-2">
-                <Sliders className="w-4 h-4 text-[#0078D4]" />
-                <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
-                  Configuración de Widgets en Pantalla
-                </h3>
+          <div className="px-4 sm:px-8 lg:px-12 pt-6">
+            <div className="p-5 bg-slate-50 border border-slate-200 rounded-xl shadow-xs space-y-4 animate-fadeIn">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-200">
+                <div className="flex items-center gap-2">
+                  <Sliders className="w-4 h-4 text-[#0078D4]" />
+                  <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
+                    Configuración de Widgets en Pantalla
+                  </h3>
+                </div>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={resetWidgets}
+                    className="text-xs text-slate-600 hover:text-slate-900 flex items-center gap-1 font-semibold cursor-pointer"
+                  >
+                    <RotateCcw className="w-3 h-3" />
+                    <span>Restaurar Valores por Defecto</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setShowCustomizer(false)}
+                    className="p-1 text-slate-400 hover:text-slate-700 cursor-pointer"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
               </div>
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={resetWidgets}
-                  className="text-xs text-slate-600 hover:text-slate-900 flex items-center gap-1 font-semibold"
-                >
-                  <RotateCcw className="w-3 h-3" />
-                  <span>Restaurar Valores por Defecto</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setShowCustomizer(false)}
-                  className="p-1 text-slate-400 hover:text-slate-700"
-                >
-                  <X className="w-4 h-4" />
-                </button>
-              </div>
-            </div>
 
-            {/* Category filter pills */}
-            <div className="flex flex-wrap items-center gap-2 text-xs">
-              <span className="text-slate-500 font-medium mr-1">Filtrar por:</span>
-              {(['all', 'negocio', 'marketing', 'operaciones', 'usuarios'] as const).map((cat) => (
-                <button
-                  key={cat}
-                  type="button"
-                  onClick={() => setSelectedCategory(cat)}
-                  className={`px-2.5 py-1 rounded text-xs font-semibold capitalize transition-colors ${
-                    selectedCategory === cat 
-                      ? 'bg-[#0078D4] text-white' 
-                      : 'bg-white text-slate-700 border border-slate-200 hover:bg-slate-100'
-                  }`}
-                >
-                  {cat === 'all' ? 'Todos los Widgets' : cat}
-                </button>
-              ))}
-            </div>
-
-            {/* Checkbox grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-              {widgets
-                .filter((w) => selectedCategory === 'all' || w.category === selectedCategory)
-                .map((w) => (
-                  <label
-                    key={w.id}
-                    className={`flex items-center gap-3 p-3 rounded-lg border text-xs cursor-pointer transition-colors ${
-                      w.enabled ? 'bg-white border-blue-200 text-slate-900' : 'bg-slate-100/60 border-slate-200 text-slate-500'
+              {/* Category filter pills */}
+              <div className="flex flex-wrap items-center gap-2 text-xs">
+                <span className="text-slate-500 font-medium mr-1">Filtrar por:</span>
+                {(['all', 'negocio', 'marketing', 'operaciones', 'usuarios'] as const).map((cat) => (
+                  <button
+                    key={cat}
+                    type="button"
+                    onClick={() => setSelectedCategory(cat)}
+                    className={`px-2.5 py-1 rounded text-xs font-semibold capitalize transition-colors cursor-pointer ${
+                      selectedCategory === cat 
+                        ? 'bg-[#0078D4] text-white' 
+                        : 'bg-white text-slate-700 border border-slate-200 hover:bg-slate-100'
                     }`}
                   >
-                    <input
-                      type="checkbox"
-                      checked={w.enabled}
-                      onChange={() => toggleWidget(w.id)}
-                      className="rounded text-[#0078D4] focus:ring-[#0078D4]"
-                    />
-                    <div className="flex-1">
-                      <span className="font-semibold block">{w.title}</span>
-                      <span className="text-[10px] text-slate-500 uppercase font-mono">{w.category}</span>
-                    </div>
-                  </label>
+                    {cat === 'all' ? 'Todos los Widgets' : cat}
+                  </button>
                 ))}
+              </div>
+
+              {/* Checkbox grid */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                {widgets
+                  .filter((w) => selectedCategory === 'all' || w.category === selectedCategory)
+                  .map((w) => (
+                    <label
+                      key={w.id}
+                      className={`flex items-center gap-3 p-3 rounded-lg border text-xs cursor-pointer transition-colors ${
+                        w.enabled ? 'bg-white border-blue-200 text-slate-900' : 'bg-slate-100/60 border-slate-200 text-slate-500'
+                      }`}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={w.enabled}
+                        onChange={() => toggleWidget(w.id)}
+                        className="rounded text-[#0078D4] focus:ring-[#0078D4]"
+                      />
+                      <div className="flex-1">
+                        <span className="font-semibold block">{w.title}</span>
+                        <span className="text-[10px] text-slate-500 uppercase font-mono">{w.category}</span>
+                      </div>
+                    </label>
+                  ))}
+              </div>
             </div>
           </div>
         )}
-      </div>
 
-      {/* Main Viewport Content Router */}
-      <div className="w-full px-4 sm:px-8 lg:px-12 py-6">
+        {/* Main Viewport Content Router */}
+        <div className="w-full px-4 sm:px-8 lg:px-12 py-6">
         {dashboardView === 'tax_calendar' ? (
           <TaxCalendarTool />
         ) : dashboardView === 'cash_flow' ? (
@@ -582,7 +583,140 @@ export const WidgetizableDashboard: React.FC<WidgetizableDashboardProps> = ({
           </div>
         ) : (
           <div className="w-full space-y-6">
-            
+            {/* Executive Quick Hub Bar (ARCA, Cash Flow, Cotizador, CRM) */}
+            {dashboardView === 'widgets' && (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                {/* Card 1: Calendario Fiscal ARCA */}
+                <div 
+                  onClick={() => setDashboardView('tax_calendar')}
+                  className="bg-white border border-slate-200 hover:border-amber-400 rounded-xl p-4.5 shadow-xs hover:shadow-md transition-all cursor-pointer group space-y-2.5"
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="w-9 h-9 rounded-lg bg-amber-50 text-amber-700 flex items-center justify-center group-hover:scale-105 transition-transform">
+                      <CalendarCheck className="w-5 h-5" />
+                    </div>
+                    <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-amber-100 text-amber-800">
+                      2 Vencimientos
+                    </span>
+                  </div>
+                  <div>
+                    <h4 className="text-xs font-bold text-slate-900 group-hover:text-[#0078D4] transition-colors flex items-center justify-between">
+                      <span>ARCA & DGR Chubut</span>
+                      <ArrowUpRight className="w-3.5 h-3.5 text-slate-400 group-hover:text-[#0078D4]" />
+                    </h4>
+                    <p className="text-[11px] text-slate-500 line-clamp-1 mt-0.5">
+                      IVA, Convenio SIFERE y Retenciones
+                    </p>
+                  </div>
+                  <div className="text-[10px] font-mono font-semibold text-amber-700 bg-amber-50/80 px-2 py-1 rounded border border-amber-200/60">
+                    Próximo: 15 Nov (CUITs 0-1)
+                  </div>
+                </div>
+
+                {/* Card 2: Cash Flow & Runway */}
+                <div 
+                  onClick={() => setDashboardView('cash_flow')}
+                  className="bg-white border border-slate-200 hover:border-blue-400 rounded-xl p-4.5 shadow-xs hover:shadow-md transition-all cursor-pointer group space-y-2.5"
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="w-9 h-9 rounded-lg bg-blue-50 text-[#0078D4] flex items-center justify-center group-hover:scale-105 transition-transform">
+                      <TrendingUp className="w-5 h-5" />
+                    </div>
+                    <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-blue-100 text-[#0078D4]">
+                      8.4 meses
+                    </span>
+                  </div>
+                  <div>
+                    <h4 className="text-xs font-bold text-slate-900 group-hover:text-[#0078D4] transition-colors flex items-center justify-between">
+                      <span>Runway & Flujo PyME</span>
+                      <ArrowUpRight className="w-3.5 h-3.5 text-slate-400 group-hover:text-[#0078D4]" />
+                    </h4>
+                    <p className="text-[11px] text-slate-500 line-clamp-1 mt-0.5">
+                      Simulación a 6 meses con 3 escenarios
+                    </p>
+                  </div>
+                  <div className="text-[10px] font-mono font-semibold text-emerald-700 bg-emerald-50/80 px-2 py-1 rounded border border-emerald-200/60 flex items-center justify-between">
+                    <span>Flujo neto: +$3.200 USD</span>
+                    <span>BEP: $14.2M</span>
+                  </div>
+                </div>
+
+                {/* Card 3: Cotizador de Honorarios */}
+                <div 
+                  onClick={() => setDashboardView('fee_pricing')}
+                  className="bg-white border border-slate-200 hover:border-emerald-400 rounded-xl p-4.5 shadow-xs hover:shadow-md transition-all cursor-pointer group space-y-2.5"
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="w-9 h-9 rounded-lg bg-emerald-50 text-[#107C41] flex items-center justify-center group-hover:scale-105 transition-transform">
+                      <Calculator className="w-5 h-5" />
+                    </div>
+                    <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-emerald-100 text-emerald-800">
+                      $35.000 / h
+                    </span>
+                  </div>
+                  <div>
+                    <h4 className="text-xs font-bold text-slate-900 group-hover:text-[#0078D4] transition-colors flex items-center justify-between">
+                      <span>Cotizador de Honorarios</span>
+                      <ArrowUpRight className="w-3.5 h-3.5 text-slate-400 group-hover:text-[#0078D4]" />
+                    </h4>
+                    <p className="text-[11px] text-slate-500 line-clamp-1 mt-0.5">
+                      Abonos mensuales e intervenciones
+                    </p>
+                  </div>
+                  <div className="text-[10px] font-mono font-semibold text-slate-700 bg-slate-50 px-2 py-1 rounded border border-slate-200">
+                    Integrado con Propuestas CRM
+                  </div>
+                </div>
+
+                {/* Card 4: CRM Leads en Vivo */}
+                <div 
+                  onClick={() => setDashboardView('crm')}
+                  className="bg-white border border-slate-200 hover:border-indigo-400 rounded-xl p-4.5 shadow-xs hover:shadow-md transition-all cursor-pointer group space-y-2.5"
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="w-9 h-9 rounded-lg bg-indigo-50 text-indigo-700 flex items-center justify-center group-hover:scale-105 transition-transform">
+                      <Users className="w-5 h-5" />
+                    </div>
+                    <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-indigo-100 text-indigo-800">
+                      {leads.length} Leads
+                    </span>
+                  </div>
+                  <div>
+                    <h4 className="text-xs font-bold text-slate-900 group-hover:text-[#0078D4] transition-colors flex items-center justify-between">
+                      <span>Pipeline Comercial</span>
+                      <ArrowUpRight className="w-3.5 h-3.5 text-slate-400 group-hover:text-[#0078D4]" />
+                    </h4>
+                    <p className="text-[11px] text-slate-500 line-clamp-1 mt-0.5">
+                      {leads.filter(l => l.stage === 'negociacion' || l.stage === 'propuesta').length} en negociación activa
+                    </p>
+                  </div>
+                  <div className="text-[10px] font-mono font-semibold text-indigo-700 bg-indigo-50/80 px-2 py-1 rounded border border-indigo-200/60">
+                    USD {leads.reduce((a, b) => a + (b.estimatedMonthlyBudgetUsd || 0), 0).toLocaleString()} / mes cartera
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Empty state if all widgets disabled in Visión General */}
+            {dashboardView === 'widgets' && widgets.filter((w) => w.enabled).length === 0 && (
+              <div className="bg-white border border-slate-200 rounded-xl p-8 text-center space-y-3">
+                <Sliders className="w-10 h-10 text-slate-400 mx-auto" />
+                <h3 className="text-sm font-bold text-slate-800">No hay widgets activos en la Visión General</h3>
+                <p className="text-xs text-slate-500 max-w-md mx-auto">
+                  Has desactivado todos los módulos en tu vista personalizada. Puedes restaurar los widgets predeterminados o seleccionar cuáles deseas activar.
+                </p>
+                <div className="pt-2">
+                  <button
+                    type="button"
+                    onClick={resetWidgets}
+                    className="px-4 py-2 bg-[#0078D4] hover:bg-[#106EBE] text-white text-xs font-bold rounded-lg shadow-xs transition-colors cursor-pointer"
+                  >
+                    Restaurar Widgets Predeterminados
+                  </button>
+                </div>
+              </div>
+            )}
+
             {/* ROW 1: CRM Pipeline & Quick Actions (Full width) */}
             {(dashboardView === 'widgets' && isWidgetVisible('crm_pipeline')) && (
               <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-xs space-y-5">
@@ -626,12 +760,7 @@ export const WidgetizableDashboard: React.FC<WidgetizableDashboardProps> = ({
               </div>
 
             {/* Stages Grid */}
-            <div 
-              className="grid grid-cols-1 sm:grid-cols-2 gap-3"
-              style={{
-                gridTemplateColumns: `repeat(${Math.max(pipelineStages.filter((s) => s.enabled).length, 1)}, minmax(0, 1fr))`
-              }}
-            >
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-3">
               {pipelineStages.filter((s) => s.enabled).map((stage) => {
                 const stageLeads = leads.filter((l) => l.stage === stage.id);
                 const totalStageBudget = stageLeads.reduce((acc, curr) => acc + (curr.estimatedMonthlyBudgetUsd || 0), 0);
@@ -1302,6 +1431,7 @@ export const WidgetizableDashboard: React.FC<WidgetizableDashboardProps> = ({
         )}
       </div>
       )}
+      </div>
 
       {/* Modal: Configurar API Key de Resend.com */}
       {showResendConfigModal && (
