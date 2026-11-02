@@ -173,6 +173,47 @@ export interface DeliverableReport {
   author: string;
 }
 
+export type DocumentCategory = 
+  | 'arca_afip' 
+  | 'iibb_chubut' 
+  | 'balances_contables' 
+  | 'societario_legal' 
+  | 'facturacion_comprobantes' 
+  | 'retenciones_percepciones'
+  | 'laboral_previsional';
+
+export type DocumentStatus = 
+  | 'auditado' 
+  | 'en_revision' 
+  | 'requiere_accion' 
+  | 'archivado';
+
+export interface ClientDocument {
+  id: string;
+  clientId: string;
+  title: string;
+  category: DocumentCategory;
+  period: string; // e.g. "Octubre 2026", "Ejercicio 2025/2026"
+  fileType: 'pdf' | 'excel' | 'zip' | 'xml';
+  fileSize: string; // e.g. "1.4 MB"
+  uploadDate: string;
+  uploadedBy: string; // e.g. "Estudio Cr. Domínguez" or "Cliente (Lic. Fernández)"
+  uploaderRole: 'estudio' | 'cliente';
+  status: DocumentStatus;
+  notes?: string;
+  vepNumber?: string;
+  dueDate?: string;
+  downloadUrl?: string;
+}
+
+export type PortalViewId = 
+  | 'resumen' 
+  | 'documentacion' 
+  | 'reportes' 
+  | 'consultas' 
+  | 'calendario' 
+  | 'datos_empresa';
+
 export interface AdvisoryTicket {
   id: string;
   clientId: string;

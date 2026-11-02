@@ -165,8 +165,8 @@ export default function App() {
         )}
 
         {currentTab === 'portal' && (
-          <div className="w-full px-4 sm:px-8 lg:px-16 xl:px-20 py-8 sm:py-12">
-            <ClientPortal />
+          <div className="w-full">
+            <ClientPortal onNavigateTab={handleTabChange} />
           </div>
         )}
 

@@ -4,7 +4,7 @@
  */
 
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
-import { Lead, CRMTask, DeliverableReport, AdvisoryTicket, ClientProfile, LeadStage, CRMContact, CRMMeeting, CompanyEmployee } from '../types';
+import { Lead, CRMTask, DeliverableReport, AdvisoryTicket, ClientProfile, LeadStage, CRMContact, CRMMeeting, CompanyEmployee, ClientDocument } from '../types';
 
 const rawSupabaseUrl = 
   (import.meta.env.VITE_SUPABASE_URL as string) || 
@@ -310,6 +310,109 @@ const SEED_TICKETS: AdvisoryTicket[] = [
     createdAt: '2026-10-26T08:45:00Z',
     question: 'Solicitamos corrida de sensibilidad del modelo de cash flow considerando un desdoblamiento de costos de infraestructura en dólares y salarios en pesos ajustados por IPC Patagonia.',
     advisorName: 'Cr. Carlos Rodrigo Domínguez',
+  },
+];
+
+export const SEED_DOCUMENTS: ClientDocument[] = [
+  {
+    id: 'doc-101',
+    clientId: 'cli-001',
+    title: 'Declaración Jurada ARCA F. 2002 IVA - Período 09/2026',
+    category: 'arca_afip',
+    period: '09/2026',
+    fileType: 'pdf',
+    fileSize: '1.2 MB',
+    uploadDate: '2026-10-18T10:15:00Z',
+    uploadedBy: 'Estudio Cr. Carlos Rodrigo Domínguez',
+    uploaderRole: 'estudio',
+    status: 'auditado',
+    notes: 'Presentación formal aprobada con VEP de saldo $0 por saldo a favor técnico computado.',
+    vepNumber: 'VEP-992140-ARCA',
+  },
+  {
+    id: 'doc-102',
+    clientId: 'cli-001',
+    title: 'Anticipo Ingresos Brutos DGR Chubut - Régimen General 09/2026',
+    category: 'iibb_chubut',
+    period: '09/2026',
+    fileType: 'pdf',
+    fileSize: '890 KB',
+    uploadDate: '2026-10-19T14:30:00Z',
+    uploadedBy: 'Estudio Cr. Carlos Rodrigo Domínguez',
+    uploaderRole: 'estudio',
+    status: 'auditado',
+    notes: 'Liquidación conforme alícuota provincial bonificada para servicios basados en conocimiento.',
+    vepNumber: 'DGR-CH-88319-2026',
+  },
+  {
+    id: 'doc-103',
+    clientId: 'cli-001',
+    title: 'Balance General & Estados Contables Auditados - Ejercicio 2025/2026',
+    category: 'balances_contables',
+    period: 'Ejercicio 2025/2026',
+    fileType: 'pdf',
+    fileSize: '4.8 MB',
+    uploadDate: '2026-09-30T17:00:00Z',
+    uploadedBy: 'Cr. Carlos Rodrigo Domínguez',
+    uploaderRole: 'estudio',
+    status: 'auditado',
+    notes: 'Certificación de firma digital legalizada ante el CPCE Provincia del Chubut (Matrícula Tomo IV Folio 128).',
+  },
+  {
+    id: 'doc-104',
+    clientId: 'cli-001',
+    title: 'Estatuto Constitutivo SAS & Personería Jurídica IGJ Chubut',
+    category: 'societario_legal',
+    period: 'Permanente',
+    fileType: 'pdf',
+    fileSize: '3.1 MB',
+    uploadDate: '2026-06-12T11:00:00Z',
+    uploadedBy: 'Estudio Cr. Carlos Rodrigo Domínguez',
+    uploaderRole: 'estudio',
+    status: 'auditado',
+    notes: 'Inscripción bajo Libro SAS Nº 441/2021. Objeto social tecnológico y de exportación de software.',
+  },
+  {
+    id: 'doc-105',
+    clientId: 'cli-001',
+    title: 'Certificado de No Retención de Ganancias RG 830 (ARCA)',
+    category: 'retenciones_percepciones',
+    period: 'Vigente hasta 31/12/2026',
+    fileType: 'pdf',
+    fileSize: '450 KB',
+    uploadDate: '2026-07-01T09:00:00Z',
+    uploadedBy: 'Estudio Cr. Carlos Rodrigo Domínguez',
+    uploaderRole: 'estudio',
+    status: 'auditado',
+    notes: 'Constancia oficial para presentar ante clientes y bancos agentes de retención.',
+  },
+  {
+    id: 'doc-106',
+    clientId: 'cli-001',
+    title: 'Extracto Bancario Conciliado & Comprobantes SWIFT Factura E - Octubre',
+    category: 'facturacion_comprobantes',
+    period: '10/2026',
+    fileType: 'pdf',
+    fileSize: '2.4 MB',
+    uploadDate: '2026-10-25T15:20:00Z',
+    uploadedBy: 'Cliente (Lic. Lucía Fernández)',
+    uploaderRole: 'cliente',
+    status: 'en_revision',
+    notes: 'Ingreso de divisas de cliente estadounidense vía Banco del Chubut. Pendiente cotejo con F. 2002.',
+  },
+  {
+    id: 'doc-107',
+    clientId: 'cli-001',
+    title: 'Formulario 931 Libro de Sueldos Digital & Nómina Fonoaudiología/Dev',
+    category: 'laboral_previsional',
+    period: '09/2026',
+    fileType: 'pdf',
+    fileSize: '1.6 MB',
+    uploadDate: '2026-10-14T12:00:00Z',
+    uploadedBy: 'Estudio Cr. Carlos Rodrigo Domínguez',
+    uploaderRole: 'estudio',
+    status: 'auditado',
+    notes: 'Aportes y contribuciones patronales debidamente cancelados por VEP.',
   },
 ];
 
@@ -750,6 +853,7 @@ class DataRepository {
   private ticketsKey = 'dl_consulting_tickets';
   private contactsKey = 'cr_crm_contacts';
   private meetingsKey = 'cr_crm_meetings';
+  private documentsKey = 'dl_client_documents';
 
   constructor() {
     this.initStorage();
@@ -774,6 +878,9 @@ class DataRepository {
     }
     if (!localStorage.getItem(this.meetingsKey)) {
       localStorage.setItem(this.meetingsKey, JSON.stringify(SEED_MEETINGS));
+    }
+    if (!localStorage.getItem(this.documentsKey)) {
+      localStorage.setItem(this.documentsKey, JSON.stringify(SEED_DOCUMENTS));
     }
   }
 
@@ -1112,6 +1219,59 @@ class DataRepository {
 
   async saveMeetingMinutes(meetingId: string, minutes: string): Promise<CRMMeeting> {
     return this.updateMeeting(meetingId, { notesMinutes: minutes, status: 'realizada' });
+  }
+
+  // Client Documents & Artifacts Repository
+  async getClientDocuments(clientId?: string): Promise<ClientDocument[]> {
+    if (typeof window === 'undefined') return SEED_DOCUMENTS;
+    try {
+      const local = localStorage.getItem(this.documentsKey);
+      const docs: ClientDocument[] = local ? JSON.parse(local) : SEED_DOCUMENTS;
+      if (clientId) {
+        return docs.filter((d) => d.clientId === clientId);
+      }
+      return docs;
+    } catch {
+      return SEED_DOCUMENTS;
+    }
+  }
+
+  async uploadClientDocument(docData: Omit<ClientDocument, 'id' | 'uploadDate'>): Promise<ClientDocument> {
+    const newDoc: ClientDocument = {
+      ...docData,
+      id: `doc-${Date.now().toString().slice(-4)}`,
+      uploadDate: new Date().toISOString(),
+    };
+    const current = await this.getClientDocuments();
+    const updated = [newDoc, ...current];
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(this.documentsKey, JSON.stringify(updated));
+    }
+    return newDoc;
+  }
+
+  async updateClientDocument(docId: string, updates: Partial<ClientDocument>): Promise<ClientDocument> {
+    const current = await this.getClientDocuments();
+    let updatedDoc: ClientDocument | null = null;
+    const updated = current.map((d) => {
+      if (d.id === docId) {
+        updatedDoc = { ...d, ...updates };
+        return updatedDoc;
+      }
+      return d;
+    });
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(this.documentsKey, JSON.stringify(updated));
+    }
+    return updatedDoc || current[0];
+  }
+
+  async deleteClientDocument(docId: string): Promise<void> {
+    const current = await this.getClientDocuments();
+    const updated = current.filter((d) => d.id !== docId);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(this.documentsKey, JSON.stringify(updated));
+    }
   }
 
   getClientProfile(): ClientProfile {
