@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   FolderLock,
   Upload,
@@ -27,9 +27,34 @@ import {
   Check,
   Cloud,
   FileUp,
-  HardDrive
+  HardDrive,
+  CheckCheck,
+  LogOut,
+  FolderOpen
 } from 'lucide-react';
 import { ClientDocument, DocumentCategory, DocumentStatus, ClientProfile } from '../../types';
+import {
+  initAuth,
+  googleSignIn,
+  logoutGoogle,
+  getAccessToken,
+  getOrCreateClientFolder,
+  uploadFileToGoogleDrive,
+  deleteGoogleDriveFile,
+  DriveFolderInfo,
+  DriveFileInfo
+} from '../../lib/googleDriveService';
+import type { User } from 'firebase/auth';
+
+const GoogleIcon: React.FC<{ className?: string }> = ({ className = 'w-4 h-4' }) => (
+  <svg className={className} viewBox="0 0 48 48" style={{ display: 'inline-block' }}>
+    <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z" />
+    <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z" />
+    <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z" />
+    <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z" />
+    <path fill="none" d="M0 0h48v48H0z" />
+  </svg>
+);
 
 interface ClientDocumentManagerProps {
   documents: ClientDocument[];
@@ -92,6 +117,89 @@ export const ClientDocumentManager: React.FC<ClientDocumentManagerProps> = ({
   const [selectedRealFile, setSelectedRealFile] = useState<File | null>(null);
   const [realFileDataUrl, setRealFileDataUrl] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
+
+  // Google Drive Integration State
+  const [googleUser, setGoogleUser] = useState<User | null>(null);
+  const [driveFolder, setDriveFolder] = useState<DriveFolderInfo | null>(null);
+  const [isConnectingDrive, setIsConnectingDrive] = useState(false);
+  const [driveError, setDriveError] = useState<string | null>(null);
+  const [syncToDrive, setSyncToDrive] = useState(true);
+  const [driveSyncingStatus, setDriveSyncingStatus] = useState<string | null>(null);
+  const [isDeletingDoc, setIsDeletingDoc] = useState(false);
+
+  // Initialize auth listener
+  useEffect(() => {
+    const unsubscribe = initAuth(
+      async (user, _token) => {
+        setGoogleUser(user);
+        try {
+          const folder = await getOrCreateClientFolder(profile.companyName);
+          setDriveFolder(folder);
+        } catch (err: any) {
+          console.warn('Google Drive folder setup:', err?.message);
+        }
+      },
+      () => {
+        setGoogleUser(null);
+        setDriveFolder(null);
+      }
+    );
+    return () => unsubscribe();
+  }, [profile.companyName]);
+
+  const handleConnectGoogleDrive = async () => {
+    setIsConnectingDrive(true);
+    setDriveError(null);
+    try {
+      const result = await googleSignIn();
+      if (result) {
+        setGoogleUser(result.user);
+        const folder = await getOrCreateClientFolder(profile.companyName);
+        setDriveFolder(folder);
+      }
+    } catch (err: any) {
+      console.error('Error Google Drive:', err);
+      setDriveError(err?.message || 'Error al conectar con Google Drive');
+    } finally {
+      setIsConnectingDrive(false);
+    }
+  };
+
+  const handleDisconnectGoogleDrive = async () => {
+    try {
+      await logoutGoogle();
+      setGoogleUser(null);
+      setDriveFolder(null);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  // Safe delete with mandatory user confirmation per Workspace Integration guidelines
+  const handleDeleteDocumentSafe = async (doc: ClientDocument) => {
+    const isDriveBacked = !!doc.driveFileId;
+    const confirmMessage = isDriveBacked
+      ? `¿Estás seguro de que deseas eliminar permanentemente el documento "${doc.title}"?\n\nEsta acción borrará el registro de la bóveda digital y el archivo alojado en Google Drive.`
+      : `¿Estás seguro de que deseas eliminar el documento "${doc.title}" de la bóveda digital?`;
+
+    if (!window.confirm(confirmMessage)) return;
+
+    try {
+      setIsDeletingDoc(true);
+      if (isDriveBacked && doc.driveFileId && getAccessToken()) {
+        try {
+          await deleteGoogleDriveFile(doc.driveFileId);
+        } catch (driveErr) {
+          console.warn('Aviso: el archivo en Drive no se pudo remover o ya fue eliminado.', driveErr);
+        }
+      }
+      await onDeleteDocument(doc.id);
+    } catch (err) {
+      console.error('Error al eliminar documento:', err);
+    } finally {
+      setIsDeletingDoc(false);
+    }
+  };
 
   // Upload modal state
   const [showUploadModal, setShowUploadModal] = useState(false);
@@ -228,6 +336,7 @@ Constancia oficial expedida para la empresa cliente y entidades bancarias o fisc
     if (!uploadTitle.trim()) return;
 
     setIsUploading(true);
+    setDriveSyncingStatus(null);
     try {
       const fileSizeFormatted = selectedRealFile
         ? selectedRealFile.size >= 1048576
@@ -245,6 +354,33 @@ Constancia oficial expedida para la empresa cliente y entidades bancarias o fisc
           : 'pdf'
         : 'pdf';
 
+      let driveUploadedFile: DriveFileInfo | null = null;
+
+      // Upload to Google Drive if user chose to sync and Drive is authenticated
+      if (syncToDrive && getAccessToken()) {
+        setDriveSyncingStatus('Sincronizando con Google Drive en la carpeta del cliente...');
+        try {
+          const fileToUpload = selectedRealFile || new Blob([
+            `Comprobante Bóveda Digital - ${uploadTitle.trim()}\nEmpresa: ${profile.companyName}\nPeríodo: ${uploadPeriod.trim() || '10/2026'}\nFecha: ${new Date().toISOString()}`
+          ], { type: 'text/plain' });
+
+          const fileNameToUpload = selectedRealFile
+            ? selectedRealFile.name
+            : `${uploadTitle.trim().replace(/[^a-zA-Z0-9_-]/g, '_')}.txt`;
+
+          const mime = selectedRealFile?.type || 'application/octet-stream';
+
+          driveUploadedFile = await uploadFileToGoogleDrive(
+            fileToUpload,
+            fileNameToUpload,
+            mime,
+            driveFolder?.id
+          );
+        } catch (driveErr) {
+          console.warn('Aviso: Falló la subida opcional a Google Drive, guardando copia en bóveda local.', driveErr);
+        }
+      }
+
       await onUploadDocument({
         clientId: profile.id,
         title: uploadTitle.trim(),
@@ -258,6 +394,9 @@ Constancia oficial expedida para la empresa cliente y entidades bancarias o fisc
         notes: uploadNotes.trim() || undefined,
         vepNumber: uploadVep.trim() || undefined,
         downloadUrl: realFileDataUrl || undefined,
+        driveFileId: driveUploadedFile?.id,
+        driveWebViewLink: driveUploadedFile?.webViewLink,
+        driveFolderId: driveFolder?.id,
       });
 
       setUploadSuccess(true);
@@ -269,12 +408,14 @@ Constancia oficial expedida para la empresa cliente y entidades bancarias o fisc
         setUploadVep('');
         setSelectedRealFile(null);
         setRealFileDataUrl(null);
+        setDriveSyncingStatus(null);
         if (fileInputRef.current) fileInputRef.current.value = '';
       }, 1000);
     } catch (err) {
       console.error(err);
     } finally {
       setIsUploading(false);
+      setDriveSyncingStatus(null);
     }
   };
 
@@ -417,57 +558,131 @@ Constancia oficial expedida para la empresa cliente y entidades bancarias o fisc
           </div>
         </div>
 
-        {/* Repository & Google Drive Integration Architecture Banner */}
-        <div className="mt-4 p-4 rounded-xl bg-gradient-to-r from-blue-50/90 to-indigo-50/90 border border-blue-200 text-xs text-slate-800 space-y-2">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <div className="flex items-start gap-2.5">
-              <div className="w-8 h-8 rounded-lg bg-white border border-blue-200 text-[#0078D4] flex items-center justify-center shrink-0 shadow-2xs mt-0.5">
-                <Cloud className="w-4 h-4" />
+        {/* Interactive Google Drive Repository Hub */}
+        <div className="mt-4 p-4 rounded-xl bg-gradient-to-r from-blue-50/90 via-sky-50/70 to-indigo-50/90 border border-blue-200 text-xs text-slate-800 space-y-3">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex items-start gap-3">
+              <div className="w-9 h-9 rounded-xl bg-white border border-blue-200 text-[#0078D4] flex items-center justify-center shrink-0 shadow-2xs mt-0.5">
+                <Cloud className="w-5 h-5 text-[#0078D4]" />
               </div>
-              <div className="space-y-0.5">
-                <div className="flex items-center gap-2">
-                  <h4 className="font-bold text-slate-900">
-                    Alojamiento del Repositorio & Google Drive
+              <div className="space-y-1">
+                <div className="flex flex-wrap items-center gap-2">
+                  <h4 className="font-bold text-slate-900 text-sm">
+                    Repositorio de Archivos & Google Drive
                   </h4>
-                  <span className="px-1.5 py-0.2 rounded text-[10px] font-mono font-bold bg-blue-100 text-[#0078D4]">
-                    Almacenamiento Seguro
-                  </span>
+                  {googleUser ? (
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-emerald-100 text-emerald-800 border border-emerald-300">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-pulse" />
+                      Drive Conectado
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-slate-100 text-slate-600 border border-slate-300">
+                      Drive No Conectado
+                    </span>
+                  )}
                 </div>
-                <p className="text-[11px] text-slate-600 leading-relaxed">
-                  <strong>¿Dónde se aloja la documentación?</strong> Actualmente se almacena en la <strong>Bóveda Digital encriptada</strong> del estudio con persistencia en base de datos.
-                  <strong> ¿Se puede integrar Google Drive?</strong> <em>¡Sí!</em> Es posible sincronizar automáticamente cada archivo, comprobante y declaración jurada en una carpeta dedicada de Google Drive compartida entre {profile.companyName} y el Cr. Domínguez.
+
+                <p className="text-[11px] text-slate-600 leading-relaxed max-w-2xl">
+                  {googleUser ? (
+                    <>
+                      Sesión activa con <strong className="text-slate-800">{googleUser.email}</strong>. Cada documento subido se respaldará en la carpeta compartida{' '}
+                      <strong className="text-[#0078D4]">Estudio Cr. Domínguez · {profile.companyName}</strong>.
+                    </>
+                  ) : (
+                    <>
+                      Los documentos se archivan en la bóveda digital encriptada. Puedes{' '}
+                      <strong className="text-slate-800">conectar tu cuenta de Google Drive</strong> sin costo para sincronizar automáticamente todos los archivos fiscales y balances en la nube.
+                    </>
+                  )}
                 </p>
+
+                {driveFolder && (
+                  <div className="pt-1 flex flex-wrap items-center gap-2 text-[11px]">
+                    <span className="text-slate-500 font-mono">Carpeta remota:</span>
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-white border border-blue-200 font-bold text-slate-800">
+                      <FolderOpen className="w-3 h-3 text-[#0078D4]" />
+                      <span>Estudio Cr. Domínguez · {profile.companyName}</span>
+                    </span>
+                  </div>
+                )}
               </div>
             </div>
 
-            <button
-              type="button"
-              onClick={() => setShowDriveInfo(!showDriveInfo)}
-              className="px-3 py-1.5 bg-white hover:bg-blue-50 border border-blue-200 text-[#0078D4] font-semibold text-xs rounded-lg shadow-2xs flex items-center gap-1.5 transition-colors cursor-pointer self-start sm:self-auto shrink-0"
-            >
-              <HardDrive className="w-3.5 h-3.5" />
-              <span>{showDriveInfo ? 'Ocultar Detalle' : 'Ver Arquitectura Google Drive'}</span>
-            </button>
+            {/* Action buttons on the right */}
+            <div className="flex flex-wrap items-center gap-2 self-start md:self-center shrink-0">
+              {googleUser ? (
+                <>
+                  {driveFolder?.webViewLink && (
+                    <a
+                      href={driveFolder.webViewLink}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="px-3.5 py-2 bg-[#0078D4] hover:bg-[#106EBE] text-white text-xs font-bold rounded-lg shadow-xs flex items-center gap-1.5 transition-colors cursor-pointer"
+                    >
+                      <FolderOpen className="w-3.5 h-3.5" />
+                      <span>Abrir Carpeta en Drive</span>
+                      <ExternalLink className="w-3 h-3 opacity-80" />
+                    </a>
+                  )}
+
+                  <button
+                    type="button"
+                    onClick={handleDisconnectGoogleDrive}
+                    className="px-3 py-2 bg-white hover:bg-slate-100 text-slate-700 text-xs font-semibold rounded-lg border border-slate-300 shadow-2xs flex items-center gap-1.5 transition-colors cursor-pointer"
+                    title="Cerrar sesión de Google Drive"
+                  >
+                    <LogOut className="w-3.5 h-3.5 text-slate-500" />
+                    <span>Desconectar</span>
+                  </button>
+                </>
+              ) : (
+                <button
+                  type="button"
+                  onClick={handleConnectGoogleDrive}
+                  disabled={isConnectingDrive}
+                  className="px-3.5 py-2 bg-white hover:bg-slate-50 text-slate-800 text-xs font-bold rounded-lg border border-slate-300 shadow-2xs flex items-center gap-2 transition-all hover:border-blue-400 cursor-pointer disabled:opacity-60"
+                >
+                  <GoogleIcon className="w-4 h-4" />
+                  <span>{isConnectingDrive ? 'Conectando con Google...' : 'Conectar con Google Drive'}</span>
+                </button>
+              )}
+
+              <button
+                type="button"
+                onClick={() => setShowDriveInfo(!showDriveInfo)}
+                className="px-2.5 py-2 text-slate-600 hover:text-slate-900 text-xs font-semibold rounded-lg hover:bg-blue-100/50 transition-colors cursor-pointer"
+              >
+                <HardDrive className="w-3.5 h-3.5 inline mr-1" />
+                <span>{showDriveInfo ? 'Ocultar' : 'Info'}</span>
+              </button>
+            </div>
           </div>
 
+          {driveError && (
+            <div className="p-2.5 rounded-lg bg-rose-50 border border-rose-200 text-rose-800 text-[11px] flex items-center gap-2">
+              <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
+              <span>{driveError}</span>
+            </div>
+          )}
+
           {showDriveInfo && (
-            <div className="pt-3 mt-3 border-t border-blue-200/80 grid grid-cols-1 md:grid-cols-3 gap-3 text-[11px] animate-fadeIn">
+            <div className="pt-3 mt-2 border-t border-blue-200/80 grid grid-cols-1 md:grid-cols-3 gap-3 text-[11px] animate-fadeIn">
               <div className="p-3 bg-white rounded-lg border border-blue-100 space-y-1">
-                <span className="font-bold text-slate-900 block">1. Bóveda Local / Supabase</span>
+                <span className="font-bold text-slate-900 block">1. Bóveda Local / Base de Datos</span>
                 <p className="text-slate-600">
                   Indexación instantánea de metadatos, períodos, números de VEP y hash criptográfico SHA-256 para auditoría fiscal.
                 </p>
               </div>
               <div className="p-3 bg-white rounded-lg border border-blue-100 space-y-1">
-                <span className="font-bold text-slate-900 block">2. Google Drive API</span>
+                <span className="font-bold text-slate-900 block">2. Google Drive Workspace</span>
                 <p className="text-slate-600">
-                  Crea la carpeta <code>Estudio Cr. Domínguez / {profile.companyName}</code> para subir PDFs, balances y planillas en tu nube.
+                  Crea y sincroniza la carpeta <code>Estudio Cr. Domínguez · {profile.companyName}</code> para mantener todos los comprobantes respaldados en tu cuenta.
                 </p>
               </div>
               <div className="p-3 bg-white rounded-lg border border-blue-100 space-y-1">
-                <span className="font-bold text-slate-900 block">3. Permisos & Respaldo</span>
+                <span className="font-bold text-slate-900 block">3. Sin Costo Adicional</span>
                 <p className="text-slate-600">
-                  Garantiza que ambos extremos mantengan acceso permanente a los comprobantes incluso fuera del portal.
+                  Utiliza la cuota habitual de almacenamiento de tu cuenta de Google. Acceso directo tanto dentro del portal como en drive.google.com.
                 </p>
               </div>
             </div>
@@ -627,10 +842,26 @@ Constancia oficial expedida para la empresa cliente y entidades bancarias o fisc
                             <span className="font-bold text-slate-900 block leading-snug truncate">
                               {doc.title}
                             </span>
-                            <div className="flex items-center gap-2 mt-1 text-[11px] text-slate-500 font-mono">
+                            <div className="flex flex-wrap items-center gap-2 mt-1 text-[11px] text-slate-500 font-mono">
                               <span className="uppercase">{doc.fileType}</span>
                               <span>·</span>
                               <span>{doc.fileSize}</span>
+                              {doc.driveWebViewLink && (
+                                <>
+                                  <span>·</span>
+                                  <a
+                                    href={doc.driveWebViewLink}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="inline-flex items-center gap-1 text-[10px] font-mono text-emerald-700 bg-emerald-50 hover:bg-emerald-100 px-1.5 py-0.5 rounded border border-emerald-200 transition-colors"
+                                    title="Ver archivo respaldado en Google Drive"
+                                  >
+                                    <Cloud className="w-2.5 h-2.5 text-emerald-600" />
+                                    <span>En Drive</span>
+                                    <ExternalLink className="w-2.5 h-2.5" />
+                                  </a>
+                                </>
+                              )}
                               {doc.vepNumber && (
                                 <>
                                   <span>·</span>
@@ -687,6 +918,18 @@ Constancia oficial expedida para la empresa cliente y entidades bancarias o fisc
                       {/* Actions */}
                       <td className="py-3.5 px-4 text-right">
                         <div className="flex items-center justify-end gap-1.5">
+                          {doc.driveWebViewLink && (
+                            <a
+                              href={doc.driveWebViewLink}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="p-1.5 text-slate-600 hover:text-[#0078D4] hover:bg-blue-50 rounded transition-colors cursor-pointer"
+                              title="Abrir directamente en Google Drive"
+                            >
+                              <ExternalLink className="w-3.5 h-3.5 text-[#0078D4]" />
+                            </a>
+                          )}
+
                           <button
                             type="button"
                             onClick={() => setPreviewDoc(doc)}
@@ -708,12 +951,9 @@ Constancia oficial expedida para la empresa cliente y entidades bancarias o fisc
                           {doc.uploaderRole === 'cliente' && (
                             <button
                               type="button"
-                              onClick={() => {
-                                if (confirm(`¿Deseas eliminar el documento "${doc.title}"?`)) {
-                                  onDeleteDocument(doc.id);
-                                }
-                              }}
-                              className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors cursor-pointer"
+                              onClick={() => handleDeleteDocumentSafe(doc)}
+                              disabled={isDeletingDoc}
+                              className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors cursor-pointer disabled:opacity-50"
                               title="Eliminar documento subido"
                             >
                               <Trash2 className="w-3.5 h-3.5" />
@@ -744,7 +984,22 @@ Constancia oficial expedida para la empresa cliente y entidades bancarias o fisc
                     <span className={`px-2 py-0.5 rounded text-[10px] font-mono font-bold border ${cat.badge}`}>
                       {cat.short}
                     </span>
-                    {getStatusBadge(doc.status)}
+                    <div className="flex items-center gap-1.5">
+                      {doc.driveWebViewLink && (
+                        <a
+                          href={doc.driveWebViewLink}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-mono font-bold bg-emerald-50 text-emerald-800 border border-emerald-200 hover:bg-emerald-100 transition-colors"
+                          title="Abrir en Google Drive"
+                        >
+                          <Cloud className="w-2.5 h-2.5 text-emerald-600" />
+                          <span>Drive</span>
+                          <ExternalLink className="w-2.5 h-2.5 opacity-70" />
+                        </a>
+                      )}
+                      {getStatusBadge(doc.status)}
+                    </div>
                   </div>
 
                   <div className="flex items-start gap-2.5">
@@ -787,11 +1042,24 @@ Constancia oficial expedida para la empresa cliente y entidades bancarias o fisc
                 </div>
 
                 <div className="pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
-                  <span className="text-[10px] text-slate-400 font-mono truncate max-w-[120px]">
+                  <span className="text-[10px] text-slate-400 font-mono truncate max-w-[100px]">
                     {new Date(doc.uploadDate).toLocaleDateString('es-AR')}
                   </span>
 
                   <div className="flex items-center gap-1">
+                    {doc.driveWebViewLink && (
+                      <a
+                        href={doc.driveWebViewLink}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="px-2 py-1 text-[#0078D4] hover:bg-blue-50 border border-blue-200 rounded text-xs font-semibold transition-colors cursor-pointer flex items-center gap-1 shadow-2xs"
+                        title="Ver en Google Drive"
+                      >
+                        <ExternalLink className="w-3 h-3" />
+                        <span>Drive</span>
+                      </a>
+                    )}
+
                     <button
                       type="button"
                       onClick={() => setPreviewDoc(doc)}
@@ -809,6 +1077,18 @@ Constancia oficial expedida para la empresa cliente y entidades bancarias o fisc
                       <Download className="w-3 h-3" />
                       <span>Descargar</span>
                     </button>
+
+                    {doc.uploaderRole === 'cliente' && (
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteDocumentSafe(doc)}
+                        disabled={isDeletingDoc}
+                        className="p-1 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors cursor-pointer"
+                        title="Eliminar documento subido"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    )}
                   </div>
                 </div>
               </div>
@@ -1017,6 +1297,71 @@ Constancia oficial expedida para la empresa cliente y entidades bancarias o fisc
                 />
               </div>
 
+              {/* Google Drive Automatic Backup Option */}
+              <div className="p-3 rounded-lg border border-slate-200 bg-slate-50 space-y-2">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Cloud className="w-4 h-4 text-[#0078D4]" />
+                    <span className="font-bold text-slate-800 text-xs">
+                      Respaldo en Google Drive
+                    </span>
+                  </div>
+                  {googleUser ? (
+                    <span className="text-[10px] font-mono text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200 font-bold">
+                      Cuenta Conectada
+                    </span>
+                  ) : (
+                    <span className="text-[10px] font-mono text-slate-500 bg-white px-2 py-0.5 rounded border border-slate-200">
+                      No Conectado
+                    </span>
+                  )}
+                </div>
+
+                {googleUser ? (
+                  <label className="flex items-start gap-2.5 cursor-pointer pt-1">
+                    <input
+                      type="checkbox"
+                      checked={syncToDrive}
+                      onChange={(e) => setSyncToDrive(e.target.checked)}
+                      className="mt-0.5 rounded text-[#0078D4] focus:ring-[#0078D4] cursor-pointer"
+                    />
+                    <div className="text-[11px] text-slate-600 leading-snug">
+                      <span className="font-semibold text-slate-800 block">
+                        Subir y sincronizar copia en Google Drive ({googleUser.email})
+                      </span>
+                      <span>
+                        Se guardará en la carpeta:{' '}
+                        <strong className="text-[#0078D4]">
+                          Estudio Cr. Domínguez · {profile.companyName}
+                        </strong>
+                      </span>
+                    </div>
+                  </label>
+                ) : (
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pt-1 text-[11px] text-slate-600">
+                    <p>
+                      Conecta Google Drive para enviar copia automática de este comprobante a tu almacenamiento en la nube sin costo.
+                    </p>
+                    <button
+                      type="button"
+                      onClick={handleConnectGoogleDrive}
+                      disabled={isConnectingDrive}
+                      className="px-2.5 py-1.5 bg-white hover:bg-slate-100 border border-slate-300 rounded font-semibold text-slate-800 shadow-2xs flex items-center gap-1.5 shrink-0 cursor-pointer"
+                    >
+                      <GoogleIcon className="w-3.5 h-3.5" />
+                      <span>{isConnectingDrive ? 'Conectando...' : 'Conectar Drive'}</span>
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              {driveSyncingStatus && (
+                <div className="p-2.5 bg-blue-50 border border-blue-200 rounded text-blue-900 text-xs font-semibold flex items-center gap-2 animate-pulse">
+                  <Cloud className="w-4 h-4 text-[#0078D4]" />
+                  <span>{driveSyncingStatus}</span>
+                </div>
+              )}
+
               {uploadSuccess && (
                 <div className="p-3 bg-emerald-50 border border-emerald-200 rounded text-emerald-800 font-semibold flex items-center gap-2">
                   <CheckCircle2 className="w-4 h-4 text-emerald-600" />
@@ -1113,6 +1458,22 @@ Constancia oficial expedida para la empresa cliente y entidades bancarias o fisc
                   <span className="font-mono font-bold text-[#0078D4] block">{previewDoc.vepNumber}</span>
                 </div>
               )}
+
+              {previewDoc.driveWebViewLink && (
+                <div>
+                  <span className="text-slate-500 block text-[11px]">Almacenamiento Cloud:</span>
+                  <a
+                    href={previewDoc.driveWebViewLink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1 font-bold text-emerald-700 hover:underline"
+                  >
+                    <Cloud className="w-3 h-3 text-emerald-600" />
+                    <span>Google Drive</span>
+                    <ExternalLink className="w-2.5 h-2.5 opacity-70" />
+                  </a>
+                </div>
+              )}
             </div>
 
             {/* Real Uploaded File Preview if DataUrl exists */}
@@ -1177,6 +1538,18 @@ Constancia oficial expedida para la empresa cliente y entidades bancarias o fisc
                 >
                   Cerrar
                 </button>
+                {previewDoc.driveWebViewLink && (
+                  <a
+                    href={previewDoc.driveWebViewLink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="px-3.5 py-2 bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold rounded-lg flex items-center gap-1.5 shadow-xs transition-colors cursor-pointer"
+                  >
+                    <Cloud className="w-3.5 h-3.5" />
+                    <span>Abrir en Google Drive</span>
+                    <ExternalLink className="w-3 h-3 opacity-80" />
+                  </a>
+                )}
                 <button
                   type="button"
                   onClick={() => {

@@ -204,6 +204,9 @@ export interface ClientDocument {
   vepNumber?: string;
   dueDate?: string;
   downloadUrl?: string;
+  driveFileId?: string;
+  driveWebViewLink?: string;
+  driveFolderId?: string;
 }
 
 export type PortalViewId = 
