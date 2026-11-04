@@ -32,9 +32,10 @@ import {
   Video,
   Menu,
   CalendarCheck,
-  Calculator
+  Calculator,
+  Database
 } from 'lucide-react';
-import { dbRepository } from '../../lib/supabaseClient';
+import { dbRepository, checkSupabaseHealth, isSupabaseConfigured, SupabaseHealthCheck } from '../../lib/supabaseClient';
 import { userService } from '../../lib/userService';
 import { resendService } from '../../lib/resendService';
 import { blogService } from '../../lib/blogService';
@@ -128,6 +129,21 @@ export const WidgetizableDashboard: React.FC<WidgetizableDashboardProps> = ({
   const [resendConfig, setResendConfig] = useState<ResendConfig>(resendService.getConfig());
   const [resendLogs, setResendLogs] = useState<ResendEmailLog[]>(resendService.getLogs());
 
+  // Supabase Database Health State
+  const [dbHealth, setDbHealth] = useState<SupabaseHealthCheck | null>(null);
+  const [showDbModal, setShowDbModal] = useState(false);
+  const [isCheckingDb, setIsCheckingDb] = useState(false);
+
+  const runCheckDb = async () => {
+    setIsCheckingDb(true);
+    try {
+      const res = await checkSupabaseHealth();
+      setDbHealth(res);
+    } finally {
+      setIsCheckingDb(false);
+    }
+  };
+
   // Widget customizer modal state
   const [showCustomizer, setShowCustomizer] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<'all' | 'negocio' | 'marketing' | 'operaciones' | 'usuarios'>('all');
@@ -192,6 +208,7 @@ export const WidgetizableDashboard: React.FC<WidgetizableDashboardProps> = ({
 
   useEffect(() => {
     loadAllData();
+    runCheckDb();
   }, []);
 
   const saveWidgetsConfig = (updated: DashboardWidgetConfig[]) => {
@@ -419,6 +436,30 @@ export const WidgetizableDashboard: React.FC<WidgetizableDashboardProps> = ({
                   <span>Personalizar ({widgets.filter((w) => w.enabled).length}/{widgets.length})</span>
                 </button>
               )}
+
+              {/* Supabase Database Connection Status Pill */}
+              <button
+                type="button"
+                onClick={() => setShowDbModal(true)}
+                className={`px-3 py-1.5 rounded-lg text-xs font-semibold border flex items-center gap-1.5 transition-all shadow-2xs cursor-pointer ${
+                  dbHealth?.connected
+                    ? 'bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border-emerald-300'
+                    : isSupabaseConfigured
+                    ? 'bg-amber-50 hover:bg-amber-100 text-amber-800 border-amber-300'
+                    : 'bg-slate-50 hover:bg-slate-100 text-slate-700 border-slate-300'
+                }`}
+                title="Ver estado de conexión de la Base de Datos Supabase / Vercel"
+              >
+                <Database className={`w-3.5 h-3.5 ${dbHealth?.connected ? 'text-emerald-600' : 'text-slate-500'}`} />
+                <span className="font-mono text-[11px] hidden sm:inline">
+                  {dbHealth?.connected
+                    ? 'Supabase Conectado'
+                    : isSupabaseConfigured
+                    ? 'Supabase en Verificación'
+                    : 'BD Bóveda Local'}
+                </span>
+                <span className={`w-2 h-2 rounded-full shrink-0 ${dbHealth?.connected ? 'bg-emerald-500 animate-pulse' : 'bg-slate-400'}`} />
+              </button>
 
               {/* Current User Pill */}
               <div className="flex items-center gap-2.5 px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg">
@@ -1599,6 +1640,124 @@ export const WidgetizableDashboard: React.FC<WidgetizableDashboardProps> = ({
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Supabase Database Health & Vercel Diagnostic Modal */}
+      {showDbModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-xs animate-fadeIn">
+          <div className="bg-white rounded-xl max-w-lg w-full border border-slate-200 shadow-2xl p-6 space-y-4 text-xs">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-200">
+              <div className="flex items-center gap-2">
+                <div className="p-2 rounded-lg bg-emerald-50 text-emerald-700">
+                  <Database className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-slate-900">
+                    Estado de la Base de Datos · Supabase / Vercel
+                  </h3>
+                  <span className="text-[11px] text-slate-500 font-mono">
+                    Conexión Cloud & Persistencia Híbrida
+                  </span>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowDbModal(false)}
+                className="text-slate-400 hover:text-slate-700 cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Health Status Box */}
+            <div className="p-3.5 rounded-xl border border-slate-200 bg-slate-50 space-y-2.5">
+              <div className="flex items-center justify-between">
+                <span className="text-slate-600 font-medium">Estado del Endpoint Cloud:</span>
+                {dbHealth?.connected ? (
+                  <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-emerald-100 text-emerald-800 border border-emerald-300">
+                    <span className="w-2 h-2 rounded-full bg-emerald-600 animate-pulse" />
+                    Supabase Online ({dbHealth.latencyMs} ms)
+                  </span>
+                ) : isSupabaseConfigured ? (
+                  <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-amber-100 text-amber-800 border border-amber-300">
+                    <span className="w-2 h-2 rounded-full bg-amber-600" />
+                    Configurado / Verificando
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-slate-200 text-slate-700 border border-slate-300">
+                    Bóveda Local Activa (Fallback)
+                  </span>
+                )}
+              </div>
+
+              <div className="grid grid-cols-2 gap-2 text-[11px] pt-1 border-t border-slate-200/80">
+                <div>
+                  <span className="text-slate-500 block">Host Supabase:</span>
+                  <span className="font-mono font-bold text-slate-800 truncate block">
+                    {dbHealth?.endpoint || 'Variables de Vercel'}
+                  </span>
+                </div>
+                <div>
+                  <span className="text-slate-500 block">Modo Operativo:</span>
+                  <span className="font-bold text-[#0078D4] block">
+                    {dbHealth?.connected ? 'PostgreSQL Directo' : 'Persistencia Local'}
+                  </span>
+                </div>
+              </div>
+
+              {dbHealth?.error && (
+                <div className="p-2 bg-rose-50 border border-rose-200 rounded text-rose-800 text-[11px] flex items-start gap-1.5">
+                  <AlertCircle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
+                  <div>
+                    <span className="font-bold block">Respuesta de Supabase:</span>
+                    <span>{dbHealth.error}</span>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Vercel Configuration Guide */}
+            <div className="border border-blue-100 rounded-xl p-3.5 bg-blue-50/60 space-y-2 text-[11px] text-slate-700">
+              <span className="font-bold text-[#0078D4] block">
+                ¿Cómo verificar o conectar tu base de datos en Vercel?
+              </span>
+              <p className="leading-relaxed">
+                En el panel de tu proyecto en <strong>Vercel</strong> (<em>Settings → Environment Variables</em>), asegúrate de tener añadidas las siguientes claves de tu proyecto de Supabase:
+              </p>
+              <div className="space-y-1 font-mono text-[10px] bg-white p-2 rounded border border-blue-200">
+                <div className="text-slate-800">
+                  <strong className="text-blue-700">VITE_SUPABASE_URL</strong> = https://[tu-id].supabase.co
+                </div>
+                <div className="text-slate-800">
+                  <strong className="text-blue-700">VITE_SUPABASE_ANON_KEY</strong> = eyJhbGciOi... [Anon Key]
+                </div>
+              </div>
+              <p className="text-[10px] text-slate-500 leading-snug">
+                * El proyecto ya incluye soporte automático para las variables sin prefijo (<code>SUPABASE_URL</code>) creadas por la integración oficial de Supabase en Vercel.
+              </p>
+            </div>
+
+            <div className="flex items-center justify-between pt-2 border-t border-slate-100">
+              <button
+                type="button"
+                onClick={runCheckDb}
+                disabled={isCheckingDb}
+                className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded font-semibold flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+              >
+                <RotateCcw className={`w-3.5 h-3.5 ${isCheckingDb ? 'animate-spin' : ''}`} />
+                <span>{isCheckingDb ? 'Verificando...' : 'Re-probar Conexión'}</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setShowDbModal(false)}
+                className="px-4 py-1.5 bg-[#0078D4] hover:bg-[#106EBE] text-white font-bold rounded shadow-xs cursor-pointer"
+              >
+                Entendido
+              </button>
+            </div>
           </div>
         </div>
       )}

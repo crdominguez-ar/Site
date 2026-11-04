@@ -38,6 +38,58 @@ export const supabase: SupabaseClient | null = isSupabaseConfigured
   ? createClient(supabaseUrl, supabaseAnonKey)
   : null;
 
+export interface SupabaseHealthCheck {
+  isConfigured: boolean;
+  endpoint: string;
+  connected: boolean;
+  latencyMs: number;
+  tablesStatus: {
+    leads: boolean;
+    crm_tasks: boolean;
+    crm_contacts: boolean;
+    client_documents: boolean;
+  };
+  error?: string;
+}
+
+export const checkSupabaseHealth = async (): Promise<SupabaseHealthCheck> => {
+  const cleanEndpoint = supabaseUrl 
+    ? supabaseUrl.replace(/^https?:\/\//, '').replace(/\/.*$/, '') 
+    : 'No configurado';
+
+  const result: SupabaseHealthCheck = {
+    isConfigured: isSupabaseConfigured,
+    endpoint: cleanEndpoint,
+    connected: false,
+    latencyMs: 0,
+    tablesStatus: {
+      leads: false,
+      crm_tasks: false,
+      crm_contacts: false,
+      client_documents: false,
+    },
+  };
+
+  if (!isSupabaseConfigured || !supabase) {
+    return result;
+  }
+
+  const start = performance.now();
+  try {
+    const { error } = await supabase.from('leads').select('id', { head: true, count: 'exact' });
+    result.latencyMs = Math.round(performance.now() - start);
+    if (!error) {
+      result.connected = true;
+      result.tablesStatus.leads = true;
+    } else {
+      result.error = error.message;
+    }
+  } catch (err: any) {
+    result.error = err?.message || 'Error de conexión con Supabase';
+  }
+  return result;
+};
+
 // Initial high-fidelity seed data representing real Patagonian and modern clients
 const SEED_CLIENT: ClientProfile = {
   id: 'cli-001',
