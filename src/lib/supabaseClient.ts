@@ -906,6 +906,8 @@ class DataRepository {
   private contactsKey = 'cr_crm_contacts';
   private meetingsKey = 'cr_crm_meetings';
   private documentsKey = 'dl_client_documents';
+  private profileKey = 'dl_client_profile';
+  private allProfilesKey = 'dl_all_client_profiles';
 
   constructor() {
     this.initStorage();
@@ -1327,7 +1329,75 @@ class DataRepository {
   }
 
   getClientProfile(): ClientProfile {
-    return SEED_CLIENT;
+    if (typeof window === 'undefined') return SEED_CLIENT;
+    try {
+      const stored = localStorage.getItem(this.profileKey);
+      return stored ? JSON.parse(stored) : SEED_CLIENT;
+    } catch {
+      return SEED_CLIENT;
+    }
+  }
+
+  saveClientProfile(profile: ClientProfile): void {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(this.profileKey, JSON.stringify(profile));
+      const all = this.getAllClientProfiles();
+      const existingIdx = all.findIndex((p) => p.id === profile.id || p.companyName.toLowerCase() === profile.companyName.toLowerCase());
+      if (existingIdx >= 0) {
+        all[existingIdx] = profile;
+      } else {
+        all.unshift(profile);
+      }
+      localStorage.setItem(this.allProfilesKey, JSON.stringify(all));
+      window.dispatchEvent(new CustomEvent('cr_client_profile_synced', { detail: profile }));
+    }
+  }
+
+  getAllClientProfiles(): ClientProfile[] {
+    if (typeof window === 'undefined') return [SEED_CLIENT];
+    try {
+      const stored = localStorage.getItem(this.allProfilesKey);
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+      return [SEED_CLIENT];
+    } catch {
+      return [SEED_CLIENT];
+    }
+  }
+
+  syncLeadToClientProfile(lead: Lead, activePlan?: ClientProfile['activePlan']): ClientProfile {
+    const plan: ClientProfile['activePlan'] = activePlan || (
+      lead.vertical === 'cfo_estrategico' ? 'CFO Fraccional Estratégico' :
+      lead.vertical === 'franquicias' ? 'Desarrollo de Franquicia' :
+      lead.vertical === 'ia_zhc' ? 'Gobierno ZHC & Tesorería' :
+      'Compliance & Liquidación Digital'
+    );
+
+    // If an existing profile for this company already exists, reuse it
+    const all = this.getAllClientProfiles();
+    const existing = all.find((p) => p.companyName.toLowerCase() === lead.companyName.toLowerCase());
+
+    const updatedProfile: ClientProfile = {
+      id: existing ? existing.id : `cli-${lead.id.replace(/[^a-zA-Z0-9]/g, '')}`,
+      companyName: lead.companyName,
+      cuit: existing?.cuit || ('30-7' + Math.floor(10000000 + Math.random() * 90000000) + '-4'),
+      legalEntity: existing?.legalEntity || (lead.vertical === 'digital_saas' ? 'SAS' : lead.vertical === 'ia_zhc' ? 'DAO / On-Chain' : 'SRL'),
+      location: lead.location || existing?.location || 'Trelew, Chubut',
+      vertical: lead.vertical,
+      activePlan: plan,
+      runwayMonths: existing?.runwayMonths || 16.5,
+      monthlyRevenueUsd: existing?.monthlyRevenueUsd || ((lead.estimatedMonthlyBudgetUsd || 1800) * 10),
+      grossMarginPercent: existing?.grossMarginPercent || 72.0,
+      cfoHoursAllocated: existing?.cfoHoursAllocated || 10,
+      cfoHoursUsed: existing?.cfoHoursUsed || 1.5,
+      nextFiscalDeadline: existing?.nextFiscalDeadline || '15 Nov 2026 (DDJJ ARCA & Anticipos)',
+      fiscalHealthScore: existing?.fiscalHealthScore || 95,
+    };
+
+    this.saveClientProfile(updatedProfile);
+    return updatedProfile;
   }
 }
 

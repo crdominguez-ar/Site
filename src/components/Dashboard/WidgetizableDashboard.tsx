@@ -600,7 +600,7 @@ export const WidgetizableDashboard: React.FC<WidgetizableDashboardProps> = ({
                 <span>Volver a Vista Widgets</span>
               </button>
             </div>
-            <InternalCRM currentRole={currentUser.role} initialSubTab={crmSubTab} />
+            <InternalCRM currentRole={currentUser.role} initialSubTab={crmSubTab} onNavigateTab={onNavigateTab} />
           </div>
         ) : dashboardView === 'seo' ? (
           <div className="space-y-4">

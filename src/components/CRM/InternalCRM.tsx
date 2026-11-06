@@ -28,12 +28,14 @@ import {
   Building2, MapPin, Tag, Check, Trash2, Edit3, Shield, ArrowUpRight,
   Send, Sparkles, Briefcase, ChevronDown, ChevronUp, Star, Layers,
   Globe, AlertCircle, TrendingUp, LayoutGrid, List, SlidersHorizontal,
-  GripVertical, Settings2, RotateCcw, Eye, EyeOff, Award
+  GripVertical, Settings2, RotateCcw, Eye, EyeOff, Award, BarChart2,
+  PieChart, FolderLock, Target, ArrowRightCircle
 } from 'lucide-react';
 
 interface InternalCRMProps {
   currentRole: UserRole;
   initialSubTab?: 'pipeline' | 'contacts' | 'calendar' | 'tasks';
+  onNavigateTab?: (tab: 'landing' | 'solutions' | 'simulators' | 'diagnostic' | 'blog' | 'portal' | 'crm' | 'seo' | 'dashboard') => void;
 }
 
 const DEFAULT_STAGES: PipelineStageConfig[] = [
@@ -57,11 +59,11 @@ export const DEPARTMENT_CONFIG: Record<CompanyDepartment, { label: string; color
   otro: { label: 'Otra Área', short: 'Área General', color: 'bg-slate-100 text-slate-700 border-slate-300' },
 };
 
-export const InternalCRM: React.FC<InternalCRMProps> = ({ currentRole, initialSubTab = 'pipeline' }) => {
+export const InternalCRM: React.FC<InternalCRMProps> = ({ currentRole, initialSubTab = 'pipeline', onNavigateTab }) => {
   const [activeTab, setActiveTab] = useState<'pipeline' | 'contacts' | 'calendar' | 'tasks'>(initialSubTab);
 
-  // View modes
-  const [pipelineViewMode, setPipelineViewMode] = useState<'kanban' | 'table'>('kanban');
+  // View modes: Kanban, Table, and Analytics
+  const [pipelineViewMode, setPipelineViewMode] = useState<'kanban' | 'table' | 'analytics'>('kanban');
   const [contactsViewMode, setContactsViewMode] = useState<'cards' | 'table'>('cards');
 
   // Core Data
@@ -276,19 +278,68 @@ export const InternalCRM: React.FC<InternalCRMProps> = ({ currentRole, initialSu
     }));
   };
 
-  // Stage change handler
+  // Pipeline Stage Progression Helper
+  const STAGE_ORDER: LeadStage[] = ['nuevo', 'diagnostico', 'propuesta', 'negociacion', 'activo'];
+
+  const getNextStage = (current: LeadStage): LeadStage | null => {
+    const idx = STAGE_ORDER.indexOf(current);
+    if (idx >= 0 && idx < STAGE_ORDER.length - 1) {
+      return STAGE_ORDER[idx + 1];
+    }
+    return null;
+  };
+
+  // Stage change handler with automatic Client Portal sync on activation
   const handleStageChange = async (leadId: string, nextStage: LeadStage) => {
     await dbRepository.updateLeadStage(leadId, nextStage);
-    const linkedContact = contacts.find((c) => c.leadId === leadId);
+    const targetLead = leads.find((l) => l.id === leadId);
+    const linkedContact = contacts.find((c) => c.leadId === leadId || (targetLead && c.companyName === targetLead.companyName));
     if (linkedContact) {
       await dbRepository.updateContact(linkedContact.id, {
         stage: nextStage,
         status: nextStage === 'activo' ? 'cliente_activo' : 'lead',
       });
     }
+
+    // Auto-sync with Client Portal if moved to Cliente Activo
+    if (nextStage === 'activo' && targetLead) {
+      dbRepository.syncLeadToClientProfile({ ...targetLead, stage: 'activo' });
+      setCopyFeedback(`¡${targetLead.companyName} activado y sincronizado con el Portal Clientes!`);
+      setTimeout(() => setCopyFeedback(null), 3500);
+    }
+
     await loadData();
     if (selectedLead && selectedLead.id === leadId) {
       setSelectedLead({ ...selectedLead, stage: nextStage });
+    }
+  };
+
+  // One-click stage advancement
+  const handleAdvanceStage = async (lead: Lead, e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
+    const next = getNextStage(lead.stage);
+    if (!next) return;
+
+    await handleStageChange(lead.id, next);
+    const nextStageObj = pipelineStages.find((s) => s.id === next);
+    setCopyFeedback(`¡Oportunidad avanzada a "${nextStageObj?.label || next}"!`);
+    setTimeout(() => setCopyFeedback(null), 3000);
+  };
+
+  // Explicit Client Portal Sync
+  const handleSyncWithPortal = (lead: Lead, e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
+    dbRepository.syncLeadToClientProfile(lead);
+    setCopyFeedback(`¡Perfil de ${lead.companyName} sincronizado con el Portal Clientes!`);
+    setTimeout(() => setCopyFeedback(null), 3500);
+  };
+
+  // Open Directly in Client Portal
+  const handleOpenInPortal = (lead: Lead, e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
+    dbRepository.syncLeadToClientProfile(lead);
+    if (onNavigateTab) {
+      onNavigateTab('portal');
     }
   };
 
@@ -1183,6 +1234,19 @@ export const InternalCRM: React.FC<InternalCRMProps> = ({ currentRole, initialSu
                   <List className="w-3.5 h-3.5" />
                   <span className="hidden sm:inline">Listado</span>
                 </button>
+                <button
+                  type="button"
+                  onClick={() => setPipelineViewMode('analytics')}
+                  className={`px-2.5 py-1 rounded text-xs font-semibold flex items-center gap-1 transition-all ${
+                    pipelineViewMode === 'analytics'
+                      ? 'bg-white text-[#0078D4] shadow-2xs font-bold'
+                      : 'text-slate-600 hover:text-slate-900'
+                  }`}
+                  title="Gráficas Analíticas, Embudo Visual y Sincronización con Portal"
+                >
+                  <BarChart2 className="w-3.5 h-3.5" />
+                  <span className="hidden sm:inline">Gráficas</span>
+                </button>
               </div>
             </div>
           )}
@@ -1361,153 +1425,211 @@ export const InternalCRM: React.FC<InternalCRMProps> = ({ currentRole, initialSu
                             onDragStart={(e) => handleDragStart(e, lead.id)}
                             onDragEnd={handleDragEnd}
                             onClick={() => setSelectedLead(lead)}
-                            className={`bg-white border rounded-lg p-3 shadow-2xs hover:shadow-xs transition-all cursor-grab active:cursor-grabbing group relative ${
+                            className={`bg-white border rounded-xl p-3.5 shadow-2xs hover:shadow-md transition-all cursor-grab active:cursor-grabbing group relative flex flex-col justify-between gap-2.5 ${
                               isDragging
-                                ? 'opacity-40 border-dashed border-[#0078D4]'
-                                : 'border-slate-200 hover:border-[#0078D4]'
+                                ? 'opacity-40 border-dashed border-[#0078D4] bg-blue-50/30'
+                                : 'border-slate-200/90 hover:border-[#0078D4]/60'
                             }`}
                           >
                             {/* Drag Grip Handle */}
-                            <div className="absolute top-2.5 right-2 text-slate-300 group-hover:text-slate-500 cursor-grab" title="Arrastrar para avanzar o retroceder">
+                            <div className="absolute top-2.5 right-2 text-slate-300 group-hover:text-slate-500 cursor-grab transition-colors" title="Arrastrar para mover de etapa">
                               <GripVertical className="w-3.5 h-3.5" />
                             </div>
 
-                            <div className="flex items-start justify-between gap-1 mb-1.5 pr-4">
-                              <span className="text-[10px] font-bold uppercase tracking-wider text-[#0078D4] truncate block max-w-[120px]">
-                                {vert?.shortTitle || lead.vertical}
-                              </span>
-                              <span className="text-[10px] font-mono font-bold text-slate-700 bg-slate-100 px-1.5 py-0.5 rounded">
-                                USD {lead.estimatedMonthlyBudgetUsd}
-                              </span>
-                            </div>
-
-                            {/* Origin & Priority Badges */}
-                            <div className="flex flex-wrap items-center gap-1 mb-1.5">
-                              {lead.source && (
-                                <span className="text-[9px] px-1.5 py-0.2 rounded font-semibold bg-blue-50 text-blue-700 border border-blue-200 truncate max-w-[160px]" title={lead.source}>
-                                  {lead.source}
+                            {/* Card Top: Vertical & Tabular Monthly Budget */}
+                            <div>
+                              <div className="flex items-start justify-between gap-1 mb-1.5 pr-4">
+                                <span className="text-[11px] font-bold text-[#0078D4] tracking-tight truncate max-w-[140px]">
+                                  {vert?.shortTitle || lead.vertical}
                                 </span>
-                              )}
-                              <span className={`text-[9px] px-1.5 py-0.2 rounded font-bold uppercase ${
-                                lead.priority === 'alta' ? 'bg-rose-50 text-rose-700 border border-rose-200' :
-                                lead.priority === 'media' ? 'bg-amber-50 text-amber-700 border border-amber-200' :
-                                'bg-slate-50 text-slate-600 border border-slate-200'
-                              }`}>
-                                {lead.priority}
-                              </span>
-                            </div>
-
-                            <h5 className="text-xs font-bold text-slate-900 group-hover:text-[#0078D4] transition-colors leading-tight mb-1 pr-3">
-                              {lead.companyName}
-                            </h5>
-
-                            <div className="flex items-center gap-1.5 text-[11px] text-slate-600 mb-1.5">
-                              <User className="w-3 h-3 text-slate-400 shrink-0" />
-                              <span className="truncate font-medium">{lead.contactName}</span>
-                              {linkedEmployee && (
-                                <span className="text-[9px] px-1 py-0.2 rounded bg-blue-50 text-blue-700 border border-blue-200 shrink-0">
-                                  {DEPARTMENT_CONFIG[linkedEmployee.department]?.short}
+                                <span className="text-[11px] font-mono font-bold text-slate-800 bg-slate-100/90 px-2 py-0.5 rounded-md tabular-nums border border-slate-200/60">
+                                  USD {lead.estimatedMonthlyBudgetUsd.toLocaleString()}/m
                                 </span>
-                              )}
-                            </div>
-
-                            {/* Location & Organization Scale */}
-                            <div className="flex items-center justify-between text-[10px] text-slate-500 mb-2">
-                              <div className="flex items-center gap-1 truncate max-w-[140px]">
-                                <MapPin className="w-3 h-3 text-slate-400 shrink-0" />
-                                <span className="truncate">{lead.location}</span>
                               </div>
-                              {(lead.revenueRange || lead.employeeRange) && (
-                                <span className="text-[9px] font-mono text-slate-600 bg-slate-50 px-1 py-0.2 rounded border border-slate-200 shrink-0 ml-1">
-                                  {lead.revenueRange || lead.employeeRange}
+
+                              {/* Company Title */}
+                              <h4 className="text-sm font-black text-slate-900 group-hover:text-[#0078D4] transition-colors leading-snug mb-1 pr-3">
+                                {lead.companyName}
+                              </h4>
+
+                              {/* Unboxed Metadata Row (Middle dot discipline) */}
+                              <div className="flex items-center flex-wrap gap-1 text-[11px] text-slate-600 mb-2 font-medium">
+                                <span className="text-slate-900 font-semibold">{lead.contactName}</span>
+                                <span className="text-slate-400">·</span>
+                                <span className="text-slate-500 truncate max-w-[110px]">
+                                  {linkedEmployee ? DEPARTMENT_CONFIG[linkedEmployee.department]?.short : (linkedContact?.roleTitle || 'Decisor')}
                                 </span>
-                              )}
-                            </div>
+                                <span className="text-slate-400">·</span>
+                                <span className="text-slate-500 truncate max-w-[90px]">{lead.location}</span>
+                              </div>
 
-                            <p className="text-[11px] text-slate-500 line-clamp-2 leading-relaxed mb-2">
-                              {lead.notes}
-                            </p>
-
-                            {/* Linked Proposal Presupuesto Badge if exists */}
-                            {(() => {
-                              const leadProposal = proposals.find((p) => p.leadId === lead.id || p.id === lead.proposalId);
-                              if (!leadProposal) return null;
-                              return (
-                                <div 
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleOpenProposalModal(lead, linkedContact, leadProposal.id);
-                                  }}
-                                  className="flex items-center justify-between text-[10px] bg-blue-50/80 hover:bg-blue-100/80 border border-blue-200 text-blue-900 rounded-md px-2 py-1 mb-2 font-mono transition-colors cursor-pointer"
-                                  title="Ver propuesta presupuesto vinculada"
-                                >
-                                  <span className="font-bold flex items-center gap-1 truncate">
-                                    <FileText className="w-3 h-3 text-[#0078D4] shrink-0" />
-                                    <span className="truncate">{leadProposal.proposalNumber} (v{leadProposal.version})</span>
-                                  </span>
-                                  <span className="font-black text-[#0078D4] shrink-0 ml-1">
-                                    {leadProposal.currency === 'USD' ? 'USD ' : '$ '}{leadProposal.totalAmount.toLocaleString('es-AR')}
+                              {/* Stage Milestone Steps & Priority Indicator */}
+                              <div className="flex items-center justify-between gap-2 mb-2 pt-1 border-t border-slate-100">
+                                <div className="flex items-center gap-1" title={`Etapa ${STAGE_ORDER.indexOf(lead.stage) + 1} de 5: ${stage.label}`}>
+                                  {STAGE_ORDER.map((stgKey, idx) => {
+                                    const currentIdx = STAGE_ORDER.indexOf(lead.stage);
+                                    const isDone = idx <= currentIdx;
+                                    const isCurrent = idx === currentIdx;
+                                    return (
+                                      <div
+                                        key={stgKey}
+                                        className={`h-1.5 rounded-full transition-all ${
+                                          isCurrent
+                                            ? 'w-4 bg-[#0078D4]'
+                                            : isDone
+                                            ? 'w-2 bg-[#107C41]'
+                                            : 'w-2 bg-slate-200'
+                                        }`}
+                                      />
+                                    );
+                                  })}
+                                  <span className="text-[9px] font-mono text-slate-400 ml-1 font-semibold">
+                                    P{STAGE_ORDER.indexOf(lead.stage) + 1}/5
                                   </span>
                                 </div>
-                              );
-                            })()}
 
-                            {/* Actions and Stage Dropdown */}
-                            <div className="flex items-center justify-between pt-2 border-t border-slate-100 text-[10px]" onClick={(e) => e.stopPropagation()}>
-                              <div className="flex items-center gap-1">
-                                <button
-                                  type="button"
-                                  title="Plantilla de Propuesta Presupuesto & Honorarios"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleOpenProposalModal(lead, linkedContact, lead.proposalId);
-                                  }}
-                                  className="px-1.5 py-0.5 bg-blue-50 hover:bg-blue-100 text-[#0078D4] rounded font-bold transition-colors flex items-center gap-1"
-                                >
-                                  <FileText className="w-3 h-3 text-[#0078D4]" />
-                                  <span>Propuesta</span>
-                                </button>
-
-                                {linkedContact && (
-                                  <button
-                                    type="button"
-                                    title="Enviar WhatsApp"
-                                    onClick={() => handleSendWhatsApp(linkedContact, linkedEmployee, 'propuesta')}
-                                    className="p-1 text-emerald-600 hover:bg-emerald-50 rounded transition-colors"
-                                  >
-                                    <MessageSquare className="w-3.5 h-3.5" />
-                                  </button>
+                                {lead.priority === 'alta' && (
+                                  <span className="text-[9px] px-1.5 py-0.2 rounded font-bold uppercase tracking-wider bg-rose-50 text-rose-700 border border-rose-200">
+                                    Alta
+                                  </span>
                                 )}
-                                <button
-                                  type="button"
-                                  title="Agendar Videollamada"
-                                  onClick={() => handleOpenMeetingScheduler(linkedContact, linkedEmployee)}
-                                  className="p-1 text-[#0078D4] hover:bg-blue-50 rounded transition-colors"
-                                >
-                                  <Video className="w-3.5 h-3.5" />
-                                </button>
-                                <button
-                                  type="button"
-                                  title="Eliminar Oportunidad"
-                                  onClick={(e) => handleDeleteLead(lead.id, e)}
-                                  className="p-1 text-slate-400 hover:text-rose-600 rounded transition-colors"
-                                >
-                                  <Trash2 className="w-3.5 h-3.5" />
-                                </button>
                               </div>
 
-                              {/* Manual stage switcher dropdown (also works on mobile!) */}
-                              <select
-                                value={lead.stage}
-                                onChange={(e) => handleStageChange(lead.id, e.target.value as LeadStage)}
-                                className="text-[10px] bg-slate-50 border border-slate-200 rounded px-1.5 py-0.5 font-medium text-slate-700 hover:bg-slate-100 focus:outline-none"
-                              >
-                                {pipelineStages.map((s) => (
-                                  <option key={s.id} value={s.id}>
-                                    {s.label.split(' ')[0]}
-                                  </option>
-                                ))}
-                              </select>
+                              {lead.notes && (
+                                <p className="text-[11px] text-slate-500 line-clamp-2 leading-relaxed mb-2 font-normal">
+                                  {lead.notes}
+                                </p>
+                              )}
+
+                              {/* Linked Proposal Presupuesto Badge */}
+                              {(() => {
+                                const leadProposal = proposals.find((p) => p.leadId === lead.id || p.id === lead.proposalId);
+                                if (!leadProposal) return null;
+                                return (
+                                  <div 
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleOpenProposalModal(lead, linkedContact, leadProposal.id);
+                                    }}
+                                    className="flex items-center justify-between text-[10px] bg-blue-50/70 hover:bg-blue-100/80 border border-blue-200 text-blue-900 rounded-lg px-2.5 py-1.5 mb-2 font-mono transition-colors cursor-pointer"
+                                    title="Ver propuesta técnica y económica vinculada"
+                                  >
+                                    <span className="font-bold flex items-center gap-1.5 truncate">
+                                      <FileText className="w-3.5 h-3.5 text-[#0078D4] shrink-0" />
+                                      <span className="truncate">{leadProposal.proposalNumber}</span>
+                                      <span className="text-[9px] text-blue-600 bg-white px-1 rounded border border-blue-200 font-semibold">v{leadProposal.version}</span>
+                                    </span>
+                                    <span className="font-black text-[#0078D4] shrink-0 ml-1 tabular-nums">
+                                      {leadProposal.currency === 'USD' ? 'USD ' : '$ '}{leadProposal.totalAmount.toLocaleString('es-AR')}
+                                    </span>
+                                  </div>
+                                );
+                              })()}
+
+                              {/* Client Portal Sync Indicator (Active or Linkable) */}
+                              {lead.stage === 'activo' ? (
+                                <div 
+                                  onClick={(e) => handleOpenInPortal(lead, e)}
+                                  className="flex items-center justify-between text-[10px] bg-emerald-50 hover:bg-emerald-100/80 border border-emerald-200 text-emerald-900 rounded-lg px-2 py-1 mb-1 transition-colors cursor-pointer group/portal"
+                                  title="Cliente activo sincronizado. Clic para abrir su bóveda en el Portal Clientes"
+                                >
+                                  <span className="font-bold flex items-center gap-1 truncate text-emerald-800">
+                                    <FolderLock className="w-3 h-3 text-[#107C41] shrink-0" />
+                                    <span>Sincronizado con Portal</span>
+                                  </span>
+                                  <span className="text-[9px] font-bold text-[#107C41] group-hover/portal:translate-x-0.5 transition-transform flex items-center gap-0.5">
+                                    Abrir <ChevronRight className="w-2.5 h-2.5" />
+                                  </span>
+                                </div>
+                              ) : (
+                                <button
+                                  type="button"
+                                  onClick={(e) => handleSyncWithPortal(lead, e)}
+                                  className="w-full text-left text-[10px] text-slate-500 hover:text-[#0078D4] flex items-center gap-1 py-0.5 hover:underline transition-colors"
+                                  title="Generar o vincular ficha de cliente en el Portal"
+                                >
+                                  <FolderLock className="w-3 h-3 text-slate-400" />
+                                  <span>Vincular con Portal Clientes</span>
+                                </button>
+                              )}
+                            </div>
+
+                            {/* Actions and Stage Controls */}
+                            <div className="pt-2 border-t border-slate-100 text-[10px]" onClick={(e) => e.stopPropagation()}>
+                              <div className="flex items-center justify-between gap-1 mb-1.5">
+                                <div className="flex items-center gap-1">
+                                  <button
+                                    type="button"
+                                    title="Presupuesto y Propuesta de Honorarios"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleOpenProposalModal(lead, linkedContact, lead.proposalId);
+                                    }}
+                                    className="px-2 py-1 bg-blue-50 hover:bg-blue-100 text-[#0078D4] rounded font-bold transition-colors flex items-center gap-1"
+                                  >
+                                    <FileText className="w-3 h-3 text-[#0078D4]" />
+                                    <span>Propuesta</span>
+                                  </button>
+
+                                  {linkedContact && (
+                                    <button
+                                      type="button"
+                                      title="Enviar WhatsApp comercial"
+                                      onClick={() => handleSendWhatsApp(linkedContact, linkedEmployee, 'propuesta')}
+                                      className="p-1 text-emerald-600 hover:bg-emerald-50 rounded transition-colors"
+                                    >
+                                      <MessageSquare className="w-3.5 h-3.5" />
+                                    </button>
+                                  )}
+
+                                  <button
+                                    type="button"
+                                    title="Agendar Videollamada Técnica"
+                                    onClick={() => handleOpenMeetingScheduler(linkedContact, linkedEmployee)}
+                                    className="p-1 text-[#0078D4] hover:bg-blue-50 rounded transition-colors"
+                                  >
+                                    <Video className="w-3.5 h-3.5" />
+                                  </button>
+
+                                  <button
+                                    type="button"
+                                    title="Eliminar Oportunidad"
+                                    onClick={(e) => handleDeleteLead(lead.id, e)}
+                                    className="p-1 text-slate-400 hover:text-rose-600 rounded transition-colors"
+                                  >
+                                    <Trash2 className="w-3.5 h-3.5" />
+                                  </button>
+                                </div>
+
+                                {/* One-click Stage Advance */}
+                                {getNextStage(lead.stage) && (
+                                  <button
+                                    type="button"
+                                    onClick={(e) => handleAdvanceStage(lead, e)}
+                                    className="px-2 py-1 bg-slate-900 hover:bg-[#0078D4] text-white rounded font-bold text-[10px] flex items-center gap-1 transition-colors shadow-2xs"
+                                    title={`Avanzar a ${pipelineStages.find(s => s.id === getNextStage(lead.stage))?.label || 'siguiente etapa'}`}
+                                  >
+                                    <span>Avanzar</span>
+                                    <ArrowRight className="w-3 h-3" />
+                                  </button>
+                                )}
+                              </div>
+
+                              {/* Manual Stage Dropdown */}
+                              <div className="flex items-center justify-between text-[10px] text-slate-500">
+                                <span>Etapa:</span>
+                                <select
+                                  value={lead.stage}
+                                  onChange={(e) => handleStageChange(lead.id, e.target.value as LeadStage)}
+                                  className="text-[10px] bg-slate-50 border border-slate-200 rounded px-1.5 py-0.5 font-medium text-slate-700 hover:bg-slate-100 focus:outline-none cursor-pointer"
+                                >
+                                  {pipelineStages.map((s) => (
+                                    <option key={s.id} value={s.id}>
+                                      {s.label}
+                                    </option>
+                                  ))}
+                                </select>
+                              </div>
                             </div>
                           </div>
                         );
@@ -1523,7 +1645,7 @@ export const InternalCRM: React.FC<InternalCRMProps> = ({ currentRole, initialSu
                 );
               })}
             </div>
-          ) : (
+          ) : pipelineViewMode === 'table' ? (
             /* HIGH-DENSITY LIST / TABLE VIEW FOR PIPELINE */
             <div className="bg-white border border-slate-200 rounded-xl shadow-xs overflow-hidden">
               <div className="overflow-x-auto">
@@ -1606,6 +1728,32 @@ export const InternalCRM: React.FC<InternalCRMProps> = ({ currentRole, initialSu
                           </td>
                           <td className="py-3 px-4 text-right" onClick={(e) => e.stopPropagation()}>
                             <div className="flex items-center justify-end gap-1.5">
+                              {/* Open in Client Portal if active */}
+                              {lead.stage === 'activo' && (
+                                <button
+                                  type="button"
+                                  title="Abrir en Portal Clientes"
+                                  onClick={(e) => handleOpenInPortal(lead, e)}
+                                  className="px-2 py-1 bg-emerald-50 hover:bg-emerald-100 text-[#107C41] border border-emerald-200 rounded font-bold text-[10px] flex items-center gap-1 transition-colors"
+                                >
+                                  <FolderLock className="w-3 h-3 text-[#107C41]" />
+                                  <span>Portal</span>
+                                </button>
+                              )}
+
+                              {/* One-click Stage Advance */}
+                              {getNextStage(lead.stage) && (
+                                <button
+                                  type="button"
+                                  title={`Avanzar a ${pipelineStages.find(s => s.id === getNextStage(lead.stage))?.label || 'siguiente etapa'}`}
+                                  onClick={(e) => handleAdvanceStage(lead, e)}
+                                  className="px-2 py-1 bg-slate-900 hover:bg-[#0078D4] text-white rounded font-bold text-[10px] flex items-center gap-1 transition-colors"
+                                >
+                                  <span>Avanzar</span>
+                                  <ArrowRight className="w-3 h-3" />
+                                </button>
+                              )}
+
                               {linkedContact && (
                                 <button
                                   type="button"
@@ -1643,6 +1791,342 @@ export const InternalCRM: React.FC<InternalCRMProps> = ({ currentRole, initialSu
                 </table>
               </div>
             </div>
+          ) : (
+            /* ========================================================================= */
+            /* VIEW 3: GRÁFICAS ANALÍTICAS, EMBUDO VISUAL & SINCRONIZACIÓN CON PORTAL   */
+            /* ========================================================================= */
+            (() => {
+              const totalGross = filteredLeads.reduce((acc, curr) => acc + (curr.estimatedMonthlyBudgetUsd || 0), 0);
+              const activeCount = filteredLeads.filter((l) => l.stage === 'activo').length;
+              const totalCount = filteredLeads.length;
+              const weightedForecast = filteredLeads.reduce((acc, curr) => {
+                const prob = curr.stage === 'activo' ? 1.0 : curr.stage === 'negociacion' ? 0.8 : curr.stage === 'propuesta' ? 0.6 : curr.stage === 'diagnostico' ? 0.4 : 0.2;
+                return acc + ((curr.estimatedMonthlyBudgetUsd || 0) * prob);
+              }, 0);
+              const avgTicket = totalCount > 0 ? Math.round(totalGross / totalCount) : 0;
+              const conversionRate = totalCount > 0 ? Math.round((activeCount / totalCount) * 100) : 0;
+              const maxStageCount = Math.max(...enabledStages.map((s) => filteredLeads.filter((l) => l.stage === s.id).length), 1);
+
+              return (
+                <div className="space-y-6">
+                  {/* Executive Metric KPI Tiles */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    {/* KPI 1: Pipeline Bruto */}
+                    <div className="bg-white border border-slate-200/90 rounded-xl p-4 shadow-2xs hover:shadow-xs transition-shadow">
+                      <div className="flex items-center justify-between text-xs font-semibold text-slate-500 mb-2">
+                        <span className="uppercase tracking-wider text-[10px]">Pipeline Total Mensual</span>
+                        <TrendingUp className="w-4 h-4 text-[#0078D4]" />
+                      </div>
+                      <div className="text-2xl font-black text-slate-900 font-mono tabular-nums mb-1">
+                        USD {totalGross.toLocaleString()}
+                        <span className="text-xs font-normal text-slate-400 font-sans ml-1">/mes</span>
+                      </div>
+                      <p className="text-xs text-slate-500">
+                        {totalCount} oportunidades activas en cartera
+                      </p>
+                    </div>
+
+                    {/* KPI 2: Forecast Ponderado */}
+                    <div className="bg-white border border-slate-200/90 rounded-xl p-4 shadow-2xs hover:shadow-xs transition-shadow">
+                      <div className="flex items-center justify-between text-xs font-semibold text-slate-500 mb-2">
+                        <span className="uppercase tracking-wider text-[10px]">Forecast Ponderado (EV)</span>
+                        <Target className="w-4 h-4 text-emerald-600" />
+                      </div>
+                      <div className="text-2xl font-black text-emerald-700 font-mono tabular-nums mb-1">
+                        USD {Math.round(weightedForecast).toLocaleString()}
+                        <span className="text-xs font-normal text-slate-400 font-sans ml-1">/mes</span>
+                      </div>
+                      <p className="text-xs text-slate-500">
+                        Ponderado por probabilidad por etapa
+                      </p>
+                    </div>
+
+                    {/* KPI 3: Ticket Promedio */}
+                    <div className="bg-white border border-slate-200/90 rounded-xl p-4 shadow-2xs hover:shadow-xs transition-shadow">
+                      <div className="flex items-center justify-between text-xs font-semibold text-slate-500 mb-2">
+                        <span className="uppercase tracking-wider text-[10px]">Ticket Promedio Mensual</span>
+                        <Briefcase className="w-4 h-4 text-indigo-600" />
+                      </div>
+                      <div className="text-2xl font-black text-slate-900 font-mono tabular-nums mb-1">
+                        USD {avgTicket.toLocaleString()}
+                        <span className="text-xs font-normal text-slate-400 font-sans ml-1">/mes</span>
+                      </div>
+                      <p className="text-xs text-slate-500">
+                        Honorario recurrente promedio estimado
+                      </p>
+                    </div>
+
+                    {/* KPI 4: Tasa de Conversión a Cliente Activo */}
+                    <div className="bg-white border border-slate-200/90 rounded-xl p-4 shadow-2xs hover:shadow-xs transition-shadow">
+                      <div className="flex items-center justify-between text-xs font-semibold text-slate-500 mb-2">
+                        <span className="uppercase tracking-wider text-[10px]">Conversión a Cliente</span>
+                        <FolderLock className="w-4 h-4 text-[#107C41]" />
+                      </div>
+                      <div className="text-2xl font-black text-[#107C41] font-mono tabular-nums mb-1">
+                        {conversionRate}%
+                      </div>
+                      <p className="text-xs text-slate-500">
+                        {activeCount} de {totalCount} leads con Portal habilitado
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Main Visual Graphs Grid */}
+                  <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                    {/* Gráfica 1: Embudo de Conversión Comercial (8 Cols) */}
+                    <div className="lg:col-span-8 bg-white border border-slate-200/90 rounded-xl p-5 shadow-2xs">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 mb-4 border-b border-slate-100 gap-2">
+                        <div>
+                          <h3 className="text-sm font-black text-slate-900 flex items-center gap-2">
+                            <BarChart2 className="w-4 h-4 text-[#0078D4]" />
+                            <span>Embudo de Conversión Comercial (Sales Funnel)</span>
+                          </h3>
+                          <p className="text-xs text-slate-500 mt-0.5">
+                            Evolución de oportunidades, caída de prospectos y volumen económico proyectado
+                          </p>
+                        </div>
+                        <span className="text-[11px] font-mono font-semibold text-slate-600 bg-slate-100 px-2.5 py-1 rounded-md self-start sm:self-auto">
+                          {enabledStages.length} Etapas Activas
+                        </span>
+                      </div>
+
+                      {/* Visual Funnel Horizontal Gradient Bars */}
+                      <div className="space-y-4">
+                        {enabledStages.map((stg, idx) => {
+                          const stgLeads = filteredLeads.filter((l) => l.stage === stg.id);
+                          const stgBudget = stgLeads.reduce((acc, curr) => acc + (curr.estimatedMonthlyBudgetUsd || 0), 0);
+                          const percentageOfTotal = totalCount > 0 ? Math.round((stgLeads.length / totalCount) * 100) : 0;
+                          const relativeWidth = Math.max(14, Math.round((stgLeads.length / maxStageCount) * 100));
+
+                          const probability = stg.id === 'activo' ? '100%' : stg.id === 'negociacion' ? '80%' : stg.id === 'propuesta' ? '60%' : stg.id === 'diagnostico' ? '40%' : '20%';
+
+                          return (
+                            <div key={stg.id} className="group/funnel">
+                              <div className="flex items-center justify-between text-xs mb-1.5">
+                                <div className="flex items-center gap-2">
+                                  <span className="w-5 h-5 rounded-full bg-slate-100 text-slate-700 font-bold text-[10px] flex items-center justify-center font-mono">
+                                    {idx + 1}
+                                  </span>
+                                  <span className="font-bold text-slate-800">{stg.label}</span>
+                                  <span className="text-[10px] font-mono text-slate-400">·</span>
+                                  <span className="text-[11px] text-slate-500 font-medium">
+                                    {stgLeads.length} {stgLeads.length === 1 ? 'oportunidad' : 'oportunidades'} ({percentageOfTotal}%)
+                                  </span>
+                                </div>
+                                <div className="flex items-center gap-2 font-mono text-xs">
+                                  <span className="text-[10px] text-slate-400 font-sans">Prob. {probability}</span>
+                                  <span className="font-bold text-slate-900 tabular-nums">
+                                    USD {stgBudget.toLocaleString()}
+                                  </span>
+                                </div>
+                              </div>
+
+                              {/* Progress bar */}
+                              <div className="h-6 w-full bg-slate-100 rounded-lg overflow-hidden flex items-center p-0.5 border border-slate-200/60">
+                                <div
+                                  className={`h-full rounded-md transition-all duration-500 flex items-center px-2 text-[10px] font-bold text-white shadow-2xs ${
+                                    stg.id === 'activo'
+                                      ? 'bg-gradient-to-r from-emerald-600 to-emerald-500'
+                                      : stg.id === 'negociacion'
+                                      ? 'bg-gradient-to-r from-amber-600 to-amber-500'
+                                      : stg.id === 'propuesta'
+                                      ? 'bg-gradient-to-r from-cyan-600 to-cyan-500'
+                                      : stg.id === 'diagnostico'
+                                      ? 'bg-gradient-to-r from-indigo-600 to-indigo-500'
+                                      : 'bg-gradient-to-r from-[#0078D4] to-blue-500'
+                                  }`}
+                                  style={{ width: `${relativeWidth}%` }}
+                                >
+                                  {stgLeads.length > 0 && (
+                                    <span className="truncate">
+                                      {stgLeads.length} leads · USD {stgBudget.toLocaleString()}
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+
+                      {/* Funnel Diagnostics Note */}
+                      <div className="mt-5 p-3 bg-blue-50/70 border border-blue-200 rounded-xl flex items-start gap-2.5">
+                        <Sparkles className="w-4 h-4 text-[#0078D4] shrink-0 mt-0.5" />
+                        <div className="text-xs text-blue-950">
+                          <span className="font-bold">Estrategia de Optimización del Pipeline:</span> Los prospectos en etapa de <strong>Propuesta / Modelo</strong> representan el mayor potencial de aceleración. Realizar seguimiento vía WhatsApp o agendar la videollamada para avanzar al cierre y habilitar la vinculación automática con el Portal Clientes.
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Gráfica 2: Distribución de Cartera por Vertical (4 Cols) */}
+                    <div className="lg:col-span-4 bg-white border border-slate-200/90 rounded-xl p-5 shadow-2xs flex flex-col justify-between">
+                      <div>
+                        <div className="pb-3 mb-3 border-b border-slate-100">
+                          <h3 className="text-sm font-black text-slate-900 flex items-center gap-2">
+                            <PieChart className="w-4 h-4 text-indigo-600" />
+                            <span>Cartera por Vertical</span>
+                          </h3>
+                          <p className="text-xs text-slate-500 mt-0.5">
+                            Volumen económico por especialidad contable
+                          </p>
+                        </div>
+
+                        <div className="space-y-3.5">
+                          {(Object.keys(BUSINESS_VERTICALS) as BusinessVertical[]).map((vKey) => {
+                            const vDef = BUSINESS_VERTICALS[vKey];
+                            const vLeads = filteredLeads.filter((l) => l.vertical === vKey);
+                            const vTotal = vLeads.reduce((acc, curr) => acc + (curr.estimatedMonthlyBudgetUsd || 0), 0);
+                            const vPercent = totalGross > 0 ? Math.round((vTotal / totalGross) * 100) : 0;
+
+                            return (
+                              <div
+                                key={vKey}
+                                onClick={() => setSelectedVertical(selectedVertical === vKey ? 'all' : vKey)}
+                                className={`p-2.5 rounded-lg border transition-all cursor-pointer ${
+                                  selectedVertical === vKey
+                                    ? 'border-[#0078D4] bg-blue-50/60 ring-1 ring-blue-300'
+                                    : 'border-slate-200/70 hover:border-slate-300 bg-slate-50/50'
+                                }`}
+                                title="Clic para filtrar por esta vertical"
+                              >
+                                <div className="flex items-center justify-between text-xs mb-1">
+                                  <span className="font-bold text-slate-800 truncate max-w-[140px]">
+                                    {vDef.shortTitle}
+                                  </span>
+                                  <span className="font-mono font-bold text-slate-900 tabular-nums">
+                                    USD {vTotal.toLocaleString()}
+                                  </span>
+                                </div>
+
+                                <div className="flex items-center justify-between text-[11px] text-slate-500 mb-1.5">
+                                  <span>{vLeads.length} {vLeads.length === 1 ? 'empresa' : 'empresas'}</span>
+                                  <span className="font-semibold text-slate-700">{vPercent}% del total</span>
+                                </div>
+
+                                <div className="h-1.5 w-full bg-slate-200/80 rounded-full overflow-hidden">
+                                  <div
+                                    className="h-full bg-[#0078D4] rounded-full transition-all duration-300"
+                                    style={{ width: `${Math.max(4, vPercent)}%` }}
+                                  />
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+
+                      {selectedVertical !== 'all' && (
+                        <button
+                          type="button"
+                          onClick={() => setSelectedVertical('all')}
+                          className="mt-3 text-xs text-[#0078D4] hover:underline font-bold text-center block"
+                        >
+                          Limpiar filtro de vertical
+                        </button>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Panel Central de Sincronización con Portal Clientes */}
+                  <div className="bg-white border border-slate-200/90 rounded-xl p-5 shadow-2xs">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 mb-4 border-b border-slate-100 gap-3">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-xl bg-emerald-50 border border-emerald-200 flex items-center justify-center text-[#107C41]">
+                          <FolderLock className="w-5 h-5" />
+                        </div>
+                        <div>
+                          <h3 className="text-sm font-black text-slate-900 flex items-center gap-2">
+                            <span>Sincronización Directa con Portal Clientes (Bóveda & Auditoría)</span>
+                            <span className="text-[10px] px-2 py-0.5 rounded-full font-bold bg-emerald-50 text-[#107C41] border border-emerald-200">
+                              Enlace Bidireccional
+                            </span>
+                          </h3>
+                          <p className="text-xs text-slate-500 mt-0.5">
+                            Los clientes en estado <strong>Cliente Activo</strong> quedan automáticamente provisionados con su ficha societaria, constancia CUIT y bóveda en Google Drive.
+                          </p>
+                        </div>
+                      </div>
+
+                      {onNavigateTab && (
+                        <button
+                          type="button"
+                          onClick={() => onNavigateTab('portal')}
+                          className="px-3.5 py-2 bg-[#107C41] hover:bg-[#0b5c30] text-white text-xs font-bold rounded-lg shadow-xs flex items-center gap-1.5 transition-colors cursor-pointer self-start sm:self-auto"
+                        >
+                          <FolderLock className="w-4 h-4" />
+                          <span>Abrir Portal de Clientes</span>
+                          <ArrowRight className="w-3.5 h-3.5" />
+                        </button>
+                      )}
+                    </div>
+
+                    {/* Active Clients Synced Grid */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5">
+                      {filteredLeads.filter((l) => l.stage === 'activo').map((activeLead) => {
+                        const linkedContact = contacts.find((c) => c.id === activeLead.contactId || c.leadId === activeLead.id || c.companyName === activeLead.companyName);
+                        return (
+                          <div
+                            key={activeLead.id}
+                            className="p-3.5 rounded-xl border border-emerald-200 bg-emerald-50/30 hover:bg-emerald-50/60 transition-colors flex flex-col justify-between"
+                          >
+                            <div>
+                              <div className="flex items-start justify-between gap-2 mb-1.5">
+                                <h4 className="text-xs font-black text-slate-900 truncate">
+                                  {activeLead.companyName}
+                                </h4>
+                                <span className="text-[10px] font-mono font-bold text-emerald-800 bg-emerald-100 px-1.5 py-0.2 rounded border border-emerald-200 shrink-0">
+                                  USD {activeLead.estimatedMonthlyBudgetUsd}/m
+                                </span>
+                              </div>
+
+                              <div className="text-[11px] text-slate-600 mb-2">
+                                <span className="font-medium text-slate-800">{activeLead.contactName}</span>
+                                <span className="text-slate-400"> · </span>
+                                <span>{activeLead.location}</span>
+                              </div>
+
+                              <div className="flex items-center gap-1.5 text-[10px] text-emerald-700 font-semibold mb-3">
+                                <CheckCircle2 className="w-3.5 h-3.5 text-[#107C41] shrink-0" />
+                                <span>Ficha & Bóveda Habilitadas</span>
+                              </div>
+                            </div>
+
+                            <div className="flex items-center gap-2 pt-2 border-t border-emerald-200/60">
+                              <button
+                                type="button"
+                                onClick={(e) => handleOpenInPortal(activeLead, e)}
+                                className="flex-1 px-2.5 py-1.5 bg-[#107C41] hover:bg-[#0b5c30] text-white text-[11px] font-bold rounded-lg transition-colors flex items-center justify-center gap-1 shadow-2xs"
+                              >
+                                <span>Abrir en Portal</span>
+                                <ChevronRight className="w-3 h-3" />
+                              </button>
+                              <button
+                                type="button"
+                                onClick={(e) => handleSyncWithPortal(activeLead, e)}
+                                className="px-2.5 py-1.5 bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 text-[11px] font-semibold rounded-lg transition-colors"
+                                title="Re-sincronizar datos"
+                              >
+                                Sincronizar
+                              </button>
+                            </div>
+                          </div>
+                        );
+                      })}
+
+                      {filteredLeads.filter((l) => l.stage === 'activo').length === 0 && (
+                        <div className="col-span-full py-8 text-center bg-slate-50 border border-dashed border-slate-200 rounded-xl">
+                          <FolderLock className="w-8 h-8 text-slate-300 mx-auto mb-2" />
+                          <p className="text-xs font-semibold text-slate-700">No hay clientes en etapa activa en este filtro</p>
+                          <p className="text-[11px] text-slate-500 mt-0.5">
+                            Avanza oportunidades desde el Kanban o Tabla para habilitar su sincronización con el Portal Clientes.
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              );
+            })()
           )}
         </div>
       )}
@@ -1736,6 +2220,41 @@ export const InternalCRM: React.FC<InternalCRMProps> = ({ currentRole, initialSu
 
                       {/* Action Buttons */}
                       <div className="flex flex-wrap items-center gap-2 self-start lg:self-auto">
+                        {(contact.status === 'cliente_activo' || linkedLead?.stage === 'activo') && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              if (linkedLead) {
+                                handleOpenInPortal(linkedLead);
+                              } else {
+                                const syntheticLead: Lead = {
+                                  id: `lead_${contact.id}`,
+                                  contactId: contact.id,
+                                  companyName: contact.companyName,
+                                  contactName: contact.name,
+                                  email: contact.email,
+                                  phone: contact.phone,
+                                  location: contact.location,
+                                  vertical: contact.vertical,
+                                  stage: 'activo',
+                                  priority: 'alta',
+                                  estimatedMonthlyBudgetUsd: 1800,
+                                  score: 95,
+                                  createdAt: new Date().toISOString(),
+                                  updatedAt: new Date().toISOString(),
+                                  notes: contact.notes || 'Cliente activo en consultoría'
+                                };
+                                handleOpenInPortal(syntheticLead);
+                              }
+                            }}
+                            className="px-2.5 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-[#107C41] border border-emerald-200 font-bold text-xs rounded-lg flex items-center gap-1.5 transition-colors cursor-pointer shadow-2xs"
+                            title="Abrir este cliente en el Portal de Clientes"
+                          >
+                            <FolderLock className="w-3.5 h-3.5 text-[#107C41]" />
+                            <span>Portal Clientes</span>
+                          </button>
+                        )}
+
                         <button
                           type="button"
                           onClick={() => handleOpenProposalModal(linkedLead, contact)}
@@ -3702,6 +4221,43 @@ export const InternalCRM: React.FC<InternalCRMProps> = ({ currentRole, initialSu
               </button>
             </div>
 
+            {/* Client Portal Integration Box */}
+            <div className="bg-emerald-50/70 border border-emerald-200 rounded-lg p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+              <div>
+                <span className="text-[10px] uppercase font-bold text-emerald-800 flex items-center gap-1.5 mb-0.5">
+                  <FolderLock className="w-3.5 h-3.5 text-[#107C41]" />
+                  <span>Sincronización con Portal Clientes & Bóveda Documental</span>
+                </span>
+                <p className="text-slate-700">
+                  {selectedLead.stage === 'activo' ? (
+                    <span>Esta oportunidad está activa y sincronizada con el Portal Clientes. Puedes acceder directamente a su bóveda documental y balances.</span>
+                  ) : (
+                    <span>Al avanzar a <strong>Cliente Activo</strong> o pulsar sincronizar, se generará la ficha societaria en el portal para subir documentación y balances.</span>
+                  )}
+                </p>
+              </div>
+              <div className="flex items-center gap-2 self-start sm:self-auto shrink-0">
+                <button
+                  type="button"
+                  onClick={(e) => handleSyncWithPortal(selectedLead, e)}
+                  className="px-3 py-1.5 bg-white hover:bg-slate-50 text-slate-700 font-semibold border border-slate-300 rounded-lg text-xs cursor-pointer"
+                >
+                  Sincronizar
+                </button>
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    handleOpenInPortal(selectedLead, e);
+                    setSelectedLead(null);
+                  }}
+                  className="px-3.5 py-1.5 bg-[#107C41] hover:bg-[#0b5c30] text-white font-bold rounded-lg text-xs flex items-center gap-1.5 shadow-xs cursor-pointer"
+                >
+                  <FolderLock className="w-3.5 h-3.5" />
+                  <span>Abrir Portal</span>
+                </button>
+              </div>
+            </div>
+
             <div>
               <span className="text-slate-700 text-xs font-bold block mb-1">Notas del Diagnóstico:</span>
               <p className="text-xs text-slate-600 bg-white p-3 rounded border border-slate-200 leading-relaxed">
@@ -3710,14 +4266,26 @@ export const InternalCRM: React.FC<InternalCRMProps> = ({ currentRole, initialSu
             </div>
 
             <div>
-              <span className="text-slate-700 text-xs font-bold block mb-1.5">Cambiar Etapa de Negociación:</span>
+              <div className="flex items-center justify-between mb-1.5">
+                <span className="text-slate-700 text-xs font-bold block">Etapa del Embudo Comercial:</span>
+                {getNextStage(selectedLead.stage) && (
+                  <button
+                    type="button"
+                    onClick={(e) => handleAdvanceStage(selectedLead, e)}
+                    className="text-xs text-[#0078D4] hover:underline font-bold flex items-center gap-1 cursor-pointer"
+                  >
+                    <span>Avanzar a {pipelineStages.find(s => s.id === getNextStage(selectedLead.stage))?.label || 'siguiente'}</span>
+                    <ArrowRight className="w-3 h-3" />
+                  </button>
+                )}
+              </div>
               <div className="grid grid-cols-5 gap-1.5">
                 {pipelineStages.map((s) => (
                   <button
                     key={s.id}
                     type="button"
                     onClick={() => handleStageChange(selectedLead.id, s.id)}
-                    className={`px-2 py-1.5 rounded text-[11px] font-bold text-center transition-all ${
+                    className={`px-2 py-1.5 rounded text-[11px] font-bold text-center transition-all cursor-pointer ${
                       selectedLead.stage === s.id
                         ? 'bg-[#0078D4] text-white shadow-xs'
                         : 'bg-slate-100 hover:bg-slate-200 text-slate-700'

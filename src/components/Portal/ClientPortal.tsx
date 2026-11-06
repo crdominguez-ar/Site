@@ -30,7 +30,8 @@ interface ClientPortalProps {
 }
 
 export const ClientPortal: React.FC<ClientPortalProps> = ({ onNavigateTab }) => {
-  const [profile] = useState<ClientProfile>(dbRepository.getClientProfile());
+  const [profile, setProfile] = useState<ClientProfile>(() => dbRepository.getClientProfile());
+  const [availableProfiles, setAvailableProfiles] = useState<ClientProfile[]>(() => dbRepository.getAllClientProfiles());
   const [portalView, setPortalView] = useState<PortalViewId>('resumen');
   const [reports, setReports] = useState<DeliverableReport[]>([]);
   const [tickets, setTickets] = useState<AdvisoryTicket[]>([]);
@@ -62,17 +63,33 @@ export const ClientPortal: React.FC<ClientPortalProps> = ({ onNavigateTab }) => 
   const [isSubmittingTicket, setIsSubmittingTicket] = useState<boolean>(false);
   const [selectedReport, setSelectedReport] = useState<DeliverableReport | null>(null);
 
-  const loadData = async () => {
+  const loadData = async (currentProfileId = profile.id) => {
     const reps = await dbRepository.getReports();
     const tkts = await dbRepository.getTickets();
-    const docs = await dbRepository.getClientDocuments(profile.id);
+    const docs = await dbRepository.getClientDocuments(currentProfileId);
     setReports(reps);
     setTickets(tkts);
     setDocuments(docs);
   };
 
   useEffect(() => {
-    loadData();
+    loadData(profile.id);
+  }, [profile.id]);
+
+  // Reactive listener for CRM lead conversions to client profile
+  useEffect(() => {
+    const handleProfileSync = (event: Event) => {
+      const customEv = event as CustomEvent<ClientProfile>;
+      const freshProfiles = dbRepository.getAllClientProfiles();
+      setAvailableProfiles(freshProfiles);
+      if (customEv.detail) {
+        setProfile(customEv.detail);
+      } else {
+        setProfile(dbRepository.getClientProfile());
+      }
+    };
+    window.addEventListener('cr_client_profile_synced', handleProfileSync);
+    return () => window.removeEventListener('cr_client_profile_synced', handleProfileSync);
   }, []);
 
   const handleCreateTicket = async (e: React.FormEvent) => {
@@ -188,19 +205,54 @@ export const ClientPortal: React.FC<ClientPortalProps> = ({ onNavigateTab }) => 
                 </button>
               )}
 
-              {/* Client Pill */}
-              <div className="flex items-center gap-2.5 px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg">
-                <div className="w-6 h-6 rounded-full bg-[#0078D4] text-white flex items-center justify-center font-bold text-[10px]">
-                  {profile.companyName.charAt(0)}
-                </div>
-                <div className="hidden sm:block text-left">
-                  <span className="text-xs font-bold text-slate-900 block leading-tight truncate max-w-[140px]">
-                    {profile.companyName}
-                  </span>
-                  <span className="text-[10px] text-slate-500 font-mono block">
-                    CUIT: {profile.cuit}
-                  </span>
-                </div>
+              {/* Client Profile Selector & Badge */}
+              <div className="flex items-center gap-2">
+                {availableProfiles.length > 1 ? (
+                  <select
+                    value={profile.id}
+                    onChange={(e) => {
+                      const sel = availableProfiles.find(p => p.id === e.target.value);
+                      if (sel) {
+                        dbRepository.saveClientProfile(sel);
+                        setProfile(sel);
+                      }
+                    }}
+                    className="text-xs bg-slate-50 border border-slate-300 font-bold text-slate-800 rounded-lg px-2.5 py-1.5 focus:outline-none focus:border-[#0078D4]"
+                    title="Cambiar cliente activo del portal"
+                  >
+                    {availableProfiles.map((p) => (
+                      <option key={p.id} value={p.id}>
+                        {p.companyName} ({p.cuit})
+                      </option>
+                    ))}
+                  </select>
+                ) : (
+                  <div className="flex items-center gap-2.5 px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg">
+                    <div className="w-6 h-6 rounded-full bg-[#0078D4] text-white flex items-center justify-center font-bold text-[10px]">
+                      {profile.companyName.charAt(0)}
+                    </div>
+                    <div className="hidden sm:block text-left">
+                      <span className="text-xs font-bold text-slate-900 block leading-tight truncate max-w-[140px]">
+                        {profile.companyName}
+                      </span>
+                      <span className="text-[10px] text-slate-500 font-mono block">
+                        CUIT: {profile.cuit}
+                      </span>
+                    </div>
+                  </div>
+                )}
+
+                {onNavigateTab && (
+                  <button
+                    type="button"
+                    onClick={() => onNavigateTab('crm')}
+                    className="px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-lg flex items-center gap-1 transition-colors cursor-pointer border border-slate-200"
+                    title="Volver al CRM de Consultoría"
+                  >
+                    <ArrowUpRight className="w-3.5 h-3.5 text-[#0078D4]" />
+                    <span className="hidden md:inline">CRM</span>
+                  </button>
+                )}
               </div>
             </div>
           </div>
