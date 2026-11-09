@@ -9,11 +9,12 @@ import {
   BusinessVertical 
 } from '../../types';
 import { proposalService, ACCOUNTING_SERVICES_CATALOG } from '../../lib/proposalService';
+import { OFFICIAL_SERVICES } from '../../data/verticals';
 import { 
   X, Plus, Trash2, Send, MessageSquare, Printer, CheckCircle2, 
   Sparkles, FileText, Clock, DollarSign, RefreshCw, AlertCircle, 
   ArrowRight, Shield, Building2, User, Mail, Phone, Calendar,
-  ChevronDown, ExternalLink, Edit3, Award, Layers
+  ChevronDown, ExternalLink, Edit3, Award, Layers, Zap
 } from 'lucide-react';
 
 interface ProposalBuilderModalProps {
@@ -204,6 +205,45 @@ export const ProposalBuilderModal: React.FC<ProposalBuilderModalProps> = ({
   }, [isOpen, proposalId, initialLead, initialContact]);
 
   if (!isOpen) return null;
+
+  // Apply one of the 5 Official Core Services presets
+  const applyOfficialPreset = (code: '01' | '02' | '03' | '04' | '05') => {
+    const srv = OFFICIAL_SERVICES[code];
+    if (!srv) return;
+    const catId = `srv-${code}-core`;
+    const cat = ACCOUNTING_SERVICES_CATALOG.find((s) => s.id === catId);
+
+    setTitle(`${srv.title} - ${companyName || 'Empresa'}`);
+    setScopeSummary(srv.deliverable);
+    if (srv.modality === 'abono_mensual') {
+      setPaymentTerms('Abono mensual con facturación a mes adelantado del 1 al 5 de cada mes. Incluye comité financiero ejecutivo de socios mensual y canal prioritario de consultas estratégicas.');
+    } else {
+      setPaymentTerms('50% de anticipo al inicio de las tareas profesionales, y el saldo restante contra entrega del informe ejecutivo / dictamen final.');
+    }
+    setSpecialTerms(`Plazo de ejecución: ${srv.durationOrCadence}. Marco normativo: ${srv.normativeBase}. Incluye acceso a Bóveda Documental privada en el portal de clientes.`);
+
+    if (code === '03') setVertical('digital_saas');
+    else if (code === '04') setVertical('cfo_estrategico');
+    else if (code === '02') setVertical('digital_saas');
+    else if (code === '01') setVertical('cfo_estrategico');
+    else if (code === '05') setVertical('digital_saas');
+
+    if (cat) {
+      const rate = currency === 'USD' ? cat.defaultHourlyRateUsd : cat.defaultHourlyRateArs;
+      const hours = cat.estimatedDefaultHours;
+      setItems([
+        {
+          id: `item-${Date.now()}-${code}`,
+          serviceId: cat.id,
+          serviceName: cat.name,
+          description: cat.description,
+          hoursEstimated: hours,
+          hourlyRate: rate,
+          subtotal: hours * rate,
+        },
+      ]);
+    }
+  };
 
   // Add service from catalog
   const handleAddCatalogService = () => {
@@ -836,6 +876,70 @@ export const ProposalBuilderModal: React.FC<ProposalBuilderModalProps> = ({
                       className="px-2.5 py-1.5 bg-white hover:bg-slate-50 border border-slate-300 text-slate-700 text-xs font-bold rounded-lg shadow-sm transition-colors"
                     >
                       + Ítem Personalizado
+                    </button>
+                  </div>
+                </div>
+
+                {/* 5 Official Core Services Quick Presets */}
+                <div className="p-3 bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 border border-slate-800 rounded-xl text-white space-y-2">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="font-bold flex items-center gap-1.5 text-sky-400">
+                      <Zap className="w-3.5 h-3.5 fill-sky-400" />
+                      <span>Plantillas Oficiales Cr. Domínguez (1 Clic)</span>
+                    </span>
+                    <span className="text-[10px] text-slate-400 font-mono">
+                      Carga alcance, entregables, plazo y honorarios de la propuesta de marca
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2">
+                    <button
+                      type="button"
+                      onClick={() => applyOfficialPreset('01')}
+                      className="p-2 bg-slate-800/80 hover:bg-slate-700 border border-slate-700 rounded-lg text-left transition-all group cursor-pointer"
+                    >
+                      <div className="text-[10px] font-mono font-bold text-sky-400 group-hover:text-white">01 · PROYECTO</div>
+                      <div className="text-xs font-bold text-white truncate">Unit Economics</div>
+                      <div className="text-[10px] text-slate-400 truncate">Churn, CAC, LTV, NRR</div>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => applyOfficialPreset('02')}
+                      className="p-2 bg-slate-800/80 hover:bg-slate-700 border border-slate-700 rounded-lg text-left transition-all group cursor-pointer"
+                    >
+                      <div className="text-[10px] font-mono font-bold text-emerald-400 group-hover:text-white">02 · PROYECTO</div>
+                      <div className="text-xs font-bold text-white truncate">Modelo & Pricing</div>
+                      <div className="text-[10px] text-slate-400 truncate">36 meses dinámico</div>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => applyOfficialPreset('03')}
+                      className="p-2 bg-slate-800/80 hover:bg-slate-700 border border-slate-700 rounded-lg text-left transition-all group cursor-pointer"
+                    >
+                      <div className="text-[10px] font-mono font-bold text-amber-400 group-hover:text-white">03 · PROYECTO</div>
+                      <div className="text-xs font-bold text-white truncate">Exportador Tech</div>
+                      <div className="text-[10px] text-slate-400 truncate">Factura E / BCRA 8481</div>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => applyOfficialPreset('04')}
+                      className="p-2 bg-slate-800/80 hover:bg-slate-700 border border-slate-700 rounded-lg text-left transition-all group cursor-pointer"
+                    >
+                      <div className="text-[10px] font-mono font-bold text-purple-400 group-hover:text-white">04 · ABONO</div>
+                      <div className="text-xs font-bold text-white truncate">CFO Fraccional</div>
+                      <div className="text-[10px] text-slate-400 truncate">Comité mensual & caja</div>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => applyOfficialPreset('05')}
+                      className="p-2 bg-slate-800/80 hover:bg-slate-700 border border-slate-700 rounded-lg text-left transition-all group cursor-pointer"
+                    >
+                      <div className="text-[10px] font-mono font-bold text-pink-400 group-hover:text-white">05 · PROYECTO</div>
+                      <div className="text-xs font-bold text-white truncate">Data Room VC</div>
+                      <div className="text-[10px] text-slate-400 truncate">Inversores pre-seed</div>
                     </button>
                   </div>
                 </div>

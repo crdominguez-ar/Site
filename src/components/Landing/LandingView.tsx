@@ -1,10 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { ArrowRight, ChevronRight, Building2, Globe, Scale, LineChart, Cpu, Play } from 'lucide-react';
+import { 
+  ArrowRight, ChevronRight, Building2, Globe, Scale, LineChart, Cpu, Play,
+  TrendingUp, AlertTriangle, CheckCircle2, Shield, Calendar, Sparkles, Layers,
+  Check, ArrowUpRight, Clock, Target, HelpCircle
+} from 'lucide-react';
 import { PartnerProfile } from '../About/PartnerProfile';
 import { InteractiveDiagnostic } from '../Diagnostic/InteractiveDiagnostic';
 import { ExecutiveVideoSection } from '../Video/ExecutiveVideoSection';
 import { HeroCarousel } from './HeroCarousel';
 import { contentService, SiteContent } from '../../lib/contentService';
+import { MACRO_METRICS_2026, COMMON_PITFALLS, OFFICIAL_SERVICES } from '../../data/verticals';
 
 interface LandingViewProps {
   onSelectTab: (tab: 'landing' | 'solutions' | 'simulators' | 'diagnostic' | 'blog' | 'portal' | 'crm' | 'seo' | 'dashboard') => void;
@@ -70,6 +75,21 @@ export const LandingView: React.FC<LandingViewProps> = ({ onSelectTab, onOpenCon
     .sort((a, b) => a.order - b.order)
     .filter((b) => b.enabled);
 
+  // Guarantee high-value brand sections are visible even if client has older local storage cache
+  const effectiveBlocks = [...sortedBlocks];
+  if (!effectiveBlocks.some((b) => b.id === 'macro_context')) {
+    const heroIdx = effectiveBlocks.findIndex((b) => b.id === 'hero');
+    effectiveBlocks.splice(heroIdx + 1, 0, { id: 'macro_context', label: 'Contexto Macroeconómico 2026', enabled: true, order: 2 });
+  }
+  if (!effectiveBlocks.some((b) => b.id === 'pitfalls')) {
+    const axesIdx = effectiveBlocks.findIndex((b) => b.id === 'axes');
+    effectiveBlocks.splice(axesIdx + 1, 0, { id: 'pitfalls', label: 'Errores Frecuentes', enabled: true, order: 4 });
+  }
+  if (!effectiveBlocks.some((b) => b.id === 'modalities')) {
+    const pitIdx = effectiveBlocks.findIndex((b) => b.id === 'pitfalls');
+    effectiveBlocks.splice(pitIdx + 1, 0, { id: 'modalities', label: 'Dos Formas de Contratar', enabled: true, order: 5 });
+  }
+
   const renderBlock = (blockId: string) => {
     switch (blockId) {
       case 'hero':
@@ -79,6 +99,65 @@ export const LandingView: React.FC<LandingViewProps> = ({ onSelectTab, onOpenCon
             onSelectTab={onSelectTab} 
             onOpenConsultationModal={onOpenConsultationModal} 
           />
+        );
+
+      case 'macro_context':
+        return (
+          <section
+            key="macro_context"
+            className="w-full bg-[#0B1520] text-white border-b border-slate-800 py-12 sm:py-16 px-4 sm:px-8 lg:px-16 xl:px-20 relative overflow-hidden"
+          >
+            <div className="absolute top-0 right-1/3 w-80 h-80 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none" />
+            <div className="w-full max-w-7xl mx-auto relative z-10 space-y-8">
+              <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+                <div>
+                  <div className="flex items-center gap-2 text-xs font-mono font-bold uppercase tracking-wider text-cyan-400 mb-2">
+                    <TrendingUp className="w-4 h-4" />
+                    <span>Validación Macroeconómica Argentina 2026</span>
+                    <span>·</span>
+                    <span className="text-slate-400 font-semibold">Cr. Carlos Rodrigo Domínguez</span>
+                  </div>
+                  <h2 className="text-2xl sm:text-4xl font-black text-white tracking-tight">
+                    La economía digital ya es un motor exportador
+                  </h2>
+                  <p className="text-xs sm:text-sm text-slate-300 mt-2 max-w-3xl leading-relaxed">
+                    Los servicios basados en el conocimiento y las compañías de software demandan rigor contable, métricas conciliadas y encuadre cambiario para transformar facturación en rentabilidad neta.
+                  </p>
+                </div>
+
+                <div className="flex items-center gap-2 shrink-0">
+                  <span className="text-[11px] font-mono text-slate-400 bg-slate-900/80 px-2.5 py-1 rounded border border-slate-800">
+                    Fuentes: INDEC · BCRA · ARCAP · SaaS Capital
+                  </span>
+                </div>
+              </div>
+
+              {/* 4 Stat Cards */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                {MACRO_METRICS_2026.map((item, idx) => (
+                  <div
+                    key={idx}
+                    className="p-5 bg-slate-900/90 border border-slate-800 rounded-xl space-y-3 shadow-sm hover:border-slate-700 transition-all flex flex-col justify-between"
+                  >
+                    <div>
+                      <div className="text-2xl sm:text-3xl font-black font-mono tabular-nums text-white tracking-tight">
+                        {item.stat}
+                      </div>
+                      <div className="text-xs font-bold text-cyan-400 mt-1">
+                        {item.growth}
+                      </div>
+                      <p className="text-xs text-slate-300 mt-2 leading-relaxed">
+                        {item.label}
+                      </p>
+                    </div>
+                    <div className="pt-3 border-t border-slate-800/80 text-[10px] font-mono text-slate-400">
+                      Fuente: {item.source}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </section>
         );
 
       case 'video':
@@ -351,6 +430,247 @@ export const LandingView: React.FC<LandingViewProps> = ({ onSelectTab, onOpenCon
         );
       }
 
+      case 'pitfalls':
+        return (
+          <section
+            key="pitfalls"
+            className="w-full bg-[#F8FAFC] border-b border-slate-200 py-14 sm:py-20 px-4 sm:px-8 lg:px-16 xl:px-20"
+          >
+            <div className="w-full max-w-7xl mx-auto space-y-10">
+              <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+                <div>
+                  <div className="flex items-center gap-2 text-xs font-mono font-bold uppercase tracking-wider text-rose-600 mb-2">
+                    <AlertTriangle className="w-4 h-4" />
+                    <span>Diagnóstico Crítico de Gestión</span>
+                    <span>·</span>
+                    <span className="text-slate-500 font-semibold">Cr. Carlos Rodrigo Domínguez</span>
+                  </div>
+                  <h2 className="text-2xl sm:text-4xl font-black text-slate-900 tracking-tight">
+                    Errores frecuentes que cuestan rentabilidad
+                  </h2>
+                  <p className="text-xs sm:text-sm text-slate-600 mt-2 max-w-3xl leading-relaxed">
+                    Identificados en auditorías a PyMEs, franquicias y exportadores de servicios en Patagonia y todo el país. Cada desvío tiene una solución técnica probada.
+                  </p>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => onSelectTab('simulators')}
+                  className="px-4 py-2 bg-[#0078D4] hover:bg-[#006cbd] text-white text-xs font-bold rounded-lg transition-all flex items-center gap-2 shrink-0 cursor-pointer shadow-sm self-start md:self-auto"
+                >
+                  <Sparkles className="w-4 h-4" />
+                  <span>Calcular Unit Economics</span>
+                </button>
+              </div>
+
+              {/* 6 Pitfall Cards */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                {COMMON_PITFALLS.map((p, idx) => (
+                  <div
+                    key={idx}
+                    className="p-6 bg-white border border-slate-200 rounded-xl shadow-xs hover:shadow-md transition-all flex flex-col justify-between space-y-4"
+                  >
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[11px] font-mono font-bold text-rose-600 bg-rose-50 px-2 py-0.5 rounded border border-rose-200 uppercase tracking-wider">
+                          Error Frecuente #{idx + 1}
+                        </span>
+                        <AlertTriangle className="w-4 h-4 text-rose-500" />
+                      </div>
+
+                      <h3 className="text-base font-bold text-slate-900 tracking-tight">
+                        {p.title}
+                      </h3>
+
+                      <div className="p-3 bg-rose-50/50 border border-rose-100 rounded-lg text-xs text-rose-900 leading-relaxed">
+                        <strong className="block text-[11px] uppercase tracking-wider text-rose-700 mb-0.5 font-mono">El Problema:</strong>
+                        {p.problem}
+                      </div>
+                    </div>
+
+                    <div className="p-3 bg-emerald-50/60 border border-emerald-200 rounded-lg text-xs text-emerald-950 leading-relaxed">
+                      <strong className="block text-[11px] uppercase tracking-wider text-emerald-800 mb-0.5 font-mono flex items-center gap-1.5">
+                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                        <span>Respuesta Cr. Domínguez:</span>
+                      </strong>
+                      {p.solution}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </section>
+        );
+
+      case 'modalities':
+        return (
+          <section
+            key="modalities"
+            className="w-full bg-white border-b border-slate-200 py-14 sm:py-20 px-4 sm:px-8 lg:px-16 xl:px-20"
+          >
+            <div className="w-full max-w-7xl mx-auto space-y-10">
+              <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+                <div>
+                  <div className="flex items-center gap-2 text-xs font-mono font-bold uppercase tracking-wider text-[#0078D4] mb-2">
+                    <Shield className="w-4 h-4" />
+                    <span>Transparencia & Certeza Contractual</span>
+                    <span>·</span>
+                    <span className="text-slate-500 font-semibold">Sin Costos Ocultos</span>
+                  </div>
+                  <h2 className="text-2xl sm:text-4xl font-black text-slate-900 tracking-tight">
+                    Dos formas de trabajar juntos
+                  </h2>
+                  <p className="text-xs sm:text-sm text-slate-600 mt-2 max-w-3xl leading-relaxed">
+                    Elegí la modalidad que mejor responda a las prioridades y madurez actual de tu negocio.
+                  </p>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={onOpenConsultationModal}
+                  className="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold rounded-lg transition-all flex items-center gap-2 shrink-0 cursor-pointer shadow-sm self-start md:self-auto"
+                >
+                  <span>Agendar Consulta Inicial</span>
+                  <ArrowRight className="w-4 h-4" />
+                </button>
+              </div>
+
+              {/* 2 Big Cards */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* Modality 1: Por Proyecto */}
+                <div className="p-7 sm:p-8 bg-slate-50 border-2 border-slate-300 rounded-2xl flex flex-col justify-between space-y-6 relative overflow-hidden">
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-mono font-bold uppercase tracking-wider text-blue-700 bg-blue-100 px-3 py-1 rounded-full">
+                        Modalidad Cerrada
+                      </span>
+                      <Clock className="w-5 h-5 text-blue-600" />
+                    </div>
+
+                    <div>
+                      <h3 className="text-2xl font-black text-slate-900 tracking-tight">
+                        Por Proyecto
+                      </h3>
+                      <p className="text-xs font-mono text-slate-600 mt-0.5">
+                        Alcance cerrado · Plazo definido · Entregables auditables
+                      </p>
+                    </div>
+
+                    <p className="text-xs text-slate-700 leading-relaxed">
+                      Ideal para empresas que necesitan resolver un desafío financiero o fiscal específico con fecha de inicio, cronograma de trabajo y dictamen final cerrado.
+                    </p>
+
+                    <div className="space-y-2 pt-2">
+                      <span className="text-[11px] font-mono font-bold text-slate-500 uppercase tracking-wider block">
+                        Servicios oficiales bajo esta modalidad:
+                      </span>
+                      <ul className="text-xs text-slate-800 space-y-2">
+                        <li className="flex items-start gap-2">
+                          <Check className="w-4 h-4 text-blue-600 shrink-0 mt-0.5" />
+                          <span><strong>01. Diagnóstico de Unit Economics</strong> (2 a 3 semanas)</span>
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <Check className="w-4 h-4 text-blue-600 shrink-0 mt-0.5" />
+                          <span><strong>02. Modelo Financiero y Pricing 36m</strong> (3 a 4 semanas)</span>
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <Check className="w-4 h-4 text-blue-600 shrink-0 mt-0.5" />
+                          <span><strong>03. Estructuración del Exportador</strong> (Proyecto inicial de encuadre)</span>
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <Check className="w-4 h-4 text-blue-600 shrink-0 mt-0.5" />
+                          <span><strong>05. Preparación para Inversores & Data Room</strong> (4 a 6 semanas)</span>
+                        </li>
+                      </ul>
+                    </div>
+
+                    <div className="p-3.5 bg-white border border-slate-200 rounded-xl text-xs text-slate-700 space-y-1 font-mono">
+                      <div className="text-[11px] font-bold text-slate-900 uppercase">Condiciones comerciales tipo:</div>
+                      <div>· 50% de anticipo al inicio de tareas</div>
+                      <div>· 50% contra entrega del informe / modelo final</div>
+                      <div>· 30 días de soporte post-entrega para dudas de implementación</div>
+                    </div>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => onSelectTab('solutions')}
+                    className="w-full py-3 bg-[#0078D4] hover:bg-[#006cbd] text-white text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-2 shadow-sm cursor-pointer"
+                  >
+                    <span>Ver Detalle de Proyectos</span>
+                    <ArrowRight className="w-4 h-4" />
+                  </button>
+                </div>
+
+                {/* Modality 2: Abono Mensual */}
+                <div className="p-7 sm:p-8 bg-[#0D223F] border-2 border-blue-500 rounded-2xl text-white flex flex-col justify-between space-y-6 relative overflow-hidden shadow-xl">
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-mono font-bold uppercase tracking-wider text-cyan-300 bg-cyan-950/80 border border-cyan-800 px-3 py-1 rounded-full">
+                        Continuo Estratégico
+                      </span>
+                      <Calendar className="w-5 h-5 text-cyan-400" />
+                    </div>
+
+                    <div>
+                      <h3 className="text-2xl font-black text-white tracking-tight">
+                        Abono Mensual
+                      </h3>
+                      <p className="text-xs font-mono text-cyan-300 mt-0.5">
+                        Acompañamiento continuo · Sin estructura fija · Comité de socios
+                      </p>
+                    </div>
+
+                    <p className="text-xs text-slate-200 leading-relaxed">
+                      Pensado para startups y PyMEs que necesitan una dirección financiera regular, control de Cash Runway y seguimiento de métricas sin afrontar el costo de un CFO full-time.
+                    </p>
+
+                    <div className="space-y-2 pt-2">
+                      <span className="text-[11px] font-mono font-bold text-slate-400 uppercase tracking-wider block">
+                        Servicios oficiales bajo esta modalidad:
+                      </span>
+                      <ul className="text-xs text-slate-200 space-y-2">
+                        <li className="flex items-start gap-2">
+                          <Check className="w-4 h-4 text-cyan-400 shrink-0 mt-0.5" />
+                          <span><strong>04. CFO Fraccional</strong> (Dirección mensual, caja y runway)</span>
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <Check className="w-4 h-4 text-cyan-400 shrink-0 mt-0.5" />
+                          <span><strong>Comité Financiero Mensual</strong> con los socios y directores</span>
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <Check className="w-4 h-4 text-cyan-400 shrink-0 mt-0.5" />
+                          <span><strong>Acompañamiento Cambiario</strong> continuo para exportadores</span>
+                        </li>
+                        <li className="flex items-start gap-2">
+                          <Check className="w-4 h-4 text-cyan-400 shrink-0 mt-0.5" />
+                          <span><strong>Acceso prioritario directo</strong> vía WhatsApp y Bóveda Documental</span>
+                        </li>
+                      </ul>
+                    </div>
+
+                    <div className="p-3.5 bg-black/40 border border-white/10 rounded-xl text-xs text-slate-300 space-y-1 font-mono">
+                      <div className="text-[11px] font-bold text-white uppercase">Condiciones comerciales tipo:</div>
+                      <div>· Facturación mensual a mes adelantado (1 al 5)</div>
+                      <div>· Revisión trimestral de alcance y metas</div>
+                      <div>· Sin cláusulas de permanencia forzosa</div>
+                    </div>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={onOpenConsultationModal}
+                    className="w-full py-3 bg-white hover:bg-slate-100 text-slate-950 text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-2 shadow-sm cursor-pointer"
+                  >
+                    <span>Solicitar Abono de Acompañamiento</span>
+                    <ArrowRight className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+            </div>
+          </section>
+        );
+
       case 'profile':
         return (
           <section key="profile" className="w-full bg-white border-b border-slate-200 py-12 sm:py-16 lg:py-20 px-4 sm:px-8 lg:px-16 xl:px-20">
@@ -376,7 +696,7 @@ export const LandingView: React.FC<LandingViewProps> = ({ onSelectTab, onOpenCon
 
   return (
     <div className={`w-full space-y-0 pb-0 bg-white text-slate-900 overflow-x-hidden ${fontClass}`}>
-      {sortedBlocks.map((block) => renderBlock(block.id))}
+      {effectiveBlocks.map((block) => renderBlock(block.id))}
     </div>
   );
 };

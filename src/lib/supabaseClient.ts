@@ -320,6 +320,65 @@ const SEED_REPORTS: DeliverableReport[] = [
     fileSize: '4.1 MB (Whitepaper Legal-Tributario)',
     author: 'Cr. Carlos Rodrigo Domínguez',
   },
+  {
+    id: 'rep-305',
+    title: '01. Diagnóstico de Unit Economics: Tablero de Recurrencia, Churn y NRR',
+    clientId: 'cli-001',
+    clientName: 'Patagonia Cloud Software SAS',
+    vertical: 'digital_saas',
+    type: 'unit_economics',
+    date: '02 Nov 2026',
+    version: 'v1.0 Auditado',
+    status: 'auditado_firmado',
+    summary: 'Auditoría completa de retención neta (NRR 104.8%), Churn de clientes mensual 2.1%, cálculo del CAC integral con personal comercial incluido (USD 420) y 5 acciones operativas recomendadas.',
+    keyMetrics: [
+      { label: 'NRR Mediano', value: '104.8%', variance: '+1.8% vs benchmark' },
+      { label: 'Churn Mensual', value: '2.1%' },
+      { label: 'Ratio LTV/CAC', value: '4.2x' },
+      { label: 'Payback CAC', value: '7.8 meses' },
+    ],
+    fileSize: '3.1 MB (Tablero + Informe de 5 Acciones)',
+    author: 'Cr. Carlos Rodrigo Domínguez',
+  },
+  {
+    id: 'rep-306',
+    title: '02. Modelo Financiero Dinámico a 36 Meses: Pricing e Indexación ARS/USD',
+    clientId: 'cli-001',
+    clientName: 'Patagonia Cloud Software SAS',
+    vertical: 'digital_saas',
+    type: 'modelo_36m',
+    date: '29 Oct 2026',
+    version: 'v2.0 Modelo Final',
+    status: 'auditado_firmado',
+    summary: 'Proyecciones a 3 años con matrices de sensibilidad en 3 escenarios (conservador, base, expansión). Umbral de equilibrio alcanzado al mes 7 con estructura de costos computacionales modelada.',
+    keyMetrics: [
+      { label: 'Break-Even', value: 'Mes 7' },
+      { label: 'Escenario Expansión', value: '+42% EBITDA' },
+      { label: 'Indexación Contratos', value: 'Ajuste Mensual ARS/USD' },
+    ],
+    fileSize: '5.2 MB (Planilla Dinámica + Dictamen)',
+    author: 'Cr. Carlos Rodrigo Domínguez',
+  },
+  {
+    id: 'rep-307',
+    title: '05. Data Room Financiero & Due Diligence Pre-Seed / Seed',
+    clientId: 'cli-001',
+    clientName: 'Patagonia Cloud Software SAS',
+    vertical: 'digital_saas',
+    type: 'data_room_due_diligence',
+    date: '20 Oct 2026',
+    version: 'v1.0 Data Room Listo',
+    status: 'auditado_firmado',
+    summary: 'Carpeta de due diligence completa para ronda con fondos VC: Cap table auditado, métricas conciliadas con registros bancarios y contables, burn rate neto de USD 8,500/mes y proyección de dilución.',
+    keyMetrics: [
+      { label: 'Cap Table', value: '100% Conciliado' },
+      { label: 'Burn Rate Neto', value: 'USD 8,500 / mes' },
+      { label: 'Runway Actual', value: '16.5 meses' },
+      { label: 'Ronda Objetivo', value: 'USD 500,000' },
+    ],
+    fileSize: '8.4 MB (Data Room Completo)',
+    author: 'Cr. Carlos Rodrigo Domínguez',
+  },
 ];
 
 const SEED_TICKETS: AdvisoryTicket[] = [
@@ -901,7 +960,7 @@ async function withTimeout<T = any>(thenable: any, timeoutMs = 1500): Promise<T>
 class DataRepository {
   private leadsKey = 'dl_consulting_leads';
   private tasksKey = 'dl_consulting_tasks';
-  private reportsKey = 'dl_consulting_reports';
+  private reportsKey = 'dl_consulting_reports_v2';
   private ticketsKey = 'dl_consulting_tickets';
   private contactsKey = 'cr_crm_contacts';
   private meetingsKey = 'cr_crm_meetings';

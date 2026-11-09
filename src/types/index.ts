@@ -77,6 +77,35 @@ export type BusinessVertical =
   | 'cfo_estrategico'
   | 'ia_zhc';
 
+export type CoreServiceCode = '01' | '02' | '03' | '04' | '05';
+
+export type ContractModality = 'proyecto' | 'abono_mensual';
+
+export interface OfficialCoreService {
+  code: CoreServiceCode;
+  title: string;
+  shortTitle: string;
+  tagline: string;
+  targetAudience: string;
+  targetArchetypes: string[];
+  deliverable: string;
+  modality: ContractModality;
+  modalityLabel: string;
+  durationOrCadence: string;
+  keyMetricsCovered: string[];
+  normativeBase: string;
+  recommendedPriceUsd: number;
+}
+
+export interface TargetArchetype {
+  id: string;
+  name: string;
+  tagline: string;
+  description: string;
+  typicalNeeds: string[];
+  linkedServiceCodes: CoreServiceCode[];
+}
+
 export interface VerticalMetadata {
   id: BusinessVertical;
   title: string;
@@ -118,6 +147,8 @@ export interface Lead {
   proposalId?: string;
   proposalTotal?: number;
   proposalStatus?: ProposalStatus;
+  contractModality?: ContractModality;
+  targetServiceCode?: CoreServiceCode;
   revenueRange?: string;
   employeeRange?: string;
   identifiedProblem?: string;
@@ -147,7 +178,9 @@ export interface ClientProfile {
   legalEntity: 'SA' | 'SRL' | 'SAS' | 'Cooperativa' | 'Unipersonal' | 'LLC/Delaware' | 'DAO / On-Chain';
   location: string;
   vertical: BusinessVertical;
-  activePlan: 'CFO Fraccional Estratégico' | 'Compliance & Liquidación Digital' | 'Desarrollo de Franquicia' | 'Gobierno ZHC & Tesorería';
+  activePlan: 'CFO Fraccional Estratégico' | 'Compliance & Liquidación Digital' | 'Desarrollo de Franquicia' | 'Gobierno ZHC & Tesorería' | string;
+  contractModality?: ContractModality;
+  targetServiceCode?: CoreServiceCode;
   runwayMonths: number;
   monthlyRevenueUsd: number;
   grossMarginPercent: number;
@@ -163,7 +196,7 @@ export interface DeliverableReport {
   clientId: string;
   clientName: string;
   vertical: BusinessVertical;
-  type: 'van_tir' | 'punto_equilibrio' | 'franquicia_ccyc' | 'ddjj_fiscal' | 'zhc_compliance';
+  type: 'van_tir' | 'punto_equilibrio' | 'franquicia_ccyc' | 'ddjj_fiscal' | 'zhc_compliance' | 'unit_economics' | 'modelo_36m' | 'data_room_due_diligence';
   date: string;
   version: string;
   status: 'auditado_firmado' | 'en_analisis' | 'publicado';
@@ -180,7 +213,9 @@ export type DocumentCategory =
   | 'societario_legal' 
   | 'facturacion_comprobantes' 
   | 'retenciones_percepciones'
-  | 'laboral_previsional';
+  | 'laboral_previsional'
+  | 'cfo_reportes_comite'
+  | 'data_room_inversores';
 
 export type DocumentStatus = 
   | 'auditado' 

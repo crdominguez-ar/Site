@@ -99,6 +99,16 @@ const CATEGORY_LABELS: Record<DocumentCategory, { label: string; short: string; 
     short: 'Sueldos F. 931',
     badge: 'bg-rose-50 text-rose-700 border-rose-200',
   },
+  cfo_reportes_comite: {
+    label: 'CFO Fraccional · Reportes Mensuales & Actas de Comité',
+    short: 'CFO / Comité',
+    badge: 'bg-teal-50 text-teal-800 border-teal-200',
+  },
+  data_room_inversores: {
+    label: 'Data Room Inversores · Cap Table & Due Diligence',
+    short: 'Data Room',
+    badge: 'bg-cyan-50 text-cyan-800 border-cyan-200',
+  },
 };
 
 export const ClientDocumentManager: React.FC<ClientDocumentManagerProps> = ({
