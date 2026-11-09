@@ -968,32 +968,62 @@ class DataRepository {
   private profileKey = 'dl_client_profile';
   private allProfilesKey = 'dl_all_client_profiles';
 
+  private memoryFallback: Record<string, string> = {};
+
+  private getStorageItem(key: string): string | null {
+    if (typeof window !== 'undefined' && window.localStorage) {
+      try {
+        const val = window.localStorage.getItem(key);
+        if (val !== null) return val;
+      } catch {
+        // LocalStorage blocked or full
+      }
+    }
+    return this.memoryFallback[key] || null;
+  }
+
+  private setStorageItem(key: string, value: string): void {
+    if (typeof window !== 'undefined' && window.localStorage) {
+      try {
+        window.localStorage.setItem(key, value);
+      } catch {
+        // QuotaExceeded or privacy mode
+      }
+    }
+    this.memoryFallback[key] = value;
+  }
+
   constructor() {
     this.initStorage();
   }
 
   private initStorage() {
-    if (typeof window === 'undefined') return;
-    if (!localStorage.getItem(this.leadsKey)) {
-      localStorage.setItem(this.leadsKey, JSON.stringify(SEED_LEADS));
+    if (!this.getStorageItem(this.leadsKey)) {
+      this.setStorageItem(this.leadsKey, JSON.stringify(SEED_LEADS));
     }
-    if (!localStorage.getItem(this.tasksKey)) {
-      localStorage.setItem(this.tasksKey, JSON.stringify(SEED_TASKS));
+    if (!this.getStorageItem(this.tasksKey)) {
+      this.setStorageItem(this.tasksKey, JSON.stringify(SEED_TASKS));
     }
-    if (!localStorage.getItem(this.reportsKey)) {
-      localStorage.setItem(this.reportsKey, JSON.stringify(SEED_REPORTS));
+    if (!this.getStorageItem(this.reportsKey)) {
+      this.setStorageItem(this.reportsKey, JSON.stringify(SEED_REPORTS));
     }
-    if (!localStorage.getItem(this.ticketsKey)) {
-      localStorage.setItem(this.ticketsKey, JSON.stringify(SEED_TICKETS));
+    if (!this.getStorageItem(this.ticketsKey)) {
+      this.setStorageItem(this.ticketsKey, JSON.stringify(SEED_TICKETS));
     }
-    if (!localStorage.getItem(this.contactsKey)) {
-      localStorage.setItem(this.contactsKey, JSON.stringify(SEED_CONTACTS));
+    if (!this.getStorageItem(this.contactsKey)) {
+      this.setStorageItem(this.contactsKey, JSON.stringify(SEED_CONTACTS));
     }
-    if (!localStorage.getItem(this.meetingsKey)) {
-      localStorage.setItem(this.meetingsKey, JSON.stringify(SEED_MEETINGS));
+    if (!this.getStorageItem(this.meetingsKey)) {
+      this.setStorageItem(this.meetingsKey, JSON.stringify(SEED_MEETINGS));
     }
-    if (!localStorage.getItem(this.documentsKey)) {
-      localStorage.setItem(this.documentsKey, JSON.stringify(SEED_DOCUMENTS));
+    if (!this.getStorageItem(this.documentsKey)) {
+      this.setStorageItem(this.documentsKey, JSON.stringify(SEED_DOCUMENTS));
+    }
+    if (!this.getStorageItem(this.profileKey)) {
+      this.setStorageItem(this.profileKey, JSON.stringify(SEED_CLIENT));
+    }
+    if (!this.getStorageItem(this.allProfilesKey)) {
+      this.setStorageItem(this.allProfilesKey, JSON.stringify([SEED_CLIENT]));
     }
   }
 
@@ -1009,7 +1039,7 @@ class DataRepository {
       }
     }
     try {
-      const local = typeof window !== 'undefined' ? localStorage.getItem(this.leadsKey) : null;
+      const local = this.getStorageItem(this.leadsKey);
       return local ? JSON.parse(local) : SEED_LEADS;
     } catch {
       return SEED_LEADS;
@@ -1034,7 +1064,7 @@ class DataRepository {
 
     const current = await this.getLeads();
     const updated = [newLead, ...current];
-    localStorage.setItem(this.leadsKey, JSON.stringify(updated));
+    this.setStorageItem(this.leadsKey, JSON.stringify(updated));
     return newLead;
   }
 
@@ -1059,7 +1089,7 @@ class DataRepository {
       }
       return l;
     });
-    localStorage.setItem(this.leadsKey, JSON.stringify(updated));
+    this.setStorageItem(this.leadsKey, JSON.stringify(updated));
     return updatedLead || current[0];
   }
 
@@ -1073,7 +1103,7 @@ class DataRepository {
     }
     const current = await this.getLeads();
     const updated = current.filter((l) => l.id !== leadId);
-    localStorage.setItem(this.leadsKey, JSON.stringify(updated));
+    this.setStorageItem(this.leadsKey, JSON.stringify(updated));
   }
 
   async getTasks(): Promise<CRMTask[]> {
@@ -1086,7 +1116,7 @@ class DataRepository {
       }
     }
     try {
-      const local = typeof window !== 'undefined' ? localStorage.getItem(this.tasksKey) : null;
+      const local = this.getStorageItem(this.tasksKey);
       return local ? JSON.parse(local) : SEED_TASKS;
     } catch {
       return SEED_TASKS;
@@ -1096,7 +1126,7 @@ class DataRepository {
   async toggleTask(taskId: string): Promise<void> {
     const current = await this.getTasks();
     const updated = current.map((t) => (t.id === taskId ? { ...t, completed: !t.completed } : t));
-    localStorage.setItem(this.tasksKey, JSON.stringify(updated));
+    this.setStorageItem(this.tasksKey, JSON.stringify(updated));
   }
 
   async toggleTaskCompletion(taskId: string): Promise<void> {
@@ -1113,14 +1143,14 @@ class DataRepository {
       }
       return t;
     });
-    localStorage.setItem(this.tasksKey, JSON.stringify(updated));
+    this.setStorageItem(this.tasksKey, JSON.stringify(updated));
     return updatedTask || current[0];
   }
 
   async deleteTask(taskId: string): Promise<void> {
     const current = await this.getTasks();
     const updated = current.filter((t) => t.id !== taskId);
-    localStorage.setItem(this.tasksKey, JSON.stringify(updated));
+    this.setStorageItem(this.tasksKey, JSON.stringify(updated));
   }
 
   async addTask(task: Omit<CRMTask, 'id'>): Promise<CRMTask> {
@@ -1130,7 +1160,7 @@ class DataRepository {
     };
     const current = await this.getTasks();
     const updated = [newTask, ...current];
-    localStorage.setItem(this.tasksKey, JSON.stringify(updated));
+    this.setStorageItem(this.tasksKey, JSON.stringify(updated));
     return newTask;
   }
 
@@ -1156,7 +1186,7 @@ class DataRepository {
       }
     }
     try {
-      const local = typeof window !== 'undefined' ? localStorage.getItem(this.reportsKey) : null;
+      const local = this.getStorageItem(this.reportsKey);
       return local ? JSON.parse(local) : SEED_REPORTS;
     } catch {
       return SEED_REPORTS;
@@ -1173,7 +1203,7 @@ class DataRepository {
       }
     }
     try {
-      const local = typeof window !== 'undefined' ? localStorage.getItem(this.ticketsKey) : null;
+      const local = this.getStorageItem(this.ticketsKey);
       return local ? JSON.parse(local) : SEED_TICKETS;
     } catch {
       return SEED_TICKETS;
@@ -1190,15 +1220,14 @@ class DataRepository {
     };
     const current = await this.getTickets();
     const updated = [newTicket, ...current];
-    localStorage.setItem(this.ticketsKey, JSON.stringify(updated));
+    this.setStorageItem(this.ticketsKey, JSON.stringify(updated));
     return newTicket;
   }
 
   // CRM Contacts Directory
   async getContacts(): Promise<CRMContact[]> {
-    if (typeof window === 'undefined') return SEED_CONTACTS;
     try {
-      const local = localStorage.getItem(this.contactsKey);
+      const local = this.getStorageItem(this.contactsKey);
       return local ? JSON.parse(local) : SEED_CONTACTS;
     } catch {
       return SEED_CONTACTS;
@@ -1214,9 +1243,7 @@ class DataRepository {
     };
     const current = await this.getContacts();
     const updated = [newContact, ...current];
-    if (typeof window !== 'undefined') {
-      localStorage.setItem(this.contactsKey, JSON.stringify(updated));
-    }
+    this.setStorageItem(this.contactsKey, JSON.stringify(updated));
     return newContact;
   }
 
@@ -1230,18 +1257,14 @@ class DataRepository {
       }
       return c;
     });
-    if (typeof window !== 'undefined') {
-      localStorage.setItem(this.contactsKey, JSON.stringify(updated));
-    }
+    this.setStorageItem(this.contactsKey, JSON.stringify(updated));
     return updatedContact || current[0];
   }
 
   async deleteContact(contactId: string): Promise<void> {
     const current = await this.getContacts();
     const updated = current.filter((c) => c.id !== contactId);
-    if (typeof window !== 'undefined') {
-      localStorage.setItem(this.contactsKey, JSON.stringify(updated));
-    }
+    this.setStorageItem(this.contactsKey, JSON.stringify(updated));
   }
 
   async recordContactInteraction(contactId: string): Promise<void> {
@@ -1251,9 +1274,7 @@ class DataRepository {
         ? { ...c, interactionCount: c.interactionCount + 1, lastContactDate: new Date().toISOString() }
         : c
     );
-    if (typeof window !== 'undefined') {
-      localStorage.setItem(this.contactsKey, JSON.stringify(updated));
-    }
+    this.setStorageItem(this.contactsKey, JSON.stringify(updated));
   }
 
   async addEmployeeToContact(contactId: string, employeeData: Omit<CompanyEmployee, 'id'>): Promise<CRMContact> {
@@ -1279,9 +1300,8 @@ class DataRepository {
 
   // CRM Meetings & Activities
   async getMeetings(): Promise<CRMMeeting[]> {
-    if (typeof window === 'undefined') return SEED_MEETINGS;
     try {
-      const local = localStorage.getItem(this.meetingsKey);
+      const local = this.getStorageItem(this.meetingsKey);
       return local ? JSON.parse(local) : SEED_MEETINGS;
     } catch {
       return SEED_MEETINGS;
@@ -1296,9 +1316,7 @@ class DataRepository {
     };
     const current = await this.getMeetings();
     const updated = [newMeeting, ...current];
-    if (typeof window !== 'undefined') {
-      localStorage.setItem(this.meetingsKey, JSON.stringify(updated));
-    }
+    this.setStorageItem(this.meetingsKey, JSON.stringify(updated));
     // Also record an interaction with the contact if linked
     if (meetingData.contactId) {
       await this.recordContactInteraction(meetingData.contactId);
@@ -1316,18 +1334,14 @@ class DataRepository {
       }
       return m;
     });
-    if (typeof window !== 'undefined') {
-      localStorage.setItem(this.meetingsKey, JSON.stringify(updated));
-    }
+    this.setStorageItem(this.meetingsKey, JSON.stringify(updated));
     return updatedMeeting || current[0];
   }
 
   async deleteMeeting(meetingId: string): Promise<void> {
     const current = await this.getMeetings();
     const updated = current.filter((m) => m.id !== meetingId);
-    if (typeof window !== 'undefined') {
-      localStorage.setItem(this.meetingsKey, JSON.stringify(updated));
-    }
+    this.setStorageItem(this.meetingsKey, JSON.stringify(updated));
   }
 
   async saveMeetingMinutes(meetingId: string, minutes: string): Promise<CRMMeeting> {
@@ -1336,9 +1350,8 @@ class DataRepository {
 
   // Client Documents & Artifacts Repository
   async getClientDocuments(clientId?: string): Promise<ClientDocument[]> {
-    if (typeof window === 'undefined') return SEED_DOCUMENTS;
     try {
-      const local = localStorage.getItem(this.documentsKey);
+      const local = this.getStorageItem(this.documentsKey);
       const docs: ClientDocument[] = local ? JSON.parse(local) : SEED_DOCUMENTS;
       if (clientId) {
         return docs.filter((d) => d.clientId === clientId);
@@ -1357,9 +1370,7 @@ class DataRepository {
     };
     const current = await this.getClientDocuments();
     const updated = [newDoc, ...current];
-    if (typeof window !== 'undefined') {
-      localStorage.setItem(this.documentsKey, JSON.stringify(updated));
-    }
+    this.setStorageItem(this.documentsKey, JSON.stringify(updated));
     return newDoc;
   }
 
@@ -1373,24 +1384,19 @@ class DataRepository {
       }
       return d;
     });
-    if (typeof window !== 'undefined') {
-      localStorage.setItem(this.documentsKey, JSON.stringify(updated));
-    }
+    this.setStorageItem(this.documentsKey, JSON.stringify(updated));
     return updatedDoc || current[0];
   }
 
   async deleteClientDocument(docId: string): Promise<void> {
     const current = await this.getClientDocuments();
     const updated = current.filter((d) => d.id !== docId);
-    if (typeof window !== 'undefined') {
-      localStorage.setItem(this.documentsKey, JSON.stringify(updated));
-    }
+    this.setStorageItem(this.documentsKey, JSON.stringify(updated));
   }
 
   getClientProfile(): ClientProfile {
-    if (typeof window === 'undefined') return SEED_CLIENT;
     try {
-      const stored = localStorage.getItem(this.profileKey);
+      const stored = this.getStorageItem(this.profileKey);
       return stored ? JSON.parse(stored) : SEED_CLIENT;
     } catch {
       return SEED_CLIENT;
@@ -1398,24 +1404,23 @@ class DataRepository {
   }
 
   saveClientProfile(profile: ClientProfile): void {
+    this.setStorageItem(this.profileKey, JSON.stringify(profile));
+    const all = this.getAllClientProfiles();
+    const existingIdx = all.findIndex((p) => p.id === profile.id || p.companyName.toLowerCase() === profile.companyName.toLowerCase());
+    if (existingIdx >= 0) {
+      all[existingIdx] = profile;
+    } else {
+      all.unshift(profile);
+    }
+    this.setStorageItem(this.allProfilesKey, JSON.stringify(all));
     if (typeof window !== 'undefined') {
-      localStorage.setItem(this.profileKey, JSON.stringify(profile));
-      const all = this.getAllClientProfiles();
-      const existingIdx = all.findIndex((p) => p.id === profile.id || p.companyName.toLowerCase() === profile.companyName.toLowerCase());
-      if (existingIdx >= 0) {
-        all[existingIdx] = profile;
-      } else {
-        all.unshift(profile);
-      }
-      localStorage.setItem(this.allProfilesKey, JSON.stringify(all));
       window.dispatchEvent(new CustomEvent('cr_client_profile_synced', { detail: profile }));
     }
   }
 
   getAllClientProfiles(): ClientProfile[] {
-    if (typeof window === 'undefined') return [SEED_CLIENT];
     try {
-      const stored = localStorage.getItem(this.allProfilesKey);
+      const stored = this.getStorageItem(this.allProfilesKey);
       if (stored) {
         const parsed = JSON.parse(stored);
         if (Array.isArray(parsed) && parsed.length > 0) return parsed;

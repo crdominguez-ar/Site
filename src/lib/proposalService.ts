@@ -418,6 +418,7 @@ class ProposalService {
     taxRatePercent: number = 21
   ): {
     totalHours: number;
+    subtotal: number;
     subtotalAmount: number;
     discountAmount: number;
     taxAmount: number;
@@ -432,6 +433,7 @@ class ProposalService {
 
     return {
       totalHours,
+      subtotal: subtotalAmount,
       subtotalAmount,
       discountAmount,
       taxAmount,
@@ -738,11 +740,11 @@ class ProposalService {
 
   generateWhatsAppProposalMessage(proposal: CRMProposal): string {
     const currencySign = proposal.currency === 'USD' ? 'USD ' : '$ ';
-    const itemsList = proposal.items
-      .map((it, idx) => `  ${idx + 1}. *${it.serviceName}* (${it.hoursEstimated} hs @ ${currencySign}${it.hourlyRate.toLocaleString('es-AR')}/h)`)
+    const itemsList = (proposal.items || [])
+      .map((it, idx) => `  ${idx + 1}. *${it.serviceName}* (${it.hoursEstimated || 0} hs @ ${currencySign}${Number(it.hourlyRate || 0).toLocaleString('es-AR')}/h)`)
       .join('\n');
 
-    const totalFormatted = `${currencySign}${proposal.totalAmount.toLocaleString('es-AR')}`;
+    const totalFormatted = `${currencySign}${Number(proposal.totalAmount || 0).toLocaleString('es-AR')}`;
 
     return `Estimado/a ${proposal.recipientName} (${proposal.companyName}),\n\nLe comparto desde *Cr Dominguez · Consultoría Estratégica & CFO* la propuesta de servicios contables y dirección financiera *#${proposal.proposalNumber}* (Versión ${proposal.version}).\n\n📋 *Alcance y Servicios Incluidos:*\n${itemsList}\n\n⏱ *Horas Totales Estimadas:* ${proposal.totalHours} hs.\n💰 *Honorarios Totales:* *${totalFormatted}* ${proposal.currency}\n📜 *Condiciones:* ${proposal.paymentTerms}\n⏳ *Validez:* ${proposal.validityDays} días corridos.\n\nPuede descargar el dictamen en PDF o consultarnos cualquier ajuste para su análisis en comité.\n\nAtentamente,\n*Cr. Carlos Rodrigo Domínguez*\nSocio Director · Trelew, Chubut\nhttps://crdominguez.ar`;
   }
