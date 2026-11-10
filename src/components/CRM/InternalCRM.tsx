@@ -710,7 +710,7 @@ export const InternalCRM: React.FC<InternalCRMProps> = ({ currentRole, initialSu
     const finalMeetingUrl = meetingCustomUrl || generateMeetingUrl(meetingPlatform, meetingTitle);
 
     const targetName = employee ? employee.name : contact?.name || 'Cliente Corporativo';
-    const targetEmail = employee ? employee.email : contact?.email || 'carlos@crdominguez.ar';
+    const targetEmail = employee ? employee.email : contact?.email || 'hola@crdominguez.ar';
     const targetPhone = employee ? employee.phone : contact?.phone || '+54 280 442-0000';
 
     const newMeeting = await dbRepository.createMeeting({
@@ -792,7 +792,7 @@ export const InternalCRM: React.FC<InternalCRMProps> = ({ currentRole, initialSu
       `DESCRIPTION:${m.description.replace(/\n/g, '\\n')} - Enlace: ${m.meetingUrl}`,
       `LOCATION:${m.meetingUrl}`,
       'STATUS:CONFIRMED',
-      'ORGANIZER;CN=Cr Carlos Rodrigo Dominguez:mailto:carlos@crdominguez.ar',
+      'ORGANIZER;CN=Cr Carlos Rodrigo Dominguez:mailto:hola@crdominguez.ar',
       'END:VEVENT',
       'END:VCALENDAR',
     ].join('\r\n');
@@ -833,7 +833,7 @@ export const InternalCRM: React.FC<InternalCRMProps> = ({ currentRole, initialSu
     setEmailRecipient(targetEmail);
     setEmailSubject(`Asesoramiento Estratégico & Finanzas · ${contact.companyName}`);
     setEmailBody(
-      `Estimado/a ${targetName},\n\nLe escribimos en relación a los servicios de consultoría estratégica y dirección financiera para ${contact.companyName}.\n\nQuedamos a su disposición para coordinar una reunión de trabajo o remitirle cualquier documentación complementaria.\n\nAtentamente,\nCr. Carlos Rodrigo Domínguez\nConsultoría Estratégica & CFO\ncarlos@crdominguez.ar`
+      `Estimado/a ${targetName},\n\nLe escribimos en relación a los servicios de consultoría estratégica y dirección financiera para ${contact.companyName}.\n\nQuedamos a su disposición para coordinar una reunión de trabajo o remitirle cualquier documentación complementaria.\n\nAtentamente,\nCr. Carlos Rodrigo Domínguez\nConsultoría Estratégica & CFO\nhola@crdominguez.ar`
     );
     setEmailStatusMsg(null);
     setShowEmailModal(true);
@@ -862,7 +862,7 @@ export const InternalCRM: React.FC<InternalCRMProps> = ({ currentRole, initialSu
             </div>
             <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 24px 0 12px;" />
             <p style="font-size: 11px; color: #94a3b8; margin: 0;">
-              Enviado formalmente desde <strong>carlos@crdominguez.ar</strong> · Cr Dominguez Consultoría
+              Enviado formalmente desde <strong>hola@crdominguez.ar</strong> · Cr Dominguez Consultoría
             </p>
           </div>
         `,
@@ -874,7 +874,7 @@ export const InternalCRM: React.FC<InternalCRMProps> = ({ currentRole, initialSu
         await dbRepository.recordContactInteraction(linked.id);
       }
 
-      setEmailStatusMsg('¡Correo despachado con éxito vía Resend.com (carlos@crdominguez.ar)!');
+      setEmailStatusMsg('¡Correo despachado con éxito vía Resend.com (hola@crdominguez.ar)!');
       setTimeout(() => {
         setShowEmailModal(false);
         setEmailStatusMsg(null);
@@ -3892,7 +3892,7 @@ export const InternalCRM: React.FC<InternalCRMProps> = ({ currentRole, initialSu
                     onChange={(e) => setMeetingSendEmailInvite(e.target.checked)}
                     className="rounded text-[#0078D4] focus:ring-[#0078D4]"
                   />
-                  <span>Enviar invitación formal con enlace vía Resend.com (carlos@crdominguez.ar)</span>
+                  <span>Enviar invitación formal con enlace vía Resend.com (notificaciones@crdominguez.ar)</span>
                 </label>
                 <label className="flex items-center gap-2 cursor-pointer text-xs text-slate-700">
                   <input
@@ -3939,7 +3939,7 @@ export const InternalCRM: React.FC<InternalCRMProps> = ({ currentRole, initialSu
                 </div>
                 <div>
                   <h3 className="text-sm font-bold text-slate-900">Enviar Correo Institucional</h3>
-                  <p className="text-[11px] text-slate-500">Desde: carlos@crdominguez.ar (Resend Free)</p>
+                  <p className="text-[11px] text-slate-500">Desde: hola@crdominguez.ar (Resend)</p>
                 </div>
               </div>
               <button

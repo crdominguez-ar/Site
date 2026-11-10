@@ -198,7 +198,7 @@ class ResendService {
    */
   async sendLeadNotification(lead: Lead): Promise<void> {
     const config = this.getConfig();
-    const adminEmail = 'crdominguez.ar@gmail.com';
+    const adminEmail = 'hola@crdominguez.ar';
 
     const subject = `[Resend Free] Nuevo Lead Calificado: ${lead.companyName} (${lead.priority.toUpperCase()})`;
     const html = `

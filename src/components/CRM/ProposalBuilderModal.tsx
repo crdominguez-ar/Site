@@ -1378,7 +1378,7 @@ export const ProposalBuilderModal: React.FC<ProposalBuilderModalProps> = ({
                 <span>Enviar Propuesta Presupuesto por Email</span>
               </h4>
               <p className="text-xs text-slate-600">
-                Se enviará una plantilla ejecutiva oficial desde <strong>carlos@crdominguez.ar</strong> con el desglose de ítems, honorarios y condiciones.
+                Se enviará una plantilla ejecutiva oficial desde <strong>hola@crdominguez.ar</strong> con el desglose de ítems, honorarios y condiciones.
               </p>
 
               <div className="space-y-3 text-xs">
