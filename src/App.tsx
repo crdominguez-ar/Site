@@ -12,15 +12,27 @@ import { CalculatorsSuite } from './components/Calculators/CalculatorsSuite';
 import { InteractiveDiagnostic } from './components/Diagnostic/InteractiveDiagnostic';
 import { BlogView } from './components/Blog/BlogView';
 import { ClientPortal } from './components/Portal/ClientPortal';
-import { InternalCRM } from './components/CRM/InternalCRM';
+import { ARNView } from './components/ARN/ARNView';
+import { CrDominguezAgentView } from './components/Agent/CrDominguezAgentView';
 import { SEOControlPanel } from './components/SEO/SEOControlPanel';
 import { WidgetizableDashboard } from './components/Dashboard/WidgetizableDashboard';
 import { ConsultationModal } from './components/Modals/ConsultationModal';
 import { WhatsAppButton } from './components/Common/WhatsAppButton';
-import { UserRole } from './types';
+import { UserRole, CoreServiceCode } from './types';
 import { userService } from './lib/userService';
 
-export type AppTab = 'landing' | 'solutions' | 'simulators' | 'diagnostic' | 'blog' | 'portal' | 'crm' | 'seo' | 'dashboard';
+export type AppTab = 
+  | 'landing' 
+  | 'solutions' 
+  | 'simulators' 
+  | 'diagnostic' 
+  | 'blog' 
+  | 'portal' 
+  | 'arn' 
+  | 'crm' 
+  | 'agent' 
+  | 'seo' 
+  | 'dashboard';
 
 const TAB_TO_PATH: Record<AppTab, string> = {
   landing: '/',
@@ -29,7 +41,9 @@ const TAB_TO_PATH: Record<AppTab, string> = {
   diagnostic: '/diagnostico',
   blog: '/blog',
   portal: '/portal',
-  crm: '/crm',
+  arn: '/arn',
+  crm: '/arn',
+  agent: '/agente',
   seo: '/seo',
   dashboard: '/dashboard',
 };
@@ -48,15 +62,21 @@ const PATH_TO_TAB: Record<string, AppTab> = {
   '/articulos': 'blog',
   '/portal': 'portal',
   '/clientes': 'portal',
-  '/crm': 'crm',
-  '/pipeline': 'crm',
+  '/arn': 'arn',
+  '/redes': 'arn',
+  '/crm': 'arn',
+  '/pipeline': 'arn',
+  '/agente': 'agent',
+  '/agent': 'agent',
+  '/ia': 'agent',
+  '/copilot': 'agent',
   '/seo': 'seo',
   '/dashboard': 'dashboard',
 };
 
 function getTabFromUrl(): AppTab {
   if (typeof window === 'undefined') return 'landing';
-  // 1. Check hash first if present (e.g. #/portal or #crm)
+  // 1. Check hash first if present (e.g. #/portal or #arn or #crm)
   const hash = window.location.hash.replace(/^#\/?/, '').toLowerCase().trim();
   if (hash && PATH_TO_TAB[`/${hash}`]) {
     return PATH_TO_TAB[`/${hash}`];
@@ -69,6 +89,7 @@ function getTabFromUrl(): AppTab {
 export default function App() {
   const [currentTab, setCurrentTab] = useState<AppTab>(() => getTabFromUrl());
   const [currentRole, setCurrentRole] = useState<UserRole>(() => userService.getCurrentUser().role);
+  const [selectedServiceCode, setSelectedServiceCode] = useState<CoreServiceCode>('01');
   const [isConsultationModalOpen, setIsConsultationModalOpen] = useState<boolean>(false);
 
   // Synchronize on browser Back/Forward (popstate)
@@ -96,6 +117,11 @@ export default function App() {
     }
   };
 
+  const handleSelectService = (code: CoreServiceCode) => {
+    setSelectedServiceCode(code);
+    handleTabChange('solutions');
+  };
+
   return (
     <div className="min-h-screen w-full bg-[#F8FAFC] text-slate-900 flex flex-col font-sans antialiased">
       {/* Top Navigation */}
@@ -105,6 +131,7 @@ export default function App() {
         currentRole={currentRole}
         setCurrentRole={handleRoleChange}
         onOpenConsultationModal={() => setIsConsultationModalOpen(true)}
+        onSelectService={handleSelectService}
       />
 
       {/* Main Content Viewport - Full Width Ancho Completo */}
@@ -131,6 +158,9 @@ export default function App() {
               onOpenConsultationModal={() => setIsConsultationModalOpen(true)}
               onOpenDiagnostic={() => handleTabChange('diagnostic')}
               onOpenSimulators={() => handleTabChange('simulators')}
+              selectedServiceCode={selectedServiceCode}
+              onSelectServiceCode={setSelectedServiceCode}
+              onOpenAgent={() => handleTabChange('agent')}
             />
           </div>
         )}
@@ -138,6 +168,16 @@ export default function App() {
         {currentTab === 'simulators' && (
           <div className="w-full px-4 sm:px-8 lg:px-16 xl:px-20 py-8 sm:py-12">
             <CalculatorsSuite />
+          </div>
+        )}
+
+        {currentTab === 'agent' && (
+          <div className="w-full">
+            <CrDominguezAgentView
+              onNavigateTab={handleTabChange}
+              onOpenConsultationModal={() => setIsConsultationModalOpen(true)}
+              onSelectService={handleSelectService}
+            />
           </div>
         )}
 
@@ -154,7 +194,7 @@ export default function App() {
                 Evalúa en 4 pasos la estructura financiera, contingencias tributarias y potencial de franquiciabilidad o digitalización de tu organización.
               </p>
             </div>
-            <InteractiveDiagnostic onLeadCreated={() => handleTabChange('crm')} />
+            <InteractiveDiagnostic onLeadCreated={() => handleTabChange('arn')} />
           </div>
         )}
 
@@ -170,10 +210,10 @@ export default function App() {
           </div>
         )}
 
-        {currentTab === 'crm' && (
+        {(currentTab === 'arn' || currentTab === 'crm') && (
           <div className="w-full">
-            <WidgetizableDashboard
-              initialView="crm"
+            <ARNView
+              currentRole={currentRole}
               onNavigateTab={handleTabChange}
               onOpenConsultationModal={() => setIsConsultationModalOpen(true)}
             />
@@ -196,15 +236,15 @@ export default function App() {
         isOpen={isConsultationModalOpen}
         onClose={() => setIsConsultationModalOpen(false)}
         onSuccess={() => {
-          // If in admin mode, they can immediately see the lead in CRM
+          // Lead created
         }}
       />
 
       {/* Footer */}
       <Footer onNavigate={handleTabChange} />
 
-      {/* Floating WhatsApp Direct Connect Button - Only displayed on public frontend sections, not in backend */}
-      {['landing', 'solutions', 'simulators', 'diagnostic', 'blog'].includes(currentTab) && (
+      {/* Floating WhatsApp Direct Connect Button */}
+      {['landing', 'solutions', 'simulators', 'diagnostic', 'blog', 'agent'].includes(currentTab) && (
         <WhatsAppButton />
       )}
     </div>

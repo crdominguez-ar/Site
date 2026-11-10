@@ -79,8 +79,8 @@ export const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
         },
         {
           id: 'crm',
-          label: 'CRM & Pipeline',
-          shortLabel: 'CRM',
+          label: 'ARN · Redes & Negocios',
+          shortLabel: 'ARN',
           icon: Users,
           badge: openLeadsCount > 0 ? `${openLeadsCount}` : undefined,
           badgeType: 'info'

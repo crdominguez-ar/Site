@@ -19,16 +19,30 @@ interface SolutionsViewProps {
   onOpenConsultationModal: () => void;
   onOpenDiagnostic: () => void;
   onOpenSimulators: () => void;
+  selectedServiceCode?: CoreServiceCode;
+  onSelectServiceCode?: (code: CoreServiceCode) => void;
+  onOpenAgent?: () => void;
 }
 
 export const SolutionsView: React.FC<SolutionsViewProps> = ({
   onOpenConsultationModal,
   onOpenDiagnostic,
   onOpenSimulators,
+  selectedServiceCode: externalServiceCode,
+  onSelectServiceCode,
+  onOpenAgent,
 }) => {
   const [activeTab, setActiveTab] = useState<'servicios' | 'arquetipos'>('servicios');
-  const [selectedServiceCode, setSelectedServiceCode] = useState<CoreServiceCode>('01');
+  const [internalServiceCode, setInternalServiceCode] = useState<CoreServiceCode>('01');
   const [selectedArchetypeId, setSelectedArchetypeId] = useState<string>('saas_software');
+
+  const selectedServiceCode = externalServiceCode || internalServiceCode;
+  const setSelectedServiceCode = (code: CoreServiceCode) => {
+    setInternalServiceCode(code);
+    if (onSelectServiceCode) {
+      onSelectServiceCode(code);
+    }
+  };
 
   const selectedService = OFFICIAL_SERVICES[selectedServiceCode];
   const selectedArchetype = TARGET_ARCHETYPES.find((a) => a.id === selectedArchetypeId) || TARGET_ARCHETYPES[0];
@@ -66,6 +80,16 @@ export const SolutionsView: React.FC<SolutionsViewProps> = ({
               <LineChart className="w-3.5 h-3.5 text-teal-300" />
               <span>Simuladores Interactivos</span>
             </button>
+            {onOpenAgent && (
+              <button
+                type="button"
+                onClick={onOpenAgent}
+                className="px-5 py-2.5 bg-gradient-to-r from-blue-600/60 to-indigo-600/60 hover:from-blue-600 hover:to-indigo-600 text-white border border-blue-400/30 text-xs font-bold rounded-lg flex items-center gap-2 transition-all cursor-pointer shadow-xs"
+              >
+                <Sparkles className="w-3.5 h-3.5 text-amber-300" />
+                <span>Consultar Agente IA</span>
+              </button>
+            )}
           </div>
         </div>
 

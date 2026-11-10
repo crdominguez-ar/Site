@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { UserRole } from '../../types';
+import { UserRole, CoreServiceCode } from '../../types';
 import { BrandLogo } from '../Common/BrandLogo';
 import { 
   MessageCircle, 
@@ -22,16 +22,19 @@ import {
   Cpu,
   Sparkles,
   ArrowRight,
-  Calendar,
-  ShieldCheck
+  ShieldCheck,
+  Bot,
+  Zap,
+  FolderLock
 } from 'lucide-react';
 
 interface NavbarProps {
-  currentTab: 'landing' | 'solutions' | 'simulators' | 'diagnostic' | 'blog' | 'portal' | 'crm' | 'seo' | 'dashboard';
-  setCurrentTab: (tab: 'landing' | 'solutions' | 'simulators' | 'diagnostic' | 'blog' | 'portal' | 'crm' | 'seo' | 'dashboard') => void;
+  currentTab: 'landing' | 'solutions' | 'simulators' | 'diagnostic' | 'blog' | 'portal' | 'arn' | 'crm' | 'seo' | 'dashboard' | 'agent';
+  setCurrentTab: (tab: 'landing' | 'solutions' | 'simulators' | 'diagnostic' | 'blog' | 'portal' | 'arn' | 'crm' | 'seo' | 'dashboard' | 'agent') => void;
   currentRole: UserRole;
   setCurrentRole: (role: UserRole) => void;
   onOpenConsultationModal: () => void;
+  onSelectService?: (code: CoreServiceCode) => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -40,6 +43,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   currentRole,
   setCurrentRole,
   onOpenConsultationModal,
+  onSelectService,
 }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isSuperMenuOpen, setIsSuperMenuOpen] = useState(false);
@@ -87,47 +91,54 @@ export const Navbar: React.FC<NavbarProps> = ({
     }, 250);
   };
 
-  const handleNavClick = (tab: 'landing' | 'solutions' | 'simulators' | 'diagnostic' | 'blog' | 'portal' | 'crm' | 'seo' | 'dashboard') => {
+  const handleNavClick = (tab: 'landing' | 'solutions' | 'simulators' | 'diagnostic' | 'blog' | 'portal' | 'arn' | 'crm' | 'seo' | 'dashboard' | 'agent') => {
     setCurrentTab(tab);
     setIsMobileMenuOpen(false);
     setIsSuperMenuOpen(false);
   };
 
-  const strategicDivisions = [
+  const handleServiceClick = (code: CoreServiceCode) => {
+    if (onSelectService) {
+      onSelectService(code);
+    }
+    handleNavClick('solutions');
+  };
+
+  const officialServicesList = [
     {
-      num: '01',
-      title: 'Costeo Marginal & PyMEs Patagónicas',
-      desc: 'Ingeniería de costos, absorción industrial y punto de equilibrio.',
-      icon: Building2,
-      tab: 'solutions' as const,
-    },
-    {
-      num: '02',
-      title: 'Economía del Conocimiento & Factura E',
-      desc: 'SaaS, creadores de software, cupo de divisas y régimen fiscal.',
-      icon: Globe,
-      tab: 'solutions' as const,
-    },
-    {
-      num: '03',
-      title: 'Evaluación y Blindaje de Franquicias (CCyC)',
-      desc: 'Auditoría precontractual de COF, Payback real y dictámenes.',
-      icon: Scale,
-      tab: 'solutions' as const,
-    },
-    {
-      num: '04',
-      title: 'Dirección Financiera CFO On-Demand',
-      desc: 'Comités mensuales, gestión del WACC y flujos proyectados.',
+      code: '01' as CoreServiceCode,
+      title: 'Diagnóstico de Unit Economics',
+      desc: 'MRR/ARR, Churn, CAC y LTV. Cuánto deja cada cliente y cada plan.',
+      badge: '2 a 3 sem',
       icon: LineChart,
-      tab: 'solutions' as const,
     },
     {
-      num: '05',
-      title: 'Empresas Autónomas IA & Criptoactivos',
-      desc: 'Deducción de costos LLM, tesorerías on-chain y smart contracts.',
-      icon: Cpu,
-      tab: 'solutions' as const,
+      code: '02' as CoreServiceCode,
+      title: 'Modelo Financiero & Pricing 36m',
+      desc: 'Escenarios dinámicos, punto de equilibrio y curvas de costo de IA.',
+      badge: '3 a 4 sem',
+      icon: Calculator,
+    },
+    {
+      code: '03' as CoreServiceCode,
+      title: 'Estructuración del Exportador',
+      desc: 'Factura E, liquidación Com. BCRA "A" 8481 y cobros tech en USD.',
+      badge: 'BCRA 8481',
+      icon: Globe,
+    },
+    {
+      code: '04' as CoreServiceCode,
+      title: 'Dirección Financiera CFO Fraccional',
+      desc: 'Acompañamiento mensual, comités de socios, Runway y flujo de caja.',
+      badge: 'Abono Mensual',
+      icon: Building2,
+    },
+    {
+      code: '05' as CoreServiceCode,
+      title: 'Preparación para Inversores',
+      desc: 'Data Room contable bajo FACPCE RT 54, cap tables y due diligence.',
+      badge: 'Rondas VC',
+      icon: ShieldCheck,
     },
   ];
 
@@ -145,27 +156,27 @@ export const Navbar: React.FC<NavbarProps> = ({
                 Auditoría 2026
               </span>
               <p className="text-[11px] sm:text-xs text-slate-200 font-medium">
-                ¿Tu empresa busca optimizar su carga tributaria o evaluar una franquicia? <span className="text-white font-bold">Diagnóstico preliminar sin cargo.</span>
+                ¿Exportas servicios tech o buscas ordenar tus Unit Economics? <span className="text-white font-bold">Diagnóstico y copiloto IA sin cargo.</span>
               </p>
             </div>
 
             <div className="flex items-center gap-2 shrink-0">
               <button
                 type="button"
-                onClick={() => handleNavClick('diagnostic')}
-                className="px-3 py-1 bg-[#0078D4] hover:bg-[#106EBE] active:bg-[#005A9E] text-white font-bold text-[11px] rounded-md transition-all flex items-center gap-1.5 shadow-xs cursor-pointer"
+                onClick={() => handleNavClick('agent')}
+                className="px-3 py-1 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold text-[11px] rounded-md transition-all flex items-center gap-1.5 shadow-xs cursor-pointer"
               >
+                <Bot className="w-3 h-3 text-amber-300" />
+                <span>Consultar Agente IA</span>
                 <Sparkles className="w-3 h-3 text-amber-300" />
-                <span>Comenzar Diagnóstico</span>
-                <ArrowRight className="w-3 h-3" />
               </button>
 
               <button
                 type="button"
-                onClick={onOpenConsultationModal}
-                className="hidden sm:flex px-2.5 py-1 bg-white/10 hover:bg-white/20 text-slate-200 hover:text-white font-semibold text-[11px] rounded-md border border-white/15 transition-all items-center gap-1 cursor-pointer"
+                onClick={() => handleNavClick('diagnostic')}
+                className="hidden md:flex px-2.5 py-1 bg-white/10 hover:bg-white/20 text-slate-200 hover:text-white font-semibold text-[11px] rounded-md border border-white/15 transition-all items-center gap-1 cursor-pointer"
               >
-                <span>Agendar Consulta</span>
+                <span>Diagnóstico sin Cargo</span>
               </button>
 
               <button
@@ -183,7 +194,7 @@ export const Navbar: React.FC<NavbarProps> = ({
 
       {/* Main Navbar Bar */}
       <div className="w-full px-4 sm:px-8 lg:px-16 xl:px-20 h-16 flex items-center justify-between gap-4">
-        {/* Zone 1: Brand Logo Cr Dominguez (Solo) */}
+        {/* Zone 1: Brand Logo */}
         <button
           type="button"
           onClick={() => handleNavClick('landing')}
@@ -193,13 +204,13 @@ export const Navbar: React.FC<NavbarProps> = ({
           <BrandLogo size="md" variant="light" showSubtitle={true} />
         </button>
 
-        {/* Zone 2: Desktop Navigation Links (Simuladores y Diagnóstico integrados en Soluciones y Ecosistema) */}
+        {/* Zone 2: Desktop Navigation Links (Embudo directo sin rutas rotas) */}
         <nav className="hidden xl:flex items-center gap-1 text-xs font-semibold text-slate-600">
           {/* Inicio */}
           <button
             type="button"
             onClick={() => handleNavClick('landing')}
-            className={`px-3.5 py-5 transition-colors whitespace-nowrap relative hover:text-slate-950 flex items-center gap-1.5 cursor-pointer ${
+            className={`px-3 py-5 transition-colors whitespace-nowrap relative hover:text-slate-950 flex items-center gap-1.5 cursor-pointer ${
               currentTab === 'landing' ? 'text-slate-950 font-bold' : 'text-slate-600'
             }`}
           >
@@ -209,7 +220,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             )}
           </button>
 
-          {/* Super Menu Trigger: Soluciones & Ecosistema (Contiene Divisiones, Simuladores y Diagnóstico) */}
+          {/* Menú Soluciones (Con Dropdown Interactivo directo a 01-05) */}
           <div 
             className="relative"
             onMouseEnter={handleMouseEnter}
@@ -218,9 +229,9 @@ export const Navbar: React.FC<NavbarProps> = ({
             <button
               ref={superMenuButtonRef}
               type="button"
-              onClick={() => setIsSuperMenuOpen(!isSuperMenuOpen)}
-              className={`px-3.5 py-5 transition-colors whitespace-nowrap relative hover:text-slate-950 flex items-center gap-1.5 cursor-pointer ${
-                isSuperMenuOpen || currentTab === 'solutions' || currentTab === 'simulators' || currentTab === 'diagnostic'
+              onClick={() => handleNavClick('solutions')}
+              className={`px-3 py-5 transition-colors whitespace-nowrap relative hover:text-slate-950 flex items-center gap-1.5 cursor-pointer ${
+                isSuperMenuOpen || currentTab === 'solutions'
                   ? 'text-[#0078D4] font-bold' 
                   : 'text-slate-600'
               }`}
@@ -228,43 +239,81 @@ export const Navbar: React.FC<NavbarProps> = ({
               aria-haspopup="true"
             >
               <Briefcase className="w-3.5 h-3.5 text-[#0078D4]" />
-              <span>Soluciones & Ecosistema</span>
+              <span>Soluciones</span>
+              <span className="px-1.5 py-0.2 bg-slate-100 text-slate-700 rounded text-[9px] font-mono">
+                01 a 05
+              </span>
               <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${isSuperMenuOpen ? 'rotate-180 text-[#0078D4]' : 'text-slate-400'}`} />
-              {(currentTab === 'solutions' || currentTab === 'simulators' || currentTab === 'diagnostic' || isSuperMenuOpen) && (
+              {(currentTab === 'solutions' || isSuperMenuOpen) && (
                 <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#0078D4]" />
               )}
             </button>
           </div>
 
+          {/* Simuladores */}
+          <button
+            type="button"
+            onClick={() => handleNavClick('simulators')}
+            className={`px-3 py-5 transition-colors whitespace-nowrap relative hover:text-slate-950 flex items-center gap-1.5 cursor-pointer ${
+              currentTab === 'simulators' ? 'text-slate-950 font-bold' : 'text-slate-600'
+            }`}
+          >
+            <Calculator className="w-3.5 h-3.5 text-[#0078D4]" />
+            <span>Simuladores</span>
+            {currentTab === 'simulators' && (
+              <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#0078D4]" />
+            )}
+          </button>
+
+          {/* Agente IA Propio (Nuevo Copiloto Estratégico) */}
+          <button
+            type="button"
+            onClick={() => handleNavClick('agent')}
+            className={`px-3 py-5 transition-colors whitespace-nowrap relative hover:text-slate-950 flex items-center gap-1.5 cursor-pointer ${
+              currentTab === 'agent' ? 'text-[#0078D4] font-bold' : 'text-slate-600'
+            }`}
+          >
+            <Bot className="w-3.5 h-3.5 text-blue-600" />
+            <span>Agente IA</span>
+            <span className="px-1.5 py-0.5 bg-gradient-to-r from-blue-50 to-indigo-50 text-[#0078D4] border border-blue-200 rounded text-[9px] font-mono font-bold flex items-center gap-1">
+              <Sparkles className="w-2.5 h-2.5 text-amber-500" />
+              Copiloto
+            </span>
+            {currentTab === 'agent' && (
+              <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#0078D4]" />
+            )}
+          </button>
+
           {/* Blog & Podcast */}
           <button
             type="button"
             onClick={() => handleNavClick('blog')}
-            className={`px-3.5 py-5 transition-colors whitespace-nowrap relative hover:text-slate-950 flex items-center gap-1.5 cursor-pointer ${
+            className={`px-3 py-5 transition-colors whitespace-nowrap relative hover:text-slate-950 flex items-center gap-1.5 cursor-pointer ${
               currentTab === 'blog' ? 'text-slate-950 font-bold' : 'text-slate-600'
             }`}
           >
             <BookOpen className="w-3.5 h-3.5" />
-            <span>Blog & Podcast</span>
+            <span>Blog</span>
             {currentTab === 'blog' && (
               <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#0078D4]" />
             )}
           </button>
 
-          {/* Dashboard & CRM (Integra CRM, CMS, Widgets y SEO) */}
+          {/* ARN (Agente de Redes y Negocios - Sustituye CRM obsoleto) */}
           <button
             type="button"
-            onClick={() => handleNavClick('dashboard')}
-            className={`px-3.5 py-5 transition-colors whitespace-nowrap relative hover:text-slate-950 flex items-center gap-1.5 cursor-pointer ${
-              currentTab === 'dashboard' || currentTab === 'crm' || currentTab === 'seo' ? 'text-[#0078D4] font-bold' : 'text-slate-600'
+            onClick={() => handleNavClick('arn')}
+            className={`px-3 py-5 transition-colors whitespace-nowrap relative hover:text-slate-950 flex items-center gap-1.5 cursor-pointer ${
+              currentTab === 'arn' || currentTab === 'crm' || currentTab === 'dashboard' ? 'text-[#0078D4] font-bold' : 'text-slate-600'
             }`}
+            title="ARN: Agente de Redes y Negocios (Centro de Dirección y Supervisión)"
           >
-            <span className="w-2 h-2 rounded-full bg-[#0078D4] animate-pulse" />
-            <span>Dashboard & CRM</span>
-            <span className="px-1.5 py-0.5 bg-blue-50 text-[#0078D4] border border-blue-200 rounded text-[9px] font-mono font-bold">
-              CRM + SEO
+            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+            <span>ARN</span>
+            <span className="px-1.5 py-0.5 bg-emerald-50 text-emerald-800 border border-emerald-200 rounded text-[9px] font-mono font-bold">
+              Negocios
             </span>
-            {(currentTab === 'dashboard' || currentTab === 'crm' || currentTab === 'seo') && (
+            {(currentTab === 'arn' || currentTab === 'crm' || currentTab === 'dashboard') && (
               <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#0078D4]" />
             )}
           </button>
@@ -290,7 +339,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             </select>
           </div>
 
-          {/* Botón Destacado: Portal Clientes (Fondo oscuro fiduciario con icono candado dorado) */}
+          {/* Botón Destacado: Portal Clientes */}
           <button
             type="button"
             onClick={() => handleNavClick('portal')}
@@ -310,18 +359,18 @@ export const Navbar: React.FC<NavbarProps> = ({
             href="https://wa.me/5492804567890?text=Hola%20Cr.%20Dom%C3%ADnguez,%20quisiera%20realizar%20una%20consulta%20profesional"
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold text-white bg-[#25D366] hover:bg-[#20ba59] active:bg-[#128C7E] rounded-lg transition-colors whitespace-nowrap shrink-0 shadow-sm"
+            className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-bold text-white bg-[#25D366] hover:bg-[#20ba59] active:bg-[#128C7E] rounded-lg transition-colors whitespace-nowrap shrink-0 shadow-sm"
             title="Escribir por WhatsApp directamente al Cr. Carlos Domínguez"
           >
             <MessageCircle className="w-3.5 h-3.5" />
             <span>WhatsApp</span>
           </a>
 
-          {/* Botón Destacado: Llamado a la Acción Principal (Solicitar Asesoría) */}
+          {/* Botón Destacado: Llamado a la Acción Principal */}
           <button
             type="button"
             onClick={onOpenConsultationModal}
-            className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-bold text-white bg-[#0078D4] hover:bg-[#106EBE] active:bg-[#005A9E] rounded-lg transition-all whitespace-nowrap shrink-0 shadow-md cursor-pointer hover:shadow-lg hover:scale-[1.02]"
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold text-white bg-[#0078D4] hover:bg-[#106EBE] active:bg-[#005A9E] rounded-lg transition-all whitespace-nowrap shrink-0 shadow-md cursor-pointer hover:shadow-lg"
           >
             <Sparkles className="w-3.5 h-3.5 text-amber-300" />
             <span>Solicitar Asesoría</span>
@@ -330,6 +379,17 @@ export const Navbar: React.FC<NavbarProps> = ({
 
         {/* Mobile Hamburger Toggle Button */}
         <div className="flex xl:hidden items-center gap-2">
+          {/* Mobile Quick Agent */}
+          <button
+            type="button"
+            onClick={() => handleNavClick('agent')}
+            className="p-2 bg-blue-50 text-[#0078D4] border border-blue-200 rounded-md shadow-2xs"
+            aria-label="Agente IA"
+            title="Agente IA"
+          >
+            <Bot className="w-4 h-4 text-[#0078D4]" />
+          </button>
+
           {/* Mobile Portal Clientes Quick Access */}
           <button
             type="button"
@@ -340,16 +400,6 @@ export const Navbar: React.FC<NavbarProps> = ({
           >
             <Lock className="w-4 h-4" />
           </button>
-
-          <a
-            href="https://wa.me/5492804567890?text=Hola%20Cr.%20Dom%C3%ADnguez,%20quisiera%20realizar%20una%20consulta%20profesional"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="p-2 bg-[#25D366] text-white rounded-md transition-colors shadow-sm"
-            aria-label="WhatsApp"
-          >
-            <MessageCircle className="w-4 h-4" />
-          </a>
 
           <button
             type="button"
@@ -363,7 +413,7 @@ export const Navbar: React.FC<NavbarProps> = ({
       </div>
 
       {/* ======================================================== */}
-      {/* SUPER MENÚ (MEGA MENU) DESPLEGABLE DE ALTO IMPACTO       */}
+      {/* SUPER MENÚ (MEGA MENU) DESPLEGABLE DE SOLUCIONES         */}
       {/* ======================================================== */}
       {isSuperMenuOpen && (
         <div
@@ -375,31 +425,31 @@ export const Navbar: React.FC<NavbarProps> = ({
           <div className="w-full max-w-7xl mx-auto px-6 lg:px-12 py-8">
             <div className="grid grid-cols-12 gap-8">
               
-              {/* Columna 1: 5 Divisiones Especializadas (5 cols) */}
+              {/* Columna 1: Cinco Servicios Canónicos (01 a 05) - Anclados y activos (5 cols) */}
               <div className="col-span-5 space-y-4 border-r border-slate-100 pr-6">
                 <div className="flex items-center justify-between">
                   <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-[#0078D4] flex items-center gap-2">
                     <span className="w-2 h-2 rounded-full bg-[#0078D4]" />
-                    Cinco Divisiones Especializadas
+                    Cinco Servicios Oficiales (01 a 05)
                   </span>
                   <button
                     type="button"
                     onClick={() => handleNavClick('solutions')}
                     className="text-xs font-bold text-[#0078D4] hover:underline flex items-center gap-1 cursor-pointer"
                   >
-                    <span>Ver alcance general</span>
+                    <span>Ver catálogo completo</span>
                     <ArrowRight className="w-3.5 h-3.5" />
                   </button>
                 </div>
 
                 <div className="space-y-1.5">
-                  {strategicDivisions.map((div) => {
-                    const Icon = div.icon;
+                  {officialServicesList.map((svc) => {
+                    const Icon = svc.icon;
                     return (
                       <button
-                        key={div.num}
+                        key={svc.code}
                         type="button"
-                        onClick={() => handleNavClick(div.tab)}
+                        onClick={() => handleServiceClick(svc.code)}
                         className="w-full p-2.5 rounded-lg text-left hover:bg-slate-50 transition-all group flex items-start gap-3 cursor-pointer border border-transparent hover:border-slate-200"
                       >
                         <div className="w-8 h-8 rounded-md bg-slate-100 text-[#0078D4] flex items-center justify-center shrink-0 group-hover:bg-[#0078D4] group-hover:text-white transition-colors">
@@ -408,14 +458,17 @@ export const Navbar: React.FC<NavbarProps> = ({
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 mb-0.5">
                             <span className="text-[10px] font-mono font-bold text-slate-400 group-hover:text-[#0078D4]">
-                              {div.num}
+                              {svc.code}
                             </span>
                             <span className="text-xs font-bold text-slate-900 group-hover:text-[#0078D4] transition-colors truncate block">
-                              {div.title}
+                              {svc.title}
+                            </span>
+                            <span className="text-[9px] font-mono px-1 py-0.2 bg-slate-100 text-slate-500 rounded shrink-0">
+                              {svc.badge}
                             </span>
                           </div>
                           <p className="text-[11px] text-slate-500 leading-snug line-clamp-1">
-                            {div.desc}
+                            {svc.desc}
                           </p>
                         </div>
                       </button>
@@ -424,11 +477,11 @@ export const Navbar: React.FC<NavbarProps> = ({
                 </div>
               </div>
 
-              {/* Columna 2: Herramientas Interactivas & Modelos (Integrando Simuladores y Diagnóstico) (4 cols) */}
+              {/* Columna 2: Herramientas Interactivas & Agente IA (4 cols) */}
               <div className="col-span-4 space-y-4 border-r border-slate-100 pr-6">
                 <div>
                   <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-slate-500 block mb-1">
-                    Herramientas & Diagnósticos Integrados
+                    Herramientas de Decisión
                   </span>
                   <h4 className="text-xs font-black text-slate-900 uppercase">
                     Ecosistema Financiero Digital
@@ -436,6 +489,28 @@ export const Navbar: React.FC<NavbarProps> = ({
                 </div>
 
                 <div className="grid grid-cols-1 gap-2.5">
+                  {/* Agente IA Propio */}
+                  <button
+                    type="button"
+                    onClick={() => handleNavClick('agent')}
+                    className="p-3 bg-gradient-to-br from-blue-50/80 to-indigo-50/80 hover:from-blue-100 hover:to-indigo-100 rounded-xl border border-blue-200 text-left transition-all group cursor-pointer"
+                  >
+                    <div className="flex items-center justify-between mb-1">
+                      <div className="flex items-center gap-2">
+                        <Bot className="w-4 h-4 text-blue-600" />
+                        <span className="text-xs font-black text-slate-900 group-hover:text-[#0078D4]">
+                          Agente IA · Copiloto Financiero
+                        </span>
+                      </div>
+                      <span className="px-1.5 py-0.2 bg-blue-100 text-[#0078D4] rounded text-[9px] font-mono font-bold">
+                        Gemini Flash
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-slate-600">
+                      Consultas sobre Com. BCRA 8481, Unit Economics y encuadres societarios en tiempo real.
+                    </p>
+                  </button>
+
                   {/* Simuladores Financieros */}
                   <button
                     type="button"
@@ -449,11 +524,11 @@ export const Navbar: React.FC<NavbarProps> = ({
                       </span>
                     </div>
                     <p className="text-[11px] text-slate-500">
-                      Calculadoras de Payback, VAN/TIR, Punto de Equilibrio y Costo de Capital (WACC).
+                      Calculadoras de Unit Economics, Runway, Punto de Equilibrio y Factura E divisas.
                     </p>
                   </button>
 
-                  {/* Diagnóstico Estratégico */}
+                  {/* Diagnóstico Automatizado */}
                   <button
                     type="button"
                     onClick={() => handleNavClick('diagnostic')}
@@ -462,14 +537,14 @@ export const Navbar: React.FC<NavbarProps> = ({
                     <div className="flex items-center gap-2 mb-1">
                       <FileCheck className="w-4 h-4 text-[#107C41]" />
                       <span className="text-xs font-bold text-slate-900 group-hover:text-[#107C41]">
-                        Diagnóstico Estratégico Automatizado
+                        Diagnóstico Estratégico Empresarial
                       </span>
                       <span className="px-1.5 py-0.2 bg-emerald-100 text-[#107C41] rounded text-[9px] font-bold">
                         Sin Cargo
                       </span>
                     </div>
                     <p className="text-[11px] text-slate-500">
-                      Evaluación inicial en 4 etapas con reporte instantáneo de madurez y contingencias.
+                      Evaluación inicial en 4 etapas con reporte instantáneo de madurez contable.
                     </p>
                   </button>
 
@@ -494,64 +569,47 @@ export const Navbar: React.FC<NavbarProps> = ({
                       Bóveda fiduciaria para balances, auditorías, informes mensuales y dictámenes.
                     </p>
                   </button>
-
-                  {/* Blog & Notas */}
-                  <button
-                    type="button"
-                    onClick={() => handleNavClick('blog')}
-                    className="p-3 bg-slate-50 hover:bg-purple-50/70 rounded-xl border border-slate-200/80 hover:border-purple-200 text-left transition-all group cursor-pointer"
-                  >
-                    <div className="flex items-center gap-2 mb-1">
-                      <BookOpen className="w-4 h-4 text-purple-600" />
-                      <span className="text-xs font-bold text-slate-900 group-hover:text-purple-600">
-                        Blog & Artículos Técnicos
-                      </span>
-                    </div>
-                    <p className="text-[11px] text-slate-500">
-                      Doctrina sobre Ley CCyC 1512, Factura E, economía del conocimiento y finanzas.
-                    </p>
-                  </button>
                 </div>
               </div>
 
-              {/* Columna 3: Dashboard de Gestión, SEO & Llamados a la Acción (3 cols) */}
+              {/* Columna 3: ARN & Centro Ejecutivo (3 cols) */}
               <div className="col-span-3 space-y-4 flex flex-col justify-between">
                 <div className="space-y-3">
                   <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-slate-500 block">
-                    Centro de Control & SEO
+                    Centro de Control
                   </span>
+
+                  {/* Direct Link to ARN */}
+                  <button
+                    type="button"
+                    onClick={() => handleNavClick('arn')}
+                    className="w-full p-3 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-xl text-left transition-all group cursor-pointer"
+                  >
+                    <div className="flex items-center gap-2 text-slate-900 mb-1">
+                      <LayoutDashboard className="w-4 h-4 text-emerald-600" />
+                      <span className="text-xs font-black">ARN · Agente de Redes & Negocios</span>
+                    </div>
+                    <p className="text-[11px] text-slate-500 leading-snug">
+                      Radar de oportunidades, alertas de vencimientos y supervisión de clientes.
+                    </p>
+                    <div className="mt-2 text-[10px] font-bold text-emerald-600 flex items-center gap-1 group-hover:translate-x-0.5 transition-transform">
+                      <span>Acceder al cockpit ARN</span>
+                      <ArrowRight className="w-3 h-3" />
+                    </div>
+                  </button>
 
                   {/* Direct Link to SEO in Dashboard */}
                   <button
                     type="button"
                     onClick={() => handleNavClick('seo')}
-                    className="w-full p-3 bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-200 rounded-xl text-left transition-all hover:shadow-sm group cursor-pointer"
-                  >
-                    <div className="flex items-center gap-2 text-[#0078D4] mb-1">
-                      <Search className="w-4 h-4" />
-                      <span className="text-xs font-black">Auditoría SEO & Posicionamiento</span>
-                    </div>
-                    <p className="text-[11px] text-slate-600 leading-snug">
-                      Panel de metadatos, OpenGraph social cards, Schema y Search Console (dentro del Dashboard).
-                    </p>
-                    <div className="mt-2 text-[10px] font-bold text-[#0078D4] flex items-center gap-1 group-hover:translate-x-0.5 transition-transform">
-                      <span>Abrir módulo SEO en Dashboard</span>
-                      <ArrowRight className="w-3 h-3" />
-                    </div>
-                  </button>
-
-                  {/* Direct Link to CRM & Pipeline */}
-                  <button
-                    type="button"
-                    onClick={() => handleNavClick('dashboard')}
                     className="w-full p-3 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-xl text-left transition-all group cursor-pointer"
                   >
                     <div className="flex items-center gap-2 text-slate-900 mb-1">
-                      <LayoutDashboard className="w-4 h-4 text-[#0078D4]" />
-                      <span className="text-xs font-bold">Dashboard Integral & CRM</span>
+                      <Search className="w-4 h-4 text-[#0078D4]" />
+                      <span className="text-xs font-bold">Auditoría SEO & Tráfico</span>
                     </div>
                     <p className="text-[11px] text-slate-500 leading-snug">
-                      Gestión de clientes, embudo de oportunidades y agenda de videollamadas Meet.
+                      Posicionamiento en Google, metadatos estructurados y Search Console.
                     </p>
                   </button>
                 </div>
@@ -608,25 +666,34 @@ export const Navbar: React.FC<NavbarProps> = ({
           {/* Section 1: Main Action Banner for Mobile */}
           <div className="p-3 bg-gradient-to-r from-blue-900 to-slate-900 text-white rounded-xl space-y-2">
             <span className="text-[10px] font-mono text-[#38BDF8] uppercase font-bold tracking-wider block">
-              Llamado a la Acción 2026
+              Copiloto & Diagnóstico 2026
             </span>
             <p className="text-xs text-slate-200">
-              Diagnóstico estratégico empresarial sin cargo para empresas y PyMEs.
+              Consulta con nuestro Agente IA o inicia el diagnóstico empresarial sin cargo.
             </p>
-            <button
-              type="button"
-              onClick={() => handleNavClick('diagnostic')}
-              className="w-full py-2 bg-[#0078D4] hover:bg-[#106EBE] text-white text-xs font-bold rounded-lg transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
-            >
-              <Sparkles className="w-3.5 h-3.5 text-amber-300" />
-              <span>Iniciar Diagnóstico Gratis</span>
-            </button>
+            <div className="grid grid-cols-2 gap-2 pt-1">
+              <button
+                type="button"
+                onClick={() => handleNavClick('agent')}
+                className="py-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-xs font-bold rounded-lg transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
+              >
+                <Bot className="w-3.5 h-3.5 text-amber-300" />
+                <span>Agente IA</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => handleNavClick('diagnostic')}
+                className="py-2 bg-white/10 hover:bg-white/20 text-white text-xs font-semibold rounded-lg border border-white/20 transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
+              >
+                <span>Diagnóstico</span>
+              </button>
+            </div>
           </div>
 
           {/* Section 2: Main Navigation Pages */}
           <div>
             <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-slate-400 block mb-2 px-1">
-              Navegación del Ecosistema
+              Navegación Principal
             </span>
             <div className="grid grid-cols-2 gap-2">
               <button
@@ -648,7 +715,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 }`}
               >
                 <Briefcase className="w-4 h-4 text-[#0078D4]" />
-                <span>Soluciones</span>
+                <span>Soluciones (01-05)</span>
               </button>
 
               <button
@@ -660,6 +727,17 @@ export const Navbar: React.FC<NavbarProps> = ({
               >
                 <Calculator className="w-4 h-4 text-[#0078D4]" />
                 <span>Simuladores</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => handleNavClick('agent')}
+                className={`p-3 rounded-lg text-xs font-bold flex items-center gap-2 border text-left cursor-pointer ${
+                  currentTab === 'agent' ? 'bg-blue-50 text-[#0078D4] border-blue-200' : 'bg-slate-50 text-slate-700 border-slate-200'
+                }`}
+              >
+                <Bot className="w-4 h-4 text-blue-600" />
+                <span>Agente IA</span>
               </button>
 
               <button
@@ -693,15 +771,37 @@ export const Navbar: React.FC<NavbarProps> = ({
                 <Lock className="w-4 h-4 text-amber-400" />
                 <span>Portal Clientes</span>
               </button>
+
+              {/* ARN Cockpit */}
+              <button
+                type="button"
+                onClick={() => handleNavClick('arn')}
+                className="p-3 rounded-lg text-xs font-bold flex items-center gap-2 border text-left cursor-pointer bg-emerald-50 text-emerald-900 border-emerald-200"
+              >
+                <LayoutDashboard className="w-4 h-4 text-emerald-700" />
+                <span>ARN Negocios</span>
+              </button>
             </div>
           </div>
 
-          {/* Section 3: Dashboard & SEO */}
+          {/* Section 3: ARN & Centro de Control */}
           <div>
             <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-slate-400 block mb-2 px-1">
-              Gestión Empresarial & SEO
+              Supervisión de Redes & Negocios
             </span>
             <div className="space-y-2">
+              <button
+                type="button"
+                onClick={() => handleNavClick('arn')}
+                className="w-full p-3 rounded-lg bg-emerald-50/70 border border-emerald-200 text-left flex items-center justify-between text-xs font-bold text-emerald-900 cursor-pointer"
+              >
+                <div className="flex items-center gap-2">
+                  <LayoutDashboard className="w-4 h-4 text-emerald-700" />
+                  <span>ARN (Agente de Redes y Negocios)</span>
+                </div>
+                <ChevronRight className="w-4 h-4 text-emerald-700" />
+              </button>
+
               <button
                 type="button"
                 onClick={() => handleNavClick('dashboard')}
@@ -709,19 +809,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               >
                 <div className="flex items-center gap-2">
                   <LayoutDashboard className="w-4 h-4 text-[#0078D4]" />
-                  <span>Dashboard Integral & CRM</span>
-                </div>
-                <ChevronRight className="w-4 h-4" />
-              </button>
-
-              <button
-                type="button"
-                onClick={() => handleNavClick('seo')}
-                className="w-full p-3 rounded-lg bg-indigo-50/60 border border-indigo-200 text-left flex items-center justify-between text-xs font-bold text-indigo-700 cursor-pointer"
-              >
-                <div className="flex items-center gap-2">
-                  <Search className="w-4 h-4 text-indigo-600" />
-                  <span>Auditoría SEO & Posicionamiento (En Dashboard)</span>
+                  <span>Dashboard Integral & Métricas</span>
                 </div>
                 <ChevronRight className="w-4 h-4" />
               </button>
