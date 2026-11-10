@@ -18,6 +18,10 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
   const contact = content.contact;
   const profile = content.profile;
 
+  const officialContactEmail = (!contact.email || contact.email.includes('gmail.com') || contact.email.includes('carlos@'))
+    ? 'hola@crdominguez.ar'
+    : contact.email;
+
   const whatsappHref = `https://wa.me/${contact.whatsappNumber}?text=${encodeURIComponent(contact.whatsappDefaultText)}`;
 
   return (
@@ -46,11 +50,11 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
             </a>
 
             <a
-              href={`mailto:${contact.email}`}
+              href={`mailto:${officialContactEmail}`}
               className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold rounded-lg transition-colors border border-slate-700 min-h-[44px]"
             >
               <Mail className="w-3.5 h-3.5 text-[#0078D4]" />
-              <span>{contact.email}</span>
+              <span>{officialContactEmail}</span>
             </a>
           </div>
         </div>

@@ -446,25 +446,37 @@ export const DEFAULT_SITE_CONTENT: SiteContent = {
   },
 };
 
-const STORAGE_KEY = 'cr_site_content_v3';
+const STORAGE_KEY = 'cr_site_content_v4';
+const LEGACY_KEYS = ['cr_site_content_v3', 'cr_site_content_v2', 'cr_site_content'];
 const UPDATE_EVENT = 'cr_content_updated';
 
 class ContentService {
   getContent(): SiteContent {
     if (typeof window === 'undefined') return DEFAULT_SITE_CONTENT;
     try {
+      LEGACY_KEYS.forEach((oldKey) => {
+        try { localStorage.removeItem(oldKey); } catch {}
+      });
+
       const stored = localStorage.getItem(STORAGE_KEY);
       if (!stored) {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(DEFAULT_SITE_CONTENT));
         return DEFAULT_SITE_CONTENT;
       }
       const parsed = JSON.parse(stored);
+      const contactMerged = { ...DEFAULT_SITE_CONTENT.contact, ...(parsed.contact || {}) };
+      
+      // Sanitización estricta de correo institucional
+      if (!contactMerged.email || contactMerged.email.includes('gmail.com') || contactMerged.email === 'carlos@crdominguez.ar') {
+        contactMerged.email = 'hola@crdominguez.ar';
+      }
+
       return {
         ...DEFAULT_SITE_CONTENT,
         ...parsed,
         theme: { ...DEFAULT_SITE_CONTENT.theme, ...(parsed.theme || {}) },
         socialLinks: { ...DEFAULT_SITE_CONTENT.socialLinks, ...(parsed.socialLinks || {}) },
-        contact: { ...DEFAULT_SITE_CONTENT.contact, ...(parsed.contact || {}) },
+        contact: contactMerged,
         homeBlocks: parsed.homeBlocks && parsed.homeBlocks.length ? parsed.homeBlocks : DEFAULT_SITE_CONTENT.homeBlocks,
         homeSectionHeaders: { ...DEFAULT_SITE_CONTENT.homeSectionHeaders, ...(parsed.homeSectionHeaders || {}) },
         caseStudies: parsed.caseStudies && parsed.caseStudies.length 
