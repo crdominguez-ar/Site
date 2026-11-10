@@ -428,7 +428,7 @@ export const DEFAULT_SITE_CONTENT: SiteContent = {
   contact: {
     whatsappNumber: '5492804567890',
     whatsappDefaultText: 'Hola Cr. Domínguez, me comunico desde la plataforma web para coordinar una reunión inicial de diagnóstico.',
-    email: 'dominguezcarlosrodrigo@gmail.com',
+    email: 'hola@crdominguez.ar',
     phone: '+54 280 442-8812',
     address: 'Trelew, Chubut · Patagonia, Argentina y el exterior',
     city: 'Trelew, Chubut',

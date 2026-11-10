@@ -9,7 +9,7 @@ const INITIAL_USERS: SystemUser[] = [
   {
     id: 'usr-001',
     name: 'Cr. Carlos Rodrigo Domínguez',
-    email: 'carlos@crdominguez.ar',
+    email: 'hola@crdominguez.ar',
     role: 'super_admin',
     title: 'Director de Consultoría & CFO',
     department: 'Dirección General & Estrategia',

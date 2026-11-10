@@ -8,7 +8,7 @@ import { ResendConfig, ResendEmailLog, Lead, DeliverableReport, CRMMeeting, CRMP
 
 const DEFAULT_CONFIG: ResendConfig = {
   apiKey: 're_patagonia_free_tier_live_key',
-  senderEmail: 'carlos@crdominguez.ar',
+  senderEmail: 'notificaciones@crdominguez.ar',
   senderName: 'Cr Dominguez · Consultoría Estratégica',
   dailyQuotaUsed: 14,
   dailyQuotaMax: 100,
@@ -21,8 +21,8 @@ const DEFAULT_CONFIG: ResendConfig = {
 const INITIAL_LOGS: ResendEmailLog[] = [
   {
     id: 'resend-log-01',
-    to: ['crdominguez.ar@gmail.com'],
-    from: 'carlos@crdominguez.ar',
+    to: ['hola@crdominguez.ar'],
+    from: 'notificaciones@crdominguez.ar',
     subject: 'Nuevo Lead Calificado: AeroDrone Logistics ZHC (Score: 95/100)',
     type: 'lead_notification',
     status: 'delivered',
@@ -33,7 +33,7 @@ const INITIAL_LOGS: ResendEmailLog[] = [
   {
     id: 'resend-log-02',
     to: ['m.vallejos@lanapatagonica.com.ar'],
-    from: 'carlos@crdominguez.ar',
+    from: 'notificaciones@crdominguez.ar',
     subject: 'Dictamen de Costos & Punto de Equilibrio Operativo Listo',
     type: 'report_delivery',
     status: 'delivered',
@@ -44,7 +44,7 @@ const INITIAL_LOGS: ResendEmailLog[] = [
   {
     id: 'resend-log-03',
     to: ['clientes-boletin@crdominguez.ar'],
-    from: 'carlos@crdominguez.ar',
+    from: 'notificaciones@crdominguez.ar',
     subject: 'Boletín Tributario: Franquicias bajo la lupa del CCyC (Art. 1512-1524)',
     type: 'blog_newsletter',
     status: 'delivered',
@@ -375,8 +375,8 @@ class ResendService {
 
         <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 28px 0 16px;" />
         <p style="font-size: 11px; color: #94a3b8; text-align: center; margin: 0; line-height: 1.4;">
-          Enviado automáticamente por <strong>Cr Dominguez</strong> desde <a href="mailto:carlos@crdominguez.ar" style="color: #94a3b8;">carlos@crdominguez.ar</a>.<br />
-          Para reprogramar o coordinar previamente, responda directamente a este correo o comuníquese por WhatsApp oficial.
+          Enviado automáticamente por <strong>Cr Dominguez</strong> desde <a href="mailto:notificaciones@crdominguez.ar" style="color: #94a3b8;">notificaciones@crdominguez.ar</a>.<br />
+          Para coordinar o consultas directas, responda a este correo o escriba a <a href="mailto:hola@crdominguez.ar" style="color: #94a3b8;">hola@crdominguez.ar</a>.
         </p>
       </div>
     `;
@@ -586,7 +586,7 @@ class ResendService {
         <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 28px 0 16px;" />
         <p style="font-size: 11px; color: #94a3b8; text-align: center; margin: 0; line-height: 1.4;">
           Socio a cargo: <strong>Cr. Carlos Rodrigo Domínguez</strong> · Director de Consultoría & CFO.<br />
-          Para soporte técnico o consultas urgentes, responda a este email o comuníquese a <a href="mailto:carlos@crdominguez.ar" style="color: #94a3b8;">carlos@crdominguez.ar</a>.
+          Para soporte técnico o consultas urgentes, comuníquese a <a href="mailto:hola@crdominguez.ar" style="color: #94a3b8;">hola@crdominguez.ar</a>.
         </p>
       </div>
     `;
