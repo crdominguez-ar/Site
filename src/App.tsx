@@ -12,9 +12,7 @@ import { CalculatorsSuite } from './components/Calculators/CalculatorsSuite';
 import { InteractiveDiagnostic } from './components/Diagnostic/InteractiveDiagnostic';
 import { BlogView } from './components/Blog/BlogView';
 import { ClientPortal } from './components/Portal/ClientPortal';
-import { ARNView } from './components/ARN/ARNView';
 import { CrDominguezAgentView } from './components/Agent/CrDominguezAgentView';
-import { SEOControlPanel } from './components/SEO/SEOControlPanel';
 import { WidgetizableDashboard } from './components/Dashboard/WidgetizableDashboard';
 import { ConsultationModal } from './components/Modals/ConsultationModal';
 import { WhatsAppButton } from './components/Common/WhatsAppButton';
@@ -32,6 +30,7 @@ export type AppTab =
   | 'crm' 
   | 'agent' 
   | 'seo' 
+  | 'cms'
   | 'dashboard';
 
 const TAB_TO_PATH: Record<AppTab, string> = {
@@ -45,6 +44,7 @@ const TAB_TO_PATH: Record<AppTab, string> = {
   crm: '/arn',
   agent: '/agente',
   seo: '/seo',
+  cms: '/cms',
   dashboard: '/dashboard',
 };
 
@@ -66,6 +66,10 @@ const PATH_TO_TAB: Record<string, AppTab> = {
   '/redes': 'arn',
   '/crm': 'arn',
   '/pipeline': 'arn',
+  '/cms': 'cms',
+  '/web': 'cms',
+  '/controles': 'cms',
+  '/control-web': 'cms',
   '/agente': 'agent',
   '/agent': 'agent',
   '/ia': 'agent',
@@ -143,9 +147,18 @@ export default function App() {
           />
         )}
 
-        {currentTab === 'dashboard' && (
+        {['dashboard', 'arn', 'crm', 'cms', 'seo'].includes(currentTab) && (
           <div className="w-full">
             <WidgetizableDashboard
+              initialView={
+                currentTab === 'arn' || currentTab === 'crm'
+                  ? 'crm'
+                  : currentTab === 'cms'
+                  ? 'cms'
+                  : currentTab === 'seo'
+                  ? 'seo'
+                  : 'widgets'
+              }
               onNavigateTab={handleTabChange}
               onOpenConsultationModal={() => setIsConsultationModalOpen(true)}
             />
@@ -210,25 +223,6 @@ export default function App() {
           </div>
         )}
 
-        {(currentTab === 'arn' || currentTab === 'crm') && (
-          <div className="w-full">
-            <ARNView
-              currentRole={currentRole}
-              onNavigateTab={handleTabChange}
-              onOpenConsultationModal={() => setIsConsultationModalOpen(true)}
-            />
-          </div>
-        )}
-
-        {currentTab === 'seo' && (
-          <div className="w-full">
-            <WidgetizableDashboard
-              initialView="seo"
-              onNavigateTab={handleTabChange}
-              onOpenConsultationModal={() => setIsConsultationModalOpen(true)}
-            />
-          </div>
-        )}
       </main>
 
       {/* Primary Consultation Modal */}

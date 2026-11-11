@@ -33,7 +33,8 @@ import {
   Menu,
   CalendarCheck,
   Calculator,
-  Database
+  Database,
+  Bot
 } from 'lucide-react';
 import { dbRepository, checkSupabaseHealth, isSupabaseConfigured, SupabaseHealthCheck } from '../../lib/supabaseClient';
 import { userService } from '../../lib/userService';
@@ -62,7 +63,7 @@ import { FeePricingMatrixTool } from './FeePricingMatrixTool';
 
 interface WidgetizableDashboardProps {
   initialView?: DashboardViewId;
-  onNavigateTab: (tab: 'landing' | 'solutions' | 'simulators' | 'diagnostic' | 'blog' | 'portal' | 'crm' | 'seo' | 'dashboard') => void;
+  onNavigateTab: (tab: any) => void;
   onOpenConsultationModal: () => void;
 }
 
@@ -412,11 +413,11 @@ export const WidgetizableDashboard: React.FC<WidgetizableDashboardProps> = ({
                 </div>
                 <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
                   {dashboardView === 'widgets' && 'Visión General & Widgets'}
-                  {dashboardView === 'crm' && 'Embudo Comercial & Pipeline CRM'}
+                  {dashboardView === 'crm' && 'ARN · Agente de Redes y Negocios (Cockpit Comercial & CRM)'}
                   {dashboardView === 'tax_calendar' && 'Calendario Fiscal ARCA & DGR Chubut'}
                   {dashboardView === 'cash_flow' && 'Proyector de Cash Flow & Runway PyME'}
                   {dashboardView === 'fee_pricing' && 'Cotizador de Servicios Contables & Horas'}
-                  {dashboardView === 'cms' && 'Gestor de Contenidos Web & Sliders'}
+                  {dashboardView === 'cms' && 'Control Web & Gestor de Contenidos del Sitio (CMS)'}
                   {dashboardView === 'seo' && 'Auditoría SEO & Posicionamiento'}
                   {dashboardView === 'users' && 'Centro de Control de Usuarios (RBAC)'}
                   {dashboardView === 'email' && 'Comunicaciones & Resend.com'}
@@ -566,41 +567,97 @@ export const WidgetizableDashboard: React.FC<WidgetizableDashboardProps> = ({
           <div className="space-y-4">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white border border-slate-200 rounded-xl px-4 sm:px-5 py-3 shadow-xs">
               <div className="flex items-center gap-2 text-xs font-semibold text-slate-700">
-                <Sliders className="w-4 h-4 text-[#0078D4]" />
-                <span>Gestor de Contenido Web & Sliders (CMS)</span>
+                <Globe className="w-4 h-4 text-[#0078D4]" />
+                <span className="font-bold text-slate-900">Control Web & Gestor de Contenidos (CMS)</span>
                 <span className="hidden sm:inline text-slate-400">·</span>
-                <span className="hidden sm:inline text-slate-500 font-normal">Edición en tiempo real de textos, fotos y enlaces de la web</span>
+                <span className="hidden sm:inline text-slate-500 font-normal">Edición en tiempo real de todos los controles del sitio: textos, sliders, fotos y enlaces</span>
               </div>
-              <button
-                type="button"
-                onClick={() => setDashboardView('widgets')}
-                className="text-xs font-bold text-[#0078D4] hover:underline flex items-center gap-1.5 cursor-pointer self-start sm:self-auto"
-              >
-                <LayoutDashboard className="w-3.5 h-3.5" />
-                <span>Volver a Vista Widgets</span>
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setDashboardView('crm')}
+                  className="text-xs font-semibold text-emerald-700 hover:text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition-colors cursor-pointer"
+                >
+                  <Users className="w-3.5 h-3.5 text-emerald-600" />
+                  <span>Ir a ARN Redes & Negocios</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setDashboardView('widgets')}
+                  className="text-xs font-bold text-[#0078D4] hover:underline flex items-center gap-1.5 cursor-pointer px-2 py-1"
+                >
+                  <LayoutDashboard className="w-3.5 h-3.5" />
+                  <span>Volver a Widgets</span>
+                </button>
+              </div>
             </div>
             <WebCMSEditor onPreviewSite={() => onNavigateTab('landing')} />
           </div>
         ) : dashboardView === 'crm' ? (
-          <div className="space-y-4">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white border border-slate-200 rounded-xl px-4 sm:px-5 py-3 shadow-xs">
-              <div className="flex items-center gap-2 text-xs font-semibold text-slate-700">
-                <Users className="w-4 h-4 text-[#0078D4]" />
-                <span>Módulo CRM Integrado</span>
-                <span className="hidden sm:inline text-slate-400">·</span>
-                <span className="hidden sm:inline text-slate-500 font-normal">Pipeline de Oportunidades & Gestión de Clientes en Vivo</span>
+          <div className="space-y-6">
+            {/* ARN Executive Brand & Supervisory Bar */}
+            <div className="bg-[#0A121E] text-white border border-slate-800 rounded-2xl p-5 sm:p-7 shadow-lg relative overflow-hidden">
+              <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+                <div className="space-y-2">
+                  <div className="flex flex-wrap items-center gap-2 text-xs font-mono font-bold tracking-wider text-[#38BDF8]">
+                    <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                    <span>ARN · Agente de Redes y Negocios</span>
+                    <span className="text-slate-500">·</span>
+                    <span className="text-slate-400">Dirección y Supervisión Agéntica</span>
+                  </div>
+                  <h2 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
+                    Cockpit de Negocios & Redes Profesionales
+                  </h2>
+                  <p className="text-xs sm:text-sm text-slate-300 max-w-2xl leading-relaxed">
+                    Superando el CRM pasivo tradicional: el ARN centraliza el radar de oportunidades comerciales, alertas automáticas de vencimiento cambiario (Com. BCRA &quot;A&quot; 8481) y sincronización con el Portal Clientes y todos los controles del sitio web.
+                  </p>
+                </div>
+
+                {/* Direct Supervisory Triggers */}
+                <div className="flex flex-wrap items-center gap-2.5 shrink-0">
+                  <button
+                    type="button"
+                    onClick={() => setDashboardView('cms')}
+                    className="px-3.5 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white border border-slate-700 text-xs font-semibold rounded-xl transition-colors flex items-center gap-2 cursor-pointer shadow-xs"
+                    title="Ir a Controles del Sitio Web (CMS)"
+                  >
+                    <Globe className="w-3.5 h-3.5 text-blue-400" />
+                    <span>Controles Web CMS</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => onNavigateTab && onNavigateTab('agent')}
+                    className="px-4 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold text-xs rounded-xl transition-all shadow-md flex items-center gap-2 cursor-pointer hover:scale-[1.02]"
+                  >
+                    <Bot className="w-4 h-4 text-amber-300" />
+                    <span>Consultar Agente IA</span>
+                    <Sparkles className="w-3.5 h-3.5 text-amber-300" />
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setDashboardView('widgets')}
+                    className="px-3.5 py-2.5 bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-700 text-xs font-semibold rounded-xl transition-colors flex items-center gap-2 cursor-pointer"
+                  >
+                    <LayoutDashboard className="w-3.5 h-3.5 text-slate-400" />
+                    <span className="hidden sm:inline">Visión General</span>
+                  </button>
+                </div>
               </div>
-              <button
-                type="button"
-                onClick={() => setDashboardView('widgets')}
-                className="text-xs font-bold text-[#0078D4] hover:underline flex items-center gap-1.5 cursor-pointer self-start sm:self-auto"
-              >
-                <LayoutDashboard className="w-3.5 h-3.5" />
-                <span>Volver a Vista Widgets</span>
-              </button>
+
+              {/* Ambient Subtle Accent */}
+              <div className="absolute top-0 right-0 w-80 h-80 bg-blue-500/10 rounded-full blur-3xl pointer-events-none" />
             </div>
-            <InternalCRM currentRole={currentUser.role} initialSubTab={crmSubTab} onNavigateTab={onNavigateTab} />
+
+            {/* Embedded Core CRM Engine with Enhanced ARN Integration */}
+            <div className="w-full">
+              <InternalCRM
+                currentRole={currentUser.role}
+                initialSubTab={crmSubTab}
+                onNavigateTab={onNavigateTab as any}
+              />
+            </div>
           </div>
         ) : dashboardView === 'seo' ? (
           <div className="space-y-4">
@@ -624,115 +681,168 @@ export const WidgetizableDashboard: React.FC<WidgetizableDashboardProps> = ({
           </div>
         ) : (
           <div className="w-full space-y-6">
-            {/* Executive Quick Hub Bar (ARCA, Cash Flow, Cotizador, CRM) */}
+            {/* Executive Quick Hub Bar (ARN, CMS Web, ARCA, Cash Flow, Cotizador, SEO) */}
             {dashboardView === 'widgets' && (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                {/* Card 1: Calendario Fiscal ARCA */}
-                <div 
-                  onClick={() => setDashboardView('tax_calendar')}
-                  className="bg-white border border-slate-200 hover:border-amber-400 rounded-xl p-4.5 shadow-xs hover:shadow-md transition-all cursor-pointer group space-y-2.5"
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="w-9 h-9 rounded-lg bg-amber-50 text-amber-700 flex items-center justify-center group-hover:scale-105 transition-transform">
-                      <CalendarCheck className="w-5 h-5" />
-                    </div>
-                    <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-amber-100 text-amber-800">
-                      2 Vencimientos
-                    </span>
-                  </div>
-                  <div>
-                    <h4 className="text-xs font-bold text-slate-900 group-hover:text-[#0078D4] transition-colors flex items-center justify-between">
-                      <span>ARCA & DGR Chubut</span>
-                      <ArrowUpRight className="w-3.5 h-3.5 text-slate-400 group-hover:text-[#0078D4]" />
-                    </h4>
-                    <p className="text-[11px] text-slate-500 line-clamp-1 mt-0.5">
-                      IVA, Convenio SIFERE y Retenciones
-                    </p>
-                  </div>
-                  <div className="text-[10px] font-mono font-semibold text-amber-700 bg-amber-50/80 px-2 py-1 rounded border border-amber-200/60">
-                    Próximo: 15 Nov (CUITs 0-1)
-                  </div>
-                </div>
-
-                {/* Card 2: Cash Flow & Runway */}
-                <div 
-                  onClick={() => setDashboardView('cash_flow')}
-                  className="bg-white border border-slate-200 hover:border-blue-400 rounded-xl p-4.5 shadow-xs hover:shadow-md transition-all cursor-pointer group space-y-2.5"
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="w-9 h-9 rounded-lg bg-blue-50 text-[#0078D4] flex items-center justify-center group-hover:scale-105 transition-transform">
-                      <TrendingUp className="w-5 h-5" />
-                    </div>
-                    <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-blue-100 text-[#0078D4]">
-                      8.4 meses
-                    </span>
-                  </div>
-                  <div>
-                    <h4 className="text-xs font-bold text-slate-900 group-hover:text-[#0078D4] transition-colors flex items-center justify-between">
-                      <span>Runway & Flujo PyME</span>
-                      <ArrowUpRight className="w-3.5 h-3.5 text-slate-400 group-hover:text-[#0078D4]" />
-                    </h4>
-                    <p className="text-[11px] text-slate-500 line-clamp-1 mt-0.5">
-                      Simulación a 6 meses con 3 escenarios
-                    </p>
-                  </div>
-                  <div className="text-[10px] font-mono font-semibold text-emerald-700 bg-emerald-50/80 px-2 py-1 rounded border border-emerald-200/60 flex items-center justify-between">
-                    <span>Flujo neto: +$3.200 USD</span>
-                    <span>BEP: $14.2M</span>
-                  </div>
-                </div>
-
-                {/* Card 3: Cotizador de Honorarios */}
-                <div 
-                  onClick={() => setDashboardView('fee_pricing')}
-                  className="bg-white border border-slate-200 hover:border-emerald-400 rounded-xl p-4.5 shadow-xs hover:shadow-md transition-all cursor-pointer group space-y-2.5"
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="w-9 h-9 rounded-lg bg-emerald-50 text-[#107C41] flex items-center justify-center group-hover:scale-105 transition-transform">
-                      <Calculator className="w-5 h-5" />
-                    </div>
-                    <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-emerald-100 text-emerald-800">
-                      $35.000 / h
-                    </span>
-                  </div>
-                  <div>
-                    <h4 className="text-xs font-bold text-slate-900 group-hover:text-[#0078D4] transition-colors flex items-center justify-between">
-                      <span>Cotizador de Honorarios</span>
-                      <ArrowUpRight className="w-3.5 h-3.5 text-slate-400 group-hover:text-[#0078D4]" />
-                    </h4>
-                    <p className="text-[11px] text-slate-500 line-clamp-1 mt-0.5">
-                      Abonos mensuales e intervenciones
-                    </p>
-                  </div>
-                  <div className="text-[10px] font-mono font-semibold text-slate-700 bg-slate-50 px-2 py-1 rounded border border-slate-200">
-                    Integrado con Propuestas CRM
-                  </div>
-                </div>
-
-                {/* Card 4: CRM Leads en Vivo */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3.5">
+                {/* Card 1: ARN · Redes & Negocios */}
                 <div 
                   onClick={() => setDashboardView('crm')}
-                  className="bg-white border border-slate-200 hover:border-indigo-400 rounded-xl p-4.5 shadow-xs hover:shadow-md transition-all cursor-pointer group space-y-2.5"
+                  className="bg-white border border-slate-200 hover:border-emerald-500 rounded-xl p-4 shadow-xs hover:shadow-md transition-all cursor-pointer group space-y-2"
                 >
                   <div className="flex items-center justify-between">
-                    <div className="w-9 h-9 rounded-lg bg-indigo-50 text-indigo-700 flex items-center justify-center group-hover:scale-105 transition-transform">
-                      <Users className="w-5 h-5" />
+                    <div className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-700 flex items-center justify-center group-hover:scale-105 transition-transform">
+                      <Users className="w-4 h-4" />
                     </div>
-                    <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-indigo-100 text-indigo-800">
+                    <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-emerald-100 text-emerald-800">
                       {leads.length} Leads
                     </span>
                   </div>
                   <div>
-                    <h4 className="text-xs font-bold text-slate-900 group-hover:text-[#0078D4] transition-colors flex items-center justify-between">
-                      <span>Pipeline Comercial</span>
-                      <ArrowUpRight className="w-3.5 h-3.5 text-slate-400 group-hover:text-[#0078D4]" />
+                    <h4 className="text-xs font-bold text-slate-900 group-hover:text-emerald-700 transition-colors flex items-center justify-between">
+                      <span>ARN · Redes</span>
+                      <ArrowUpRight className="w-3 h-3 text-slate-400 group-hover:text-emerald-700" />
                     </h4>
-                    <p className="text-[11px] text-slate-500 line-clamp-1 mt-0.5">
-                      {leads.filter(l => l.stage === 'negociacion' || l.stage === 'propuesta').length} en negociación activa
+                    <p className="text-[10px] text-slate-500 line-clamp-1 mt-0.5">
+                      Pipeline y Oportunidades
                     </p>
                   </div>
-                  <div className="text-[10px] font-mono font-semibold text-indigo-700 bg-indigo-50/80 px-2 py-1 rounded border border-indigo-200/60">
-                    USD {leads.reduce((a, b) => a + (b.estimatedMonthlyBudgetUsd || 0), 0).toLocaleString()} / mes cartera
+                  <div className="text-[9px] font-mono font-semibold text-emerald-700 bg-emerald-50/80 px-1.5 py-0.5 rounded border border-emerald-200/60 truncate">
+                    Cockpit Agéntico Activo
+                  </div>
+                </div>
+
+                {/* Card 2: Control Web & CMS */}
+                <div 
+                  onClick={() => setDashboardView('cms')}
+                  className="bg-white border border-slate-200 hover:border-blue-500 rounded-xl p-4 shadow-xs hover:shadow-md transition-all cursor-pointer group space-y-2"
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="w-8 h-8 rounded-lg bg-blue-50 text-[#0078D4] flex items-center justify-center group-hover:scale-105 transition-transform">
+                      <Globe className="w-4 h-4" />
+                    </div>
+                    <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-blue-100 text-[#0078D4]">
+                      Sitio Web
+                    </span>
+                  </div>
+                  <div>
+                    <h4 className="text-xs font-bold text-slate-900 group-hover:text-[#0078D4] transition-colors flex items-center justify-between">
+                      <span>Control Web & CMS</span>
+                      <ArrowUpRight className="w-3 h-3 text-slate-400 group-hover:text-[#0078D4]" />
+                    </h4>
+                    <p className="text-[10px] text-slate-500 line-clamp-1 mt-0.5">
+                      Sliders, Textos, Fotos
+                    </p>
+                  </div>
+                  <div className="text-[9px] font-mono font-semibold text-[#0078D4] bg-blue-50/80 px-1.5 py-0.5 rounded border border-blue-200/60 truncate">
+                    Editor en Vivo
+                  </div>
+                </div>
+
+                {/* Card 3: Auditoría SEO */}
+                <div 
+                  onClick={() => setDashboardView('seo')}
+                  className="bg-white border border-slate-200 hover:border-purple-500 rounded-xl p-4 shadow-xs hover:shadow-md transition-all cursor-pointer group space-y-2"
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="w-8 h-8 rounded-lg bg-purple-50 text-purple-700 flex items-center justify-center group-hover:scale-105 transition-transform">
+                      <Search className="w-4 h-4" />
+                    </div>
+                    <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-purple-100 text-purple-800">
+                      SEO 100%
+                    </span>
+                  </div>
+                  <div>
+                    <h4 className="text-xs font-bold text-slate-900 group-hover:text-purple-700 transition-colors flex items-center justify-between">
+                      <span>Auditoría SEO</span>
+                      <ArrowUpRight className="w-3 h-3 text-slate-400 group-hover:text-purple-700" />
+                    </h4>
+                    <p className="text-[10px] text-slate-500 line-clamp-1 mt-0.5">
+                      Metadatos & Google
+                    </p>
+                  </div>
+                  <div className="text-[9px] font-mono font-semibold text-purple-700 bg-purple-50/80 px-1.5 py-0.5 rounded border border-purple-200/60 truncate">
+                    Schema.org & OG
+                  </div>
+                </div>
+
+                {/* Card 4: Calendario Fiscal ARCA */}
+                <div 
+                  onClick={() => setDashboardView('tax_calendar')}
+                  className="bg-white border border-slate-200 hover:border-amber-400 rounded-xl p-4 shadow-xs hover:shadow-md transition-all cursor-pointer group space-y-2"
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="w-8 h-8 rounded-lg bg-amber-50 text-amber-700 flex items-center justify-center group-hover:scale-105 transition-transform">
+                      <CalendarCheck className="w-4 h-4" />
+                    </div>
+                    <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-amber-100 text-amber-800">
+                      ARCA
+                    </span>
+                  </div>
+                  <div>
+                    <h4 className="text-xs font-bold text-slate-900 group-hover:text-amber-700 transition-colors flex items-center justify-between">
+                      <span>Vencimientos</span>
+                      <ArrowUpRight className="w-3 h-3 text-slate-400 group-hover:text-amber-700" />
+                    </h4>
+                    <p className="text-[10px] text-slate-500 line-clamp-1 mt-0.5">
+                      IVA, SIFERE & DGR
+                    </p>
+                  </div>
+                  <div className="text-[9px] font-mono font-semibold text-amber-700 bg-amber-50/80 px-1.5 py-0.5 rounded border border-amber-200/60 truncate">
+                    Próximo: 15 Nov
+                  </div>
+                </div>
+
+                {/* Card 5: Cash Flow & Runway */}
+                <div 
+                  onClick={() => setDashboardView('cash_flow')}
+                  className="bg-white border border-slate-200 hover:border-emerald-400 rounded-xl p-4 shadow-xs hover:shadow-md transition-all cursor-pointer group space-y-2"
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-700 flex items-center justify-center group-hover:scale-105 transition-transform">
+                      <TrendingUp className="w-4 h-4" />
+                    </div>
+                    <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-emerald-100 text-emerald-800">
+                      8.4 m
+                    </span>
+                  </div>
+                  <div>
+                    <h4 className="text-xs font-bold text-slate-900 group-hover:text-emerald-700 transition-colors flex items-center justify-between">
+                      <span>Runway PyME</span>
+                      <ArrowUpRight className="w-3 h-3 text-slate-400 group-hover:text-emerald-700" />
+                    </h4>
+                    <p className="text-[10px] text-slate-500 line-clamp-1 mt-0.5">
+                      Flujo de Caja 6 meses
+                    </p>
+                  </div>
+                  <div className="text-[9px] font-mono font-semibold text-emerald-700 bg-emerald-50/80 px-1.5 py-0.5 rounded border border-emerald-200/60 truncate">
+                    BEP: $14.2M
+                  </div>
+                </div>
+
+                {/* Card 6: Cotizador de Honorarios */}
+                <div 
+                  onClick={() => setDashboardView('fee_pricing')}
+                  className="bg-white border border-slate-200 hover:border-slate-400 rounded-xl p-4 shadow-xs hover:shadow-md transition-all cursor-pointer group space-y-2"
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="w-8 h-8 rounded-lg bg-slate-100 text-slate-700 flex items-center justify-center group-hover:scale-105 transition-transform">
+                      <Calculator className="w-4 h-4" />
+                    </div>
+                    <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-slate-100 text-slate-800">
+                      Tarifario
+                    </span>
+                  </div>
+                  <div>
+                    <h4 className="text-xs font-bold text-slate-900 group-hover:text-slate-700 transition-colors flex items-center justify-between">
+                      <span>Cotizador</span>
+                      <ArrowUpRight className="w-3 h-3 text-slate-400 group-hover:text-slate-700" />
+                    </h4>
+                    <p className="text-[10px] text-slate-500 line-clamp-1 mt-0.5">
+                      Horas & Abonos
+                    </p>
+                  </div>
+                  <div className="text-[9px] font-mono font-semibold text-slate-700 bg-slate-50 px-1.5 py-0.5 rounded border border-slate-200 truncate">
+                    $35.000 / h
                   </div>
                 </div>
               </div>

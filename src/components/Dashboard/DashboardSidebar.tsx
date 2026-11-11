@@ -69,7 +69,7 @@ export const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
 }) => {
   const sections: NavSection[] = [
     {
-      title: 'Gestión Principal',
+      title: 'Gestión Ejecutiva & Web',
       items: [
         {
           id: 'widgets',
@@ -84,6 +84,12 @@ export const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
           icon: Users,
           badge: openLeadsCount > 0 ? `${openLeadsCount}` : undefined,
           badgeType: 'info'
+        },
+        {
+          id: 'cms',
+          label: 'Control Web & CMS',
+          shortLabel: 'CMS Web',
+          icon: Globe,
         }
       ]
     },
@@ -113,14 +119,8 @@ export const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
       ]
     },
     {
-      title: 'Presencia & Contenidos',
+      title: 'Presencia & Tráfico',
       items: [
-        {
-          id: 'cms',
-          label: 'Control Web & CMS',
-          shortLabel: 'CMS',
-          icon: Globe,
-        },
         {
           id: 'seo',
           label: 'Salud SEO & Posicionamiento',

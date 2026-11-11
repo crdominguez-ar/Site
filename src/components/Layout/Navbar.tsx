@@ -29,8 +29,8 @@ import {
 } from 'lucide-react';
 
 interface NavbarProps {
-  currentTab: 'landing' | 'solutions' | 'simulators' | 'diagnostic' | 'blog' | 'portal' | 'arn' | 'crm' | 'seo' | 'dashboard' | 'agent';
-  setCurrentTab: (tab: 'landing' | 'solutions' | 'simulators' | 'diagnostic' | 'blog' | 'portal' | 'arn' | 'crm' | 'seo' | 'dashboard' | 'agent') => void;
+  currentTab: 'landing' | 'solutions' | 'simulators' | 'diagnostic' | 'blog' | 'portal' | 'arn' | 'crm' | 'seo' | 'cms' | 'dashboard' | 'agent';
+  setCurrentTab: (tab: 'landing' | 'solutions' | 'simulators' | 'diagnostic' | 'blog' | 'portal' | 'arn' | 'crm' | 'seo' | 'cms' | 'dashboard' | 'agent') => void;
   currentRole: UserRole;
   setCurrentRole: (role: UserRole) => void;
   onOpenConsultationModal: () => void;
@@ -91,7 +91,7 @@ export const Navbar: React.FC<NavbarProps> = ({
     }, 250);
   };
 
-  const handleNavClick = (tab: 'landing' | 'solutions' | 'simulators' | 'diagnostic' | 'blog' | 'portal' | 'arn' | 'crm' | 'seo' | 'dashboard' | 'agent') => {
+  const handleNavClick = (tab: 'landing' | 'solutions' | 'simulators' | 'diagnostic' | 'blog' | 'portal' | 'arn' | 'crm' | 'seo' | 'cms' | 'dashboard' | 'agent') => {
     setCurrentTab(tab);
     setIsMobileMenuOpen(false);
     setIsSuperMenuOpen(false);
@@ -299,21 +299,21 @@ export const Navbar: React.FC<NavbarProps> = ({
             )}
           </button>
 
-          {/* ARN (Agente de Redes y Negocios - Sustituye CRM obsoleto) */}
+          {/* Dashboard & ARN (Cockpit Ejecutivo + Controles Web CMS) */}
           <button
             type="button"
-            onClick={() => handleNavClick('arn')}
+            onClick={() => handleNavClick('dashboard')}
             className={`px-3 py-5 transition-colors whitespace-nowrap relative hover:text-slate-950 flex items-center gap-1.5 cursor-pointer ${
-              currentTab === 'arn' || currentTab === 'crm' || currentTab === 'dashboard' ? 'text-[#0078D4] font-bold' : 'text-slate-600'
+              ['dashboard', 'arn', 'crm', 'cms', 'seo'].includes(currentTab) ? 'text-[#0078D4] font-bold' : 'text-slate-600'
             }`}
-            title="ARN: Agente de Redes y Negocios (Centro de Dirección y Supervisión)"
+            title="Dashboard Ejecutivo & ARN: Controles del Sitio Web (CMS), Redes y Negocios, SEO y Suite Fiscal"
           >
             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-            <span>ARN</span>
-            <span className="px-1.5 py-0.5 bg-emerald-50 text-emerald-800 border border-emerald-200 rounded text-[9px] font-mono font-bold">
-              Negocios
+            <span>Dashboard & ARN</span>
+            <span className="px-1.5 py-0.5 bg-blue-50 text-[#0078D4] border border-blue-200 rounded text-[9px] font-mono font-bold">
+              ARN + CMS
             </span>
-            {(currentTab === 'arn' || currentTab === 'crm' || currentTab === 'dashboard') && (
+            {['dashboard', 'arn', 'crm', 'cms', 'seo'].includes(currentTab) && (
               <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#0078D4]" />
             )}
           </button>
@@ -583,17 +583,36 @@ export const Navbar: React.FC<NavbarProps> = ({
                   <button
                     type="button"
                     onClick={() => handleNavClick('arn')}
-                    className="w-full p-3 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-xl text-left transition-all group cursor-pointer"
+                    className="w-full p-2.5 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-xl text-left transition-all group cursor-pointer"
                   >
-                    <div className="flex items-center gap-2 text-slate-900 mb-1">
-                      <LayoutDashboard className="w-4 h-4 text-emerald-600" />
-                      <span className="text-xs font-black">ARN · Agente de Redes & Negocios</span>
+                    <div className="flex items-center gap-2 text-slate-900 mb-0.5">
+                      <LayoutDashboard className="w-3.5 h-3.5 text-emerald-600" />
+                      <span className="text-xs font-black">ARN · Redes & Negocios</span>
                     </div>
                     <p className="text-[11px] text-slate-500 leading-snug">
-                      Radar de oportunidades, alertas de vencimientos y supervisión de clientes.
+                      Radar de oportunidades, alertas cambiarias y CRM en vivo.
                     </p>
-                    <div className="mt-2 text-[10px] font-bold text-emerald-600 flex items-center gap-1 group-hover:translate-x-0.5 transition-transform">
-                      <span>Acceder al cockpit ARN</span>
+                    <div className="mt-1 text-[10px] font-bold text-emerald-600 flex items-center gap-1 group-hover:translate-x-0.5 transition-transform">
+                      <span>Cockpit ARN</span>
+                      <ArrowRight className="w-3 h-3" />
+                    </div>
+                  </button>
+
+                  {/* Direct Link to Web CMS Controls */}
+                  <button
+                    type="button"
+                    onClick={() => handleNavClick('cms')}
+                    className="w-full p-2.5 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-xl text-left transition-all group cursor-pointer"
+                  >
+                    <div className="flex items-center gap-2 text-slate-900 mb-0.5">
+                      <Globe className="w-3.5 h-3.5 text-[#0078D4]" />
+                      <span className="text-xs font-black">Control Web & CMS</span>
+                    </div>
+                    <p className="text-[11px] text-slate-500 leading-snug">
+                      Todos los controles del sitio: sliders, fotos, textos y testimonios.
+                    </p>
+                    <div className="mt-1 text-[10px] font-bold text-[#0078D4] flex items-center gap-1 group-hover:translate-x-0.5 transition-transform">
+                      <span>Gestor de Contenidos</span>
                       <ArrowRight className="w-3 h-3" />
                     </div>
                   </button>
@@ -602,14 +621,14 @@ export const Navbar: React.FC<NavbarProps> = ({
                   <button
                     type="button"
                     onClick={() => handleNavClick('seo')}
-                    className="w-full p-3 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-xl text-left transition-all group cursor-pointer"
+                    className="w-full p-2.5 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-xl text-left transition-all group cursor-pointer"
                   >
-                    <div className="flex items-center gap-2 text-slate-900 mb-1">
-                      <Search className="w-4 h-4 text-[#0078D4]" />
-                      <span className="text-xs font-bold">Auditoría SEO & Tráfico</span>
+                    <div className="flex items-center gap-2 text-slate-900 mb-0.5">
+                      <Search className="w-3.5 h-3.5 text-purple-600" />
+                      <span className="text-xs font-black">Auditoría SEO & Tráfico</span>
                     </div>
                     <p className="text-[11px] text-slate-500 leading-snug">
-                      Posicionamiento en Google, metadatos estructurados y Search Console.
+                      Posicionamiento en Google, metadatos y Search Console.
                     </p>
                   </button>
                 </div>
@@ -784,34 +803,58 @@ export const Navbar: React.FC<NavbarProps> = ({
             </div>
           </div>
 
-          {/* Section 3: ARN & Centro de Control */}
+          {/* Section 3: Dashboard, ARN & Controles Web */}
           <div>
             <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-slate-400 block mb-2 px-1">
-              Supervisión de Redes & Negocios
+              Dashboard, ARN & Controles Web
             </span>
             <div className="space-y-2">
+              <button
+                type="button"
+                onClick={() => handleNavClick('dashboard')}
+                className="w-full p-3 rounded-lg bg-blue-50/80 border border-blue-200 text-left flex items-center justify-between text-xs font-bold text-[#0078D4] cursor-pointer"
+              >
+                <div className="flex items-center gap-2">
+                  <LayoutDashboard className="w-4 h-4 text-[#0078D4]" />
+                  <span>Dashboard General & ARN (Cockpit)</span>
+                </div>
+                <ChevronRight className="w-4 h-4" />
+              </button>
+
               <button
                 type="button"
                 onClick={() => handleNavClick('arn')}
                 className="w-full p-3 rounded-lg bg-emerald-50/70 border border-emerald-200 text-left flex items-center justify-between text-xs font-bold text-emerald-900 cursor-pointer"
               >
                 <div className="flex items-center gap-2">
-                  <LayoutDashboard className="w-4 h-4 text-emerald-700" />
-                  <span>ARN (Agente de Redes y Negocios)</span>
+                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                  <span>ARN (Redes & Negocios)</span>
                 </div>
                 <ChevronRight className="w-4 h-4 text-emerald-700" />
               </button>
 
               <button
                 type="button"
-                onClick={() => handleNavClick('dashboard')}
-                className="w-full p-3 rounded-lg bg-blue-50/70 border border-blue-200 text-left flex items-center justify-between text-xs font-bold text-[#0078D4] cursor-pointer"
+                onClick={() => handleNavClick('cms')}
+                className="w-full p-3 rounded-lg bg-slate-50 border border-slate-200 text-left flex items-center justify-between text-xs font-bold text-slate-800 cursor-pointer"
               >
                 <div className="flex items-center gap-2">
-                  <LayoutDashboard className="w-4 h-4 text-[#0078D4]" />
-                  <span>Dashboard Integral & Métricas</span>
+                  <Globe className="w-4 h-4 text-[#0078D4]" />
+                  <span>Control Web & CMS (Sitio en Vivo)</span>
                 </div>
-                <ChevronRight className="w-4 h-4" />
+                <ChevronRight className="w-4 h-4 text-slate-400" />
+              </button>
+
+              <button
+                type="button"
+                onClick={() => handleNavClick('seo')}
+                className="w-full p-3 rounded-lg bg-slate-50 border border-slate-200 text-left flex items-center justify-between text-xs font-bold text-slate-800 cursor-pointer"
+              >
+                <div className="flex items-center gap-2">
+                  <Search className="w-4 h-4 text-purple-600" />
+                  <span>Auditoría SEO & Posicionamiento</span>
+                </div>
+                <ChevronRight className="w-4 h-4 text-slate-400" />
               </button>
             </div>
           </div>
